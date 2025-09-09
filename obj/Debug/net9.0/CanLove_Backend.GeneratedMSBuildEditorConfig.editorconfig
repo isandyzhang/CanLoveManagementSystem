@@ -27,3 +27,27 @@ build_property.MSBuildProjectDirectory = /Users/andy/Desktop/NGO_OG/CanLove_Back
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
+
+[/Users/andy/Desktop/NGO_OG/CanLove_Backend/Views/Case/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2FzZS9DcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/andy/Desktop/NGO_OG/CanLove_Backend/Views/Case/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2FzZS9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/andy/Desktop/NGO_OG/CanLove_Backend/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/andy/Desktop/NGO_OG/CanLove_Backend/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/andy/Desktop/NGO_OG/CanLove_Backend/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/andy/Desktop/NGO_OG/CanLove_Backend/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
