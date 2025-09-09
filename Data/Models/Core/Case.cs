@@ -22,7 +22,7 @@ public partial class Case
 
     public int? SchoolId { get; set; }
 
-    public DateOnly BirthDate { get; set; }
+    public DateOnly BirthDate { get; set; } = new DateOnly(2000, 1, 1);
 
     public string IdNumber { get; set; } = null!;
 

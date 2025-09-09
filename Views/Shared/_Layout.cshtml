@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CanLove 個案管理系統</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Flatpickr 日期選擇器 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <style>
+        /* 強制日期輸入欄位顯示 yyyy-MM-dd 格式 */
+        input[type="date"] {
+            direction: ltr;
+        }
+    </style>
+    <script>
+        // 頁面載入時自動初始化 Flatpickr
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化所有日期輸入欄位為 Flatpickr
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(function(input) {
+                flatpickr(input, {
+                    locale: "zh_tw",  // 中文介面
+                    dateFormat: "Y/m/d",  // 台灣格式 yyyy/MM/dd
+                    allowInput: true,  // 允許手動輸入
+                    clickOpens: true,  // 點擊開啟
+                    onChange: function(selectedDates, dateStr, instance) {
+                        // 日期變更時的回調
+                        const displayElement = input.nextElementSibling;
+                        if (displayElement && displayElement.classList.contains('form-text')) {
+                            displayElement.textContent = `目前選擇：${dateStr}`;
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                    <i class="bi bi-heart-fill me-2"></i>CanLove
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Home")">
+                                <i class="bi bi-house me-1"></i>首頁
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Case")">
+                                <i class="bi bi-people me-1"></i>個案管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Create", "Case")">
+                                <i class="bi bi-plus-circle me-1"></i>新增個案
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <main role="main" class="pb-3">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    &copy; 2024 - CanLove 個案管理系統
+                </div>
+                <div class="col-md-6 text-end">
+                    <small>版本 1.0.0</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Flatpickr 日期選擇器 -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
