@@ -1,4 +1,4 @@
-namespace CanLove_Backend.Models.Api.Requests
+namespace CanLove_Backend.Models.Api.Requests.Shared
 {
     /// <summary>
     /// 新增學校請求模型

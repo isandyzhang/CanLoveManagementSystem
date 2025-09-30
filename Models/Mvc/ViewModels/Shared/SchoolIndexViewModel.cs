@@ -1,6 +1,6 @@
 using CanLove_Backend.Data.Models.Options;
 
-namespace CanLove_Backend.Models.Mvc.ViewModels
+namespace CanLove_Backend.Models.Mvc.ViewModels.Shared
 {
     /// <summary>
     /// 學校管理頁面視圖模型

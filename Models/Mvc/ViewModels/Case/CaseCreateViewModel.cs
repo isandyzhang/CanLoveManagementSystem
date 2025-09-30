@@ -1,8 +1,8 @@
 using CanLove_Backend.Data.Models.Core;
 using CanLove_Backend.Data.Models.Options;
 
-namespace CanLove_Backend.Models.Mvc.ViewModels
-{
+namespace CanLove_Backend.Models.Mvc.ViewModels;
+
     /// <summary>
     /// 個案建立頁面的 ViewModel
     /// </summary>
@@ -64,4 +64,3 @@ namespace CanLove_Backend.Models.Mvc.ViewModels
         /// </summary>
         public List<OptionSetValue> GenderOptions { get; set; } = new List<OptionSetValue>();
     }
-}

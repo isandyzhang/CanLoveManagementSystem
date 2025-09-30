@@ -8,7 +8,7 @@
     <h2>
         <i class="bi bi-people me-2"></i>個案管理
     </h2>
-    <a href="@Url.Action("Create", "Case")" class="btn btn-primary">
+    <a href="@Url.Action("Start", "CaseWizard")" class="btn btn-primary">
         <i class="bi bi-plus-circle me-1"></i>新增個案
     </a>
 </div>
@@ -37,7 +37,7 @@
                         {
                             <tr>
                                 <td>
-                                    <code>@item.CaseId.Substring(0, 8)...</code>
+                                    <code>@item.CaseId</code>
                                 </td>
                                 <td>@item.Name</td>
                                 <td>
@@ -48,6 +48,10 @@
                                     else if (item.Gender == "F")
                                     {
                                         <span class="badge bg-pink">女</span>
+                                    }
+                                    else if (item.Gender == "O")
+                                    {
+                                        <span class="badge bg-info">其他</span>
                                     }
                                     else
                                     {
@@ -70,15 +74,15 @@
                                 <td><datetime value="@item.CreatedAt"></datetime></td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="@Url.Action("Details", "Case", new { id = item.CaseId })" 
+                                        <a href="@Url.Action("Details", "CaseIndex", new { id = item.CaseId })" 
                                            class="btn btn-sm btn-outline-info" title="查看詳情">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="@Url.Action("Edit", "Case", new { id = item.CaseId })" 
+                                        <a href="@Url.Action("Edit", "CaseEdit", new { id = item.CaseId })" 
                                            class="btn btn-sm btn-outline-primary" title="編輯">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="@Url.Action("Delete", "Case", new { id = item.CaseId })" 
+                                        <a href="@Url.Action("Delete", "CaseDelete", new { id = item.CaseId })" 
                                            class="btn btn-sm btn-outline-danger" title="刪除"
                                            onclick="return confirm('確定要刪除此個案嗎？')">
                                             <i class="bi bi-trash"></i>
@@ -99,7 +103,7 @@ else
         <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
         <h4 class="text-muted mt-3">尚無個案資料</h4>
         <p class="text-muted">開始建立您的第一個個案記錄</p>
-        <a href="@Url.Action("Create", "Case")" class="btn btn-primary">
+        <a href="@Url.Action("Start", "CaseWizardOpenCase")" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i>新增個案
         </a>
     </div>

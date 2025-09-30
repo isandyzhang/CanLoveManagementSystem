@@ -93,4 +93,5 @@ public partial class Case
     public virtual FinalAssessmentSummary? FinalAssessmentSummary { get; set; }
 
     public virtual School? School { get; set; }
+
 }

@@ -27,6 +27,8 @@ public partial class OptionSetValue
 
     public virtual ICollection<CaseDetail> CaseDetailContactRelationValues { get; set; } = new List<CaseDetail>();
 
+    public virtual ICollection<CaseDetail> CaseDetailMainCaregiverRelationValues { get; set; } = new List<CaseDetail>();
+
     public virtual ICollection<CaseDetail> CaseDetailHelpExperienceValues { get; set; } = new List<CaseDetail>();
 
     public virtual ICollection<CaseDetail> CaseDetailMainCaregiverEduValues { get; set; } = new List<CaseDetail>();

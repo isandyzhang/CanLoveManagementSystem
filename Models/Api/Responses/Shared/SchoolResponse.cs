@@ -1,4 +1,4 @@
-namespace CanLove_Backend.Models.Api.Responses
+namespace CanLove_Backend.Models.Api.Responses.Shared
 {
     /// <summary>
     /// 學校響應模型
