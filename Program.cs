@@ -5,16 +5,35 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 添加 Key Vault 配置
+// 添加 Key Vault 配置（同時支援 ClientSecret 與 DefaultAzureCredential/Managed Identity）
 var keyVaultUri = builder.Configuration["KeyVault:VaultUri"];
 var clientId = builder.Configuration["KeyVault:ClientId"];
 var clientSecret = builder.Configuration["KeyVault:ClientSecret"];
 var tenantId = builder.Configuration["KeyVault:TenantId"];
+var userAssignedManagedIdentityClientId = builder.Configuration["ManagedIdentityClientId"]; // 可選，用於 User-assigned MI
 
-if (!string.IsNullOrEmpty(keyVaultUri) && !string.IsNullOrEmpty(clientId) && 
-    !string.IsNullOrEmpty(clientSecret) && !string.IsNullOrEmpty(tenantId))
+if (!string.IsNullOrEmpty(keyVaultUri))
 {
-    var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    Azure.Core.TokenCredential credential;
+
+    var hasClientSecret = !string.IsNullOrEmpty(clientId)
+        && !string.IsNullOrEmpty(clientSecret)
+        && !string.IsNullOrEmpty(tenantId);
+
+    if (hasClientSecret)
+    {
+        credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    }
+    else
+    {
+        var defaultOptions = new DefaultAzureCredentialOptions();
+        if (!string.IsNullOrEmpty(userAssignedManagedIdentityClientId))
+        {
+            defaultOptions.ManagedIdentityClientId = userAssignedManagedIdentityClientId;
+        }
+        credential = new DefaultAzureCredential(defaultOptions);
+    }
+
     builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), credential);
 }
 
