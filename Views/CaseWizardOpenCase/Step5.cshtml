@@ -1,0 +1,153 @@
+@model CanLove_Backend.Models.Mvc.ViewModels.CaseWizardOpenCase.CaseWizard_S5_CIQAP_ViewModel
+
+@{
+    ViewData["Title"] = "步驟5: 學業表現評估";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- 頁面標題 -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">@ViewData["Title"]</h2>
+                    <p class="text-muted mb-0">填寫兒少學業表現評估資料</p>
+                </div>
+                <div class="text-end">
+                    <small class="text-muted">步驟 5 / 8</small>
+                </div>
+            </div>
+
+            <!-- 進度條 -->
+            <div class="progress mb-4" style="height: 8px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: 62.5%" aria-valuenow="62.5" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <!-- 表單 -->
+            <form asp-action="Step5" method="post" class="needs-validation" novalidate>
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-graduation-cap me-2"></i>學業表現評估
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- 隱藏欄位 -->
+                                <input asp-for="CaseId" type="hidden" />
+
+                                <!-- 學業表現描述 -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                            <i class="fas fa-book me-2"></i>學業表現描述
+                                        </h6>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label asp-for="AcademicPerformanceSummary" class="form-label">學業表現描述 <small class="text-muted d-block">academic_performance_summary（可空，NVARCHAR(100)）</small></label>
+                                            <textarea asp-for="AcademicPerformanceSummary" class="form-control" rows="6" placeholder="請詳細描述兒少的學業表現狀況，包括：&#10;• 學習態度與動機&#10;• 各科成績表現&#10;• 學習困難與挑戰&#10;• 特殊學習需求&#10;• 與同學和老師的互動情況&#10;• 課外活動參與度&#10;• 其他相關觀察"></textarea>
+                                            <div class="form-text">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                請詳細描述兒少的學業表現狀況，包括學習態度、成績表現、學習困難、特殊需求等相關資訊。
+                                            </div>
+                                            <span asp-validation-for="AcademicPerformanceSummary" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 評估指引 -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="alert alert-info">
+                                            <h6 class="alert-heading">
+                                                <i class="fas fa-lightbulb me-2"></i>評估指引
+                                            </h6>
+                                            <p class="mb-2">在填寫學業表現評估時，請考慮以下面向：</p>
+                                            <ul class="mb-0">
+                                                <li><strong>學習動機：</strong>兒少對學習的興趣和主動性</li>
+                                                <li><strong>學習能力：</strong>理解、記憶、應用知識的能力</li>
+                                                <li><strong>學習態度：</strong>上課專注度、作業完成度、學習紀律</li>
+                                                <li><strong>社交學習：</strong>與同學合作、參與討論、尋求幫助的能力</li>
+                                                <li><strong>特殊需求：</strong>是否需要特殊教育支持或學習輔助</li>
+                                                <li><strong>家庭支持：</strong>家庭對學業的支持程度和參與度</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 按鈕區域 -->
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                                    <a asp-action="Step4" asp-route-caseId="@Model.CaseId" class="btn btn-outline-secondary me-md-2">
+                                        <i class="fas fa-arrow-left me-1"></i>返回上一步
+                                    </a>
+                                    <div>
+                                        <button type="submit" class="btn btn-primary me-md-2">
+                                            <i class="fas fa-save me-1"></i>儲存並繼續
+                                        </button>
+                                        <a asp-controller="Case" asp-action="Index" class="btn btn-outline-danger">
+                                            <i class="fas fa-times me-1"></i>取消
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 表單驗證
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // 字數計算
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.querySelector('textarea[name="AcademicPerformanceSummary"]');
+            if (textarea) {
+                const maxLength = 100;
+                const counter = document.createElement('div');
+                counter.className = 'form-text text-end';
+                counter.innerHTML = `<span id="charCount">0</span> / ${maxLength} 字元`;
+                textarea.parentNode.appendChild(counter);
+                
+                const charCount = document.getElementById('charCount');
+                
+                textarea.addEventListener('input', function() {
+                    const currentLength = this.value.length;
+                    charCount.textContent = currentLength;
+                    
+                    if (currentLength > maxLength) {
+                        charCount.style.color = 'red';
+                        this.setCustomValidity('學業表現描述不能超過100個字元');
+                    } else {
+                        charCount.style.color = '';
+                        this.setCustomValidity('');
+                    }
+                });
+                
+                // 初始化字數
+                textarea.dispatchEvent(new Event('input'));
+            }
+        });
+    </script>
+}

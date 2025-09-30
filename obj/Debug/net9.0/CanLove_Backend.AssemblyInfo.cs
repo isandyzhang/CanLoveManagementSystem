@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CanLove_Backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ba874eb46077a2c17b83c2de9456e51eca054309")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8546ccc0fecf5f79f7d337f753346a0ad247f391")]
 [assembly: System.Reflection.AssemblyProductAttribute("CanLove_Backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CanLove_Backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

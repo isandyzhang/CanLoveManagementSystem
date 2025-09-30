@@ -1,0 +1,110 @@
+@model IEnumerable<CanLove_Backend.Data.Models.Core.Case>
+
+@{
+    ViewData["Title"] = "個案管理";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-people me-2"></i>個案管理
+    </h2>
+    <a href="@Url.Action("Start", "CaseWizard")" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>新增個案
+    </a>
+</div>
+
+@if (Model.Any())
+{
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>個案編號</th>
+                            <th>姓名</th>
+                            <th>性別</th>
+                            <th>出生日期</th>
+                            <th>學校</th>
+                            <th>城市</th>
+                            <th>狀態</th>
+                            <th>建立時間</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <code>@item.CaseId</code>
+                                </td>
+                                <td>@item.Name</td>
+                                <td>
+                                    @if (item.Gender == "M")
+                                    {
+                                        <span class="badge bg-primary">男</span>
+                                    }
+                                    else if (item.Gender == "F")
+                                    {
+                                        <span class="badge bg-pink">女</span>
+                                    }
+                                    else if (item.Gender == "O")
+                                    {
+                                        <span class="badge bg-info">其他</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">未設定</span>
+                                    }
+                                </td>
+                                <td>@item.BirthDate.ToTaiwanDateString()</td>
+                                <td>@(item.School?.SchoolName ?? "未設定")</td>
+                                <td>@(item.City?.CityName ?? "未設定")</td>
+                                <td>
+                                    @if (item.DraftStatus == true)
+                                    {
+                                        <span class="badge bg-warning">草稿</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">已提交</span>
+                                    }
+                                </td>
+                                <td><datetime value="@item.CreatedAt"></datetime></td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="@Url.Action("Details", "CaseIndex", new { id = item.CaseId })" 
+                                           class="btn btn-sm btn-outline-info" title="查看詳情">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="@Url.Action("Edit", "CaseEdit", new { id = item.CaseId })" 
+                                           class="btn btn-sm btn-outline-primary" title="編輯">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="@Url.Action("Delete", "CaseDelete", new { id = item.CaseId })" 
+                                           class="btn btn-sm btn-outline-danger" title="刪除"
+                                           onclick="return confirm('確定要刪除此個案嗎？')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+        <h4 class="text-muted mt-3">尚無個案資料</h4>
+        <p class="text-muted">開始建立您的第一個個案記錄</p>
+        <a href="@Url.Action("Start", "CaseWizardOpenCase")" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>新增個案
+        </a>
+    </div>
+}

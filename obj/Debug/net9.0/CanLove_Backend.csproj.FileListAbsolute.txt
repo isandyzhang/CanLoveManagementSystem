@@ -270,3 +270,11 @@
 /Users/andy/Desktop/NGO_OG/CanLove_Backend/obj/Debug/net9.0/ref/CanLove_Backend.dll
 /Users/andy/Desktop/NGO_OG/CanLove_Backend/bin/Debug/net9.0/Azure.Extensions.AspNetCore.Configuration.Secrets.dll
 /Users/andy/Desktop/NGO_OG/CanLove_Backend/bin/Debug/net9.0/Azure.Security.KeyVault.Secrets.dll
+/Users/andy/Desktop/NGO_OG/CanLove_Backend/obj/Debug/net9.0/CanLove_Backend.RazorAssemblyInfo.cache
+/Users/andy/Desktop/NGO_OG/CanLove_Backend/obj/Debug/net9.0/CanLove_Backend.RazorAssemblyInfo.cs
+/Users/andy/Desktop/NGO_OG/CanLove_Backend/obj/Debug/net9.0/CanLove_Backend.sourcelink.json
+/Users/andy/Desktop/NGO_OG/CanLove_Backend/bin/Debug/net9.0/Microsoft.OpenApi.dll
+/Users/andy/Desktop/NGO_OG/CanLove_Backend/bin/Debug/net9.0/Swashbuckle.AspNetCore.Swagger.dll
+/Users/andy/Desktop/NGO_OG/CanLove_Backend/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/Users/andy/Desktop/NGO_OG/CanLove_Backend/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+/Users/andy/Desktop/NGO_OG/CanLove_Backend/obj/Debug/net9.0/CanLove_Backend.MvcApplicationPartsAssemblyInfo.cs
