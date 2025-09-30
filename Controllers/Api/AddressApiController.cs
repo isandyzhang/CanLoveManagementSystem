@@ -23,8 +23,8 @@ public class AddressApiController : ControllerBase
     {
         var cities = await _context.Cities
             .Select(c => new { 
-                CityId = c.CityId, 
-                CityName = c.CityName 
+                c.CityId, 
+                c.CityName 
             })
             .OrderBy(c => c.CityId)
             .ToListAsync();
@@ -41,8 +41,8 @@ public class AddressApiController : ControllerBase
         var districts = await _context.Districts
             .Where(d => d.CityId == cityId)
             .Select(d => new { 
-                DistrictId = d.DistrictId, 
-                DistrictName = d.DistrictName 
+                d.DistrictId, 
+                d.DistrictName 
             })
             .OrderBy(d => d.DistrictName)
             .ToListAsync();
@@ -58,9 +58,9 @@ public class AddressApiController : ControllerBase
     {
         var districts = await _context.Districts
             .Select(d => new { 
-                DistrictId = d.DistrictId, 
-                DistrictName = d.DistrictName,
-                CityId = d.CityId
+                d.DistrictId, 
+                d.DistrictName,
+                d.CityId
             })
             .OrderBy(d => d.CityId)
             .ThenBy(d => d.DistrictName)

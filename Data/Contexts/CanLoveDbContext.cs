@@ -120,8 +120,7 @@ public partial class CanLoveDbContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("email");
             entity.Property(e => e.Gender)
-                .HasMaxLength(2)
-                .IsFixedLength()
+                .HasMaxLength(30)
                 .HasColumnName("gender");
             entity.Property(e => e.IdNumber)
                 .HasMaxLength(255)
@@ -166,6 +165,7 @@ public partial class CanLoveDbContext : DbContext
             entity.HasOne(d => d.School).WithMany(p => p.Cases)
                 .HasForeignKey(d => d.SchoolId)
                 .HasConstraintName("FK__Cases__school_id__7F2BE32F");
+
         });
 
         modelBuilder.Entity<CaseConsultationRecord>(entity =>
@@ -262,9 +262,8 @@ public partial class CanLoveDbContext : DbContext
             entity.Property(e => e.MainCaregiverName)
                 .HasMaxLength(20)
                 .HasColumnName("main_caregiver_name");
-            entity.Property(e => e.MainCaregiverRelation)
-                .HasMaxLength(10)
-                .HasColumnName("main_caregiver_relation");
+            entity.Property(e => e.MainCaregiverRelationValueId)
+                .HasColumnName("main_caregiver_relation_value_id");
             entity.Property(e => e.Note)
                 .HasMaxLength(1000)
                 .HasColumnName("note");
@@ -283,6 +282,10 @@ public partial class CanLoveDbContext : DbContext
             entity.HasOne(d => d.ContactRelationValue).WithMany(p => p.CaseDetailContactRelationValues)
                 .HasForeignKey(d => d.ContactRelationValueId)
                 .HasConstraintName("FK__CaseDetai__conta__07C12930");
+
+            entity.HasOne(d => d.MainCaregiverRelationValue).WithMany(p => p.CaseDetailMainCaregiverRelationValues)
+                .HasForeignKey(d => d.MainCaregiverRelationValueId)
+                .HasConstraintName("FK__CaseDetai__main_caregiver_relation__07C12931");
 
             entity.HasOne(d => d.FamilyStructureType).WithMany(p => p.CaseDetails)
                 .HasForeignKey(d => d.FamilyStructureTypeId)

@@ -33,7 +33,7 @@ public partial class CaseDetail
 
     public string? MainCaregiverName { get; set; }
 
-    public string? MainCaregiverRelation { get; set; }
+    public int? MainCaregiverRelationValueId { get; set; }
 
     public string? MainCaregiverId { get; set; }
 
@@ -64,6 +64,8 @@ public partial class CaseDetail
     public virtual Case Case { get; set; } = null!;
 
     public virtual OptionSetValue? ContactRelationValue { get; set; }
+
+    public virtual OptionSetValue? MainCaregiverRelationValue { get; set; }
 
     public virtual FamilyStructureType? FamilyStructureType { get; set; }
 

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using CanLove_Backend.Data.Models.Core;
 using CanLove_Backend.Models.Api.Responses;
 using CanLove_Backend.Models.Api.Requests;
-using CanLove_Backend.Services;
+using CanLove_Backend.Services.Case;
 
 namespace CanLove_Backend.Controllers.Api
 {
@@ -35,7 +35,7 @@ namespace CanLove_Backend.Controllers.Api
         /// <param name="id">個案ID</param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ApiResponse<CaseResponse>> GetCase(string id)
+        public ApiResponse<CaseResponse> GetCase(string id)
         {
             try
             {
@@ -87,7 +87,7 @@ namespace CanLove_Backend.Controllers.Api
         /// <param name="request">個案資料</param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<ApiResponse<CaseResponse>> UpdateCase(string id, [FromBody] UpdateCaseRequest request)
+        public ApiResponse<CaseResponse> UpdateCase(string id, [FromBody] UpdateCaseRequest request)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace CanLove_Backend.Controllers.Api
         /// <param name="id">個案ID</param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<ApiResponse> DeleteCase(string id)
+        public ApiResponse DeleteCase(string id)
         {
             try
             {

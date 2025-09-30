@@ -1,8 +1,10 @@
 using CanLove_Backend.Data.Contexts;
 using CanLove_Backend.Data.Models.Options;
 using Microsoft.EntityFrameworkCore;
+using CanLove_Backend.Models.Api.Requests.Shared;
+using CanLove_Backend.Models.Api.Responses;
 
-namespace CanLove_Backend.Services
+namespace CanLove_Backend.Services.Shared
 {
     /// <summary>
     /// 學校服務類別
@@ -136,5 +138,35 @@ namespace CanLove_Backend.Services
                 .OrderBy(t => t)
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// 以請求模型新增學校（提供給 MVC/API 共用）
+        /// </summary>
+        public async Task<ApiResponse<School>> AddSchoolAsync(AddSchoolRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.SchoolName))
+            {
+                return ApiResponse<School>.ErrorResponse("學校名稱為必填");
+            }
+
+            var exists = await _context.Schools.AnyAsync(s => s.SchoolName == request.SchoolName);
+            if (exists)
+            {
+                return ApiResponse<School>.ErrorResponse("學校已存在");
+            }
+
+            var school = new School
+            {
+                SchoolName = request.SchoolName!,
+                SchoolType = string.IsNullOrWhiteSpace(request.SchoolType) ? "Unknown" : request.SchoolType!
+            };
+
+            _context.Schools.Add(school);
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<School>.SuccessResponse(school, "學校新增成功");
+        }
+
+        // 刪除學校功能已暫停（僅保留新增）。
     }
 }

@@ -1,9 +1,10 @@
 using CanLove_Backend.Data.Contexts;
 using CanLove_Backend.Data.Models.Options;
 using CanLove_Backend.Models.Api.Responses;
+using CanLove_Backend.Models.Api.Responses.Shared;
 using Microsoft.EntityFrameworkCore;
 
-namespace CanLove_Backend.Services
+namespace CanLove_Backend.Services.Shared
 {
     /// <summary>
     /// 地址服務類別
@@ -84,22 +85,4 @@ namespace CanLove_Backend.Services
         }
     }
 
-    /// <summary>
-    /// 城市響應模型
-    /// </summary>
-    public class CityResponse
-    {
-        public int CityId { get; set; }
-        public string CityName { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// 區域響應模型
-    /// </summary>
-    public class DistrictResponse
-    {
-        public int DistrictId { get; set; }
-        public string DistrictName { get; set; } = string.Empty;
-        public int CityId { get; set; }
-    }
 }

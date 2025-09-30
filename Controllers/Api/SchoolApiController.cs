@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using CanLove_Backend.Data.Contexts;
 using CanLove_Backend.Data.Models.Options;
-using CanLove_Backend.Models.Api.Requests;
+using CanLove_Backend.Models.Api.Requests.Shared;
+using CanLove_Backend.Models.Api.Responses;
+using CanLove_Backend.Models.Api.Responses.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace CanLove_Backend.Controllers.Api;
