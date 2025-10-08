@@ -12,7 +12,8 @@ using Microsoft.Identity.Web.UI;
 var builder = WebApplication.CreateBuilder(args);
 
 // 添加 Key Vault 配置（支援開發和正式環境）
-builder.Configuration.AddAzureKeyVaultWithIdentity(builder.Environment);
+// 暫時註解掉 Key Vault 進行測試
+// builder.Configuration.AddAzureKeyVaultWithIdentity(builder.Environment);
 
 // 添加 Microsoft Identity Web 驗證
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
