@@ -36,8 +36,9 @@ var builder = WebApplication.CreateBuilder(args);
 // });
 
 // 添加服務
-builder.Services.AddDbContext<CanLoveDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// 暫時註解掉資料庫連線進行測試
+// builder.Services.AddDbContext<CanLoveDbContext>(options =>
+//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 註冊自定義服務
 // 共用服務

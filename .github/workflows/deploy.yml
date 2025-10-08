@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: CanLoveSytstem
+  AZURE_WEBAPP_NAME: CanLoveMainSystem
   DOTNET_VERSION: '9.0.x'
 
 jobs:
