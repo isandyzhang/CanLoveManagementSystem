@@ -1,17 +1,35 @@
 @model IEnumerable<CanLove_Backend.Data.Models.Core.Case>
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 
 @{
     ViewData["Title"] = "個案管理";
+    
+    // 從 Microsoft Identity 標準的 role claim 讀取角色
+    var userRoles = User.FindAll("http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(c => c.Value).ToList();
+    
+    // 如果沒有找到，嘗試其他常見的 claim 名稱
+    if (!userRoles.Any())
+    {
+        userRoles = User.FindAll("roles").Select(c => c.Value).ToList();
+    }
+    if (!userRoles.Any())
+    {
+        userRoles = User.FindAll("role").Select(c => c.Value).ToList();
+    }
+    
+    var isAdmin = userRoles.Contains("admin") || User.IsInRole("admin");
+    var isSocialWorker = userRoles.Contains("socialworker") || User.IsInRole("socialworker");
+    var isAssistant = userRoles.Contains("assistant") || User.IsInRole("assistant");
+    var isViewer = userRoles.Contains("viewer") || User.IsInRole("viewer");
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>
         <i class="bi bi-people me-2"></i>個案管理
     </h2>
-    <a href="@Url.Action("Start", "CaseWizard")" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-1"></i>新增個案
-    </a>
 </div>
+
 
 @if (Model.Any())
 {
@@ -27,7 +45,8 @@
                             <th>出生日期</th>
                             <th>學校</th>
                             <th>城市</th>
-                            <th>狀態</th>
+                            <th>審核狀態</th>
+                            <th>建立者</th>
                             <th>建立時間</th>
                             <th>操作</th>
                         </tr>
@@ -41,15 +60,15 @@
                                 </td>
                                 <td>@item.Name</td>
                                 <td>
-                                    @if (item.Gender == "M")
+                                    @if (item.Gender == "M" || item.Gender == "男")
                                     {
                                         <span class="badge bg-primary">男</span>
                                     }
-                                    else if (item.Gender == "F")
+                                    else if (item.Gender == "F" || item.Gender == "女")
                                     {
-                                        <span class="badge bg-pink">女</span>
+                                        <span class="badge bg-danger">女</span>
                                     }
-                                    else if (item.Gender == "O")
+                                    else if (item.Gender == "O" || item.Gender == "其他")
                                     {
                                         <span class="badge bg-info">其他</span>
                                     }
@@ -62,32 +81,130 @@
                                 <td>@(item.School?.SchoolName ?? "未設定")</td>
                                 <td>@(item.City?.CityName ?? "未設定")</td>
                                 <td>
-                                    @if (item.DraftStatus == true)
-                                    {
-                                        <span class="badge bg-warning">草稿</span>
+                                    @{
+                                        var statusClass = "";
+                                        var statusText = "";
+                                        var tooltipText = "";
+                                        
+                                        if (item.ReviewedAt != null)
+                                        {
+                                            statusClass = "bg-success";
+                                            statusText = "已審核";
+                                            var reviewedBy = item.ReviewedBy ?? "系統";
+                                            if (reviewedBy.Contains("@"))
+                                            {
+                                                reviewedBy = reviewedBy.Split('@')[0];
+                                            }
+                                            tooltipText = $"審核者：{reviewedBy}&#10;審核時間：{item.ReviewedAt:yyyy/MM/dd HH:mm}";
+                                        }
+                                        else if (item.SubmittedAt != null)
+                                        {
+                                            statusClass = "bg-warning";
+                                            statusText = "待審核";
+                                            tooltipText = $"提交時間：{item.SubmittedAt:yyyy/MM/dd HH:mm}";
+                                        }
+                                        else
+                                        {
+                                            statusClass = "bg-secondary";
+                                            statusText = "草稿";
+                                            tooltipText = "個案尚未提交審核";
+                                        }
+                                        
+                                        if (item.IsLocked == true)
+                                        {
+                                            statusText += " 🔒";
+                                            statusClass = "bg-danger";
+                                            var lockedBy = item.LockedBy ?? "系統";
+                                            if (lockedBy.Contains("@"))
+                                            {
+                                                lockedBy = lockedBy.Split('@')[0];
+                                            }
+                                            tooltipText += $"&#10;鎖定者：{lockedBy}&#10;鎖定時間：{item.LockedAt:yyyy/MM/dd HH:mm}";
+                                        }
                                     }
-                                    else
-                                    {
-                                        <span class="badge bg-success">已提交</span>
+                                    <span class="badge @statusClass" 
+                                          data-bs-toggle="tooltip" 
+                                          data-bs-html="true"
+                                          data-bs-placement="top" 
+                                          title="@tooltipText">
+                                        @statusText
+                                    </span>
+                                </td>
+                                <td>
+                                    @{
+                                        var displayName = item.SubmittedBy ?? "系統";
+                                        // 如果是 email 格式，取 @ 前面的部分
+                                        if (displayName.Contains("@"))
+                                        {
+                                            displayName = displayName.Split('@')[0];
+                                        }
                                     }
+                                    <small class="text-muted">@displayName</small>
                                 </td>
                                 <td><datetime value="@item.CreatedAt"></datetime></td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="@Url.Action("Details", "CaseIndex", new { id = item.CaseId })" 
-                                           class="btn btn-sm btn-outline-info" title="查看詳情">
-                                            <i class="bi bi-eye"></i>
+                                    <!-- 查看詳情 - 所有角色都可以 -->
+                                    <a href="javascript:void(0)" 
+                                       class="badge bg-info text-decoration-none me-1" 
+                                       style="cursor: pointer;"
+                                       onclick="showCaseDetails('@item.CaseId')">
+                                        查看
+                                    </a>
+                                    
+                                    <!-- 編輯 - Admin 和 SocialWorker 都可以 -->
+                                    @if (isAdmin || isSocialWorker)
+                                    {
+                                        <a href="@Url.Action("Step1", "CaseWizardOpenCase", new { caseId = item.CaseId })" 
+                                           class="badge bg-primary text-decoration-none me-1"
+                                           style="cursor: pointer;">
+                                            編輯
                                         </a>
-                                        <a href="@Url.Action("Edit", "CaseEdit", new { id = item.CaseId })" 
-                                           class="btn btn-sm btn-outline-primary" title="編輯">
-                                            <i class="bi bi-pencil"></i>
+                                    }
+                                    
+                                    <!-- 提交審核 - Assistant 自己的草稿才能提交 -->
+                                    @if (isAssistant && item.SubmittedAt == null)
+                                    {
+                                        <form method="post" action="@Url.Action("SubmitForReview", "Case", new { id = item.CaseId })" 
+                                              style="display: inline;" onsubmit="return confirm('確定要提交此個案進行審核嗎？')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="badge bg-warning border-0 text-decoration-none" 
+                                                    style="cursor: pointer;">
+                                                提交審核
+                                            </button>
+                                        </form>
+                                    }
+                                    
+                                    <!-- 審核按鈕 - SocialWorker 和 Admin 可以審核待審核的個案 -->
+                                    @if ((isSocialWorker || isAdmin) && item.SubmittedAt != null && item.ReviewedAt == null)
+                                    {
+                                        <form method="post" action="@Url.Action("ReviewCase", "Case", new { id = item.CaseId, approved = true })" 
+                                              style="display: inline;" onsubmit="return confirm('確定要通過此個案嗎？')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="badge bg-success border-0 text-decoration-none me-1" 
+                                                    style="cursor: pointer;">
+                                                通過
+                                            </button>
+                                        </form>
+                                        <form method="post" action="@Url.Action("ReviewCase", "Case", new { id = item.CaseId, approved = false })" 
+                                              style="display: inline;" onsubmit="return confirm('確定要退回此個案嗎？')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="badge bg-danger border-0 text-decoration-none me-1" 
+                                                    style="cursor: pointer;">
+                                                退回
+                                            </button>
+                                        </form>
+                                    }
+                                    
+                                    <!-- 刪除 - 只有 Admin 可以 -->
+                                    @if (isAdmin)
+                                    {
+                                        <a href="javascript:void(0)" 
+                                           class="badge bg-danger text-decoration-none me-1" 
+                                           style="cursor: pointer;"
+                                           onclick="deleteCase('@item.CaseId', '@item.Name')">
+                                            刪除
                                         </a>
-                                        <a href="@Url.Action("Delete", "CaseDelete", new { id = item.CaseId })" 
-                                           class="btn btn-sm btn-outline-danger" title="刪除"
-                                           onclick="return confirm('確定要刪除此個案嗎？')">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    </div>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -102,9 +219,606 @@ else
     <div class="text-center py-5">
         <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
         <h4 class="text-muted mt-3">尚無個案資料</h4>
-        <p class="text-muted">開始建立您的第一個個案記錄</p>
-        <a href="@Url.Action("Start", "CaseWizardOpenCase")" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i>新增個案
-        </a>
+        <p class="text-muted">目前沒有符合條件的個案記錄</p>
     </div>
+}
+
+<!-- 個案詳細資料彈出視窗 -->
+<div class="modal fade" id="caseDetailsModal" tabindex="-1" aria-labelledby="caseDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="caseDetailsModalLabel">
+                    <i class="bi bi-person-lines-fill me-2"></i>個案詳細資料
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- 載入中 -->
+                <div id="caseDetailsLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">載入中...</span>
+                    </div>
+                    <p class="mt-3 text-muted">正在載入個案資料...</p>
+                </div>
+                
+                <!-- 錯誤訊息 -->
+                <div id="caseDetailsError" class="alert alert-danger d-none" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span id="caseDetailsErrorMessage"></span>
+                </div>
+                
+                <!-- 個案詳細資料內容 -->
+                <div id="caseDetailsContent" class="d-none">
+                    <!-- 基本資料 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="bi bi-person me-2"></i>基本資料
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">姓名</label>
+                                <p class="form-control-plaintext" id="detailName">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">性別</label>
+                                <p class="form-control-plaintext" id="detailGender">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">生日</label>
+                                <p class="form-control-plaintext" id="detailBirthDate">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">身分證號</label>
+                                <p class="form-control-plaintext" id="detailIdNumber">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">電話</label>
+                                <p class="form-control-plaintext" id="detailPhone">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email</label>
+                                <p class="form-control-plaintext" id="detailEmail">-</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">地址</label>
+                                <p class="form-control-plaintext" id="detailAddress">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">縣市</label>
+                                <p class="form-control-plaintext" id="detailCity">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">區域</label>
+                                <p class="form-control-plaintext" id="detailDistrict">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">學校</label>
+                                <p class="form-control-plaintext" id="detailSchool">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 聯絡人資料 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="bi bi-telephone me-2"></i>聯絡人資料
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">聯絡人姓名</label>
+                                <p class="form-control-plaintext" id="detailContactName">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">關係</label>
+                                <p class="form-control-plaintext" id="detailContactRelation">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">聯絡電話</label>
+                                <p class="form-control-plaintext" id="detailContactPhone">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">住家電話</label>
+                                <p class="form-control-plaintext" id="detailHomePhone">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 扶養人資料 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="bi bi-people me-2"></i>扶養人資料
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">主要照顧者</label>
+                                <p class="form-control-plaintext" id="detailMainCaregiverName">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">關係</label>
+                                <p class="form-control-plaintext" id="detailMainCaregiverRelation">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">職業</label>
+                                <p class="form-control-plaintext" id="detailMainCaregiverJob">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">生日</label>
+                                <p class="form-control-plaintext" id="detailMainCaregiverBirth">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">教育程度</label>
+                                <p class="form-control-plaintext" id="detailMainCaregiverEdu">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">婚姻狀況</label>
+                                <p class="form-control-plaintext" id="detailMainCaregiverMarryStatus">-</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">家庭結構</label>
+                                <p class="form-control-plaintext" id="detailFamilyStructure">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 經濟狀況 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="bi bi-currency-dollar me-2"></i>經濟狀況
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">月收入</label>
+                                <p class="form-control-plaintext" id="detailMonthlyIncome">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">月支出</label>
+                                <p class="form-control-plaintext" id="detailMonthlyExpense">-</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">經濟概況</label>
+                                <p class="form-control-plaintext" id="detailEconomicOverview">-</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">工作狀況</label>
+                                <p class="form-control-plaintext" id="detailWorkSituation">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 評估分數 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="bi bi-graph-up me-2"></i>評估分數
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">EQ 情緒評估</label>
+                                <p class="form-control-plaintext" id="detailEqScore">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">HQ 健康評估</label>
+                                <p class="form-control-plaintext" id="detailHqScore">-</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">學業表現</label>
+                                <p class="form-control-plaintext" id="detailAcademicPerformance">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 審核狀態 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="bi bi-shield-check me-2"></i>審核狀態
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">狀態</label>
+                                <p class="form-control-plaintext" id="detailDraftStatus">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">鎖定狀態</label>
+                                <p class="form-control-plaintext" id="detailLockStatus">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">提交者</label>
+                                <p class="form-control-plaintext" id="detailSubmittedBy">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">提交時間</label>
+                                <p class="form-control-plaintext" id="detailSubmittedAt">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">審核者</label>
+                                <p class="form-control-plaintext" id="detailReviewedBy">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">審核時間</label>
+                                <p class="form-control-plaintext" id="detailReviewedAt">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>關閉
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 個案詳細資料彈出視窗美化 */
+    #caseDetailsModal .modal-dialog {
+        max-width: 1000px;
+    }
+    
+    #caseDetailsModal .modal-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border-bottom: none;
+        padding: 1.5rem;
+    }
+    
+    #caseDetailsModal .modal-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+    
+    #caseDetailsModal .modal-body {
+        padding: 2rem;
+        background-color: #f8f9fa;
+    }
+    
+    #caseDetailsModal .form-label {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    #caseDetailsModal .form-control-plaintext {
+        background-color: white;
+        border: 1px solid #e9ecef;
+        border-radius: 0.375rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0;
+        color: #495057;
+        font-weight: 500;
+        min-height: 2.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    #caseDetailsModal .form-control-plaintext:empty::before {
+        content: '-';
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    #caseDetailsModal .border-bottom {
+        border-bottom: 2px solid #007bff !important;
+        margin-bottom: 1.5rem;
+    }
+    
+    #caseDetailsModal .text-primary {
+        color: #007bff !important;
+    }
+    
+    #caseDetailsModal .mb-4 {
+        background-color: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    #caseDetailsModal .badge {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    #caseDetailsModal .modal-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 1rem 2rem;
+    }
+    
+    /* 響應式調整 */
+    @@media (max-width: 768px) {
+        #caseDetailsModal .modal-dialog {
+            margin: 0.5rem;
+            max-width: calc(100% - 1rem);
+        }
+        
+        #caseDetailsModal .modal-body {
+            padding: 1rem;
+        }
+        
+        #caseDetailsModal .mb-4 {
+            padding: 1rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // 啟用 Bootstrap Tooltip
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // 個案詳細資料彈出視窗功能
+        function showCaseDetails(caseId) {
+            // 重置視窗狀態
+            document.getElementById('caseDetailsLoading').classList.remove('d-none');
+            document.getElementById('caseDetailsError').classList.add('d-none');
+            document.getElementById('caseDetailsContent').classList.add('d-none');
+            
+            // 更新標題
+            document.getElementById('caseDetailsModalLabel').innerHTML = 
+                '<i class="bi bi-person-lines-fill me-2"></i>個案詳細資料 - ' + caseId;
+            
+            // 顯示彈出視窗
+            var modal = new bootstrap.Modal(document.getElementById('caseDetailsModal'));
+            modal.show();
+            
+            // 載入個案資料
+            fetch('/Case/ViewDetails?caseId=' + encodeURIComponent(caseId))
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('caseDetailsLoading').classList.add('d-none');
+                    
+                    if (data.success) {
+                        // 顯示資料
+                        populateCaseDetails(data.data);
+                        document.getElementById('caseDetailsContent').classList.remove('d-none');
+                    } else {
+                        // 顯示錯誤
+                        document.getElementById('caseDetailsErrorMessage').textContent = data.message;
+                        document.getElementById('caseDetailsError').classList.remove('d-none');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('caseDetailsLoading').classList.add('d-none');
+                    document.getElementById('caseDetailsErrorMessage').textContent = '載入資料時發生錯誤：' + error.message;
+                    document.getElementById('caseDetailsError').classList.remove('d-none');
+                });
+        }
+        
+        // 刪除個案功能
+        function deleteCase(caseId, caseName) {
+            // 建立確認對話框
+            var confirmMessage = '確定要刪除個案「' + caseName + '」嗎？\n\n' +
+                                '⚠️ 注意：此操作將執行軟刪除，個案資料將被標記為已刪除，但不會從資料庫中移除。\n\n' +
+                                '個案編號：' + caseId;
+            
+            if (confirm(confirmMessage)) {
+                // 顯示載入狀態
+                var deleteButton = event.target;
+                var originalText = deleteButton.textContent;
+                deleteButton.textContent = '刪除中...';
+                deleteButton.style.pointerEvents = 'none';
+                deleteButton.style.opacity = '0.6';
+                
+                // 執行 AJAX 刪除
+                fetch('/Case/Delete/' + encodeURIComponent(caseId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    // 檢查回應是否成功
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    // 檢查 Content-Type 是否為 JSON
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        // 如果不是 JSON，可能是重定向或其他回應
+                        throw new Error('伺服器回應格式不正確');
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        // 刪除成功，顯示成功訊息並重新載入頁面
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        throw new Error(data.message || '刪除失敗');
+                    }
+                })
+                .catch(error => {
+                    // 恢復按鈕狀態
+                    deleteButton.textContent = originalText;
+                    deleteButton.style.pointerEvents = 'auto';
+                    deleteButton.style.opacity = '1';
+                    
+                    alert('刪除個案時發生錯誤：' + error.message);
+                });
+            }
+        }
+        
+        // 填入個案詳細資料
+        function populateCaseDetails(data) {
+            // 基本資料
+            document.getElementById('detailName').textContent = data.name || '-';
+            
+            // 性別顯示轉換
+            var genderDisplay = '-';
+            if (data.gender) {
+                switch(data.gender.toLowerCase()) {
+                    case 'm':
+                    case 'male':
+                    case '男':
+                        genderDisplay = '男';
+                        break;
+                    case 'f':
+                    case 'female':
+                    case '女':
+                        genderDisplay = '女';
+                        break;
+                    default:
+                        genderDisplay = data.gender;
+                }
+            }
+            document.getElementById('detailGender').textContent = genderDisplay;
+            document.getElementById('detailBirthDate').textContent = data.birthDate || '-';
+            document.getElementById('detailIdNumber').textContent = data.idNumber || '-';
+            document.getElementById('detailPhone').textContent = data.phone || '-';
+            document.getElementById('detailEmail').textContent = data.email || '-';
+            
+            // 地址格式：縣市 + 區域 + 地址
+            var fullAddress = '';
+            if (data.cityName) fullAddress += data.cityName;
+            if (data.districtName) fullAddress += (fullAddress ? ' ' : '') + data.districtName;
+            if (data.address) fullAddress += (fullAddress ? ' ' : '') + data.address;
+            document.getElementById('detailAddress').textContent = fullAddress || '-';
+            
+            document.getElementById('detailCity').textContent = data.cityName || '-';
+            document.getElementById('detailDistrict').textContent = data.districtName || '-';
+            document.getElementById('detailSchool').textContent = data.schoolName || '-';
+            
+            // 聯絡人資料
+            document.getElementById('detailContactName').textContent = data.contactName || '-';
+            document.getElementById('detailContactRelation').textContent = data.contactRelation || '-';
+            document.getElementById('detailContactPhone').textContent = data.contactPhone || '-';
+            document.getElementById('detailHomePhone').textContent = data.homePhone || '-';
+            
+            // 扶養人資料
+            document.getElementById('detailMainCaregiverName').textContent = data.mainCaregiverName || '-';
+            document.getElementById('detailMainCaregiverRelation').textContent = data.mainCaregiverRelation || '-';
+            document.getElementById('detailMainCaregiverJob').textContent = data.mainCaregiverJob || '-';
+            document.getElementById('detailMainCaregiverBirth').textContent = data.mainCaregiverBirth || '-';
+            document.getElementById('detailMainCaregiverEdu').textContent = data.mainCaregiverEdu || '-';
+            document.getElementById('detailMainCaregiverMarryStatus').textContent = data.mainCaregiverMarryStatus || '-';
+            
+            // 家庭結構
+            var familyStructure = data.familyStructure || '-';
+            if (data.familyStructureOther) {
+                familyStructure += ' (' + data.familyStructureOther + ')';
+            }
+            document.getElementById('detailFamilyStructure').textContent = familyStructure;
+            
+            // 經濟狀況
+            document.getElementById('detailMonthlyIncome').textContent = data.monthlyIncome ? '$' + data.monthlyIncome.toLocaleString() : '-';
+            document.getElementById('detailMonthlyExpense').textContent = data.monthlyExpense ? '$' + data.monthlyExpense.toLocaleString() : '-';
+            document.getElementById('detailEconomicOverview').textContent = data.economicOverview || '-';
+            document.getElementById('detailWorkSituation').textContent = data.workSituation || '-';
+            
+            // 評估分數
+            var eqScore = '-';
+            if (data.eqTotal !== null && data.eqCount > 0) {
+                eqScore = data.eqTotal + ' 分 (共 ' + data.eqCount + ' 題)';
+            }
+            document.getElementById('detailEqScore').textContent = eqScore;
+            
+            var hqScore = '-';
+            if (data.hqAverage !== null && data.hqCount > 0) {
+                hqScore = data.hqAverage + ' 分 (平均，共 ' + data.hqCount + ' 項)';
+            }
+            document.getElementById('detailHqScore').textContent = hqScore;
+            
+            document.getElementById('detailAcademicPerformance').textContent = data.academicPerformance || '-';
+            
+            // 審核狀態
+            var draftStatus = '-';
+            if (data.draftStatus === true) {
+                draftStatus = '<span class="badge bg-warning">草稿</span>';
+            } else if (data.draftStatus === false) {
+                draftStatus = '<span class="badge bg-success">已提交</span>';
+            }
+            document.getElementById('detailDraftStatus').innerHTML = draftStatus;
+            
+            var lockStatus = '-';
+            if (data.isLocked === true) {
+                lockStatus = '<span class="badge bg-danger">已鎖定</span> 由 ' + (data.lockedBy || '未知') + ' 於 ' + (data.lockedAt || '未知時間');
+            } else {
+                lockStatus = '<span class="badge bg-success">未鎖定</span>';
+            }
+            document.getElementById('detailLockStatus').innerHTML = lockStatus;
+            
+            document.getElementById('detailSubmittedBy').textContent = data.submittedBy || '-';
+            document.getElementById('detailSubmittedAt').textContent = data.submittedAt || '-';
+            document.getElementById('detailReviewedBy').textContent = data.reviewedBy || '-';
+            document.getElementById('detailReviewedAt').textContent = data.reviewedAt || '-';
+        }
+    </script>
 }

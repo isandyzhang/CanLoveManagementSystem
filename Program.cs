@@ -2,40 +2,36 @@ using Azure.Identity;
 using CanLove_Backend.Data.Contexts;
 using CanLove_Backend.Services;
 using Microsoft.EntityFrameworkCore;
+using CanLove_Backend.Extensions;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 添加 Key Vault 配置（同時支援 ClientSecret 與 DefaultAzureCredential/Managed Identity）
-var keyVaultUri = builder.Configuration["KeyVault:VaultUri"];
-var clientId = builder.Configuration["KeyVault:ClientId"];
-var clientSecret = builder.Configuration["KeyVault:ClientSecret"];
-var tenantId = builder.Configuration["KeyVault:TenantId"];
-var userAssignedManagedIdentityClientId = builder.Configuration["ManagedIdentityClientId"]; // 可選，用於 User-assigned MI
+// 添加 Key Vault 配置（支援開發和正式環境）
+builder.Configuration.AddAzureKeyVaultWithIdentity(builder.Environment);
 
-if (!string.IsNullOrEmpty(keyVaultUri))
+// 添加 Microsoft Identity Web 驗證
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+    .EnableTokenAcquisitionToCallDownstreamApi()
+    .AddInMemoryTokenCaches();
+
+// 添加授權策略
+builder.Services.AddAuthorization(options =>
 {
-    Azure.Core.TokenCredential credential;
-
-    var hasClientSecret = !string.IsNullOrEmpty(clientId)
-        && !string.IsNullOrEmpty(clientSecret)
-        && !string.IsNullOrEmpty(tenantId);
-
-    if (hasClientSecret)
-    {
-        credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-    }
-    else
-    {
-        var defaultOptions = new DefaultAzureCredentialOptions();
-        if (!string.IsNullOrEmpty(userAssignedManagedIdentityClientId))
-        {
-            defaultOptions.ManagedIdentityClientId = userAssignedManagedIdentityClientId;
-        }
-        credential = new DefaultAzureCredential(defaultOptions);
-    }
-
-    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), credential);
-}
+    options.AddPolicy("RequireAdmin", policy => 
+        policy.RequireRole("admin"));
+    options.AddPolicy("RequireSocialWorker", policy => 
+        policy.RequireRole("socialworker", "admin"));
+    options.AddPolicy("RequireViewer", policy => 
+        policy.RequireRole("viewer", "socialworker", "admin"));
+    options.AddPolicy("RequireAssistant", policy => 
+        policy.RequireRole("assistant", "socialworker", "admin"));
+});
 
 // 添加服務
 builder.Services.AddDbContext<CanLoveDbContext>(options =>
@@ -63,7 +59,8 @@ builder.Services.AddScoped<CanLove_Backend.Services.CaseWizardOpenCase.Steps.Cas
 builder.Services.AddAutoMapper(typeof(CanLove_Backend.Mappings.CaseMappingProfile));
 
 // 添加 MVC 支援
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddMicrosoftIdentityUI();
 
 // 添加 API 支援
 builder.Services.AddControllers();
@@ -95,6 +92,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+// 添加驗證和授權中介軟體
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseCors("AllowAll");
 
 // MVC 路由
@@ -107,6 +109,11 @@ app.MapControllerRoute(
     name: "case",
     pattern: "Case/{action=Index}/{id?}",
     defaults: new { controller = "Case" });
+
+// Microsoft Identity Web 路由
+app.MapControllerRoute(
+    name: "microsoft-identity",
+    pattern: "MicrosoftIdentity/{controller=Account}/{action=SignIn}/{id?}");
 
 // API 路由
 app.MapControllers();

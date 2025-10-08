@@ -55,16 +55,101 @@
                                 <i class="bi bi-house me-1"></i>首頁
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Case")">
-                                <i class="bi bi-people me-1"></i>個案管理
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Create", "Case")">
-                                <i class="bi bi-plus-circle me-1"></i>新增個案
-                            </a>
-                        </li>
+                        
+                        @if (User?.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Index", "Case")">
+                                    <i class="bi bi-people me-1"></i>個案管理
+                                </a>
+                            </li>
+                            
+                            @if (User.IsInRole("assistant") || User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" href="@Url.Action("Create", "Case")">
+                                        <i class="bi bi-plus-circle me-1"></i>新增個案
+                                    </a>
+                                </li>
+                            }
+                            
+                            @if (User.IsInRole("socialworker") || User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" href="@Url.Action("Index", "Case")">
+                                        <i class="bi bi-clipboard-check me-1"></i>待審核個案
+                                    </a>
+                                </li>
+                            }
+                            
+                        }
+                    </ul>
+                    
+                    <!-- 使用者資訊區域 -->
+                    <ul class="navbar-nav">
+                        @if (User?.Identity?.IsAuthenticated ?? false)
+                        {
+                            // 取得使用者名稱
+                            var userName = User.FindFirst("name")?.Value ?? User.Identity?.Name ?? "使用者";
+                            
+                            // 取得 Email (從 preferred_username 或 Identity.Name)
+                            var userEmail = User.FindFirst("preferred_username")?.Value ?? User.Identity?.Name ?? "未提供";
+                            
+                            // 從 Microsoft Identity 標準的 role claim 讀取角色
+                            var roles = User.FindAll("http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(c => c.Value).ToList();
+                            
+                            // 如果沒有找到，嘗試其他常見的 claim 名稱
+                            if (!roles.Any())
+                            {
+                                roles = User.FindAll("roles").Select(c => c.Value).ToList();
+                            }
+                            if (!roles.Any())
+                            {
+                                roles = User.FindAll("role").Select(c => c.Value).ToList();
+                            }
+                            
+                            var roleDisplay = roles.Any() ? string.Join(", ", roles) : "無角色";
+                            
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    @userName
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" style="min-width: 280px;">
+                                    <li class="dropdown-item-text">
+                                        <div><strong><i class="bi bi-person me-1"></i>姓名：</strong>@userName</div>
+                                        <div><strong><i class="bi bi-envelope me-1"></i>Email：</strong><small>@userEmail</small></div>
+                                        <div><strong><i class="bi bi-shield-check me-1"></i>身分：</strong>
+                                            @if (roles.Any())
+                                            {
+                                                @foreach (var role in roles)
+                                                {
+                                                    <span class="badge bg-primary me-1">@role</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">無角色</span>
+                                            }
+                                        </div>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="@Url.Action("SignOut", "Account")">
+                                            <i class="bi bi-box-arrow-right me-1"></i>登出
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("SignIn", "Account")">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>登入
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

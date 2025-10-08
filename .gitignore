@@ -189,6 +189,7 @@ node_modules/
 # Local development
 appsettings.Local.json
 appsettings.Development.Local.json
+appsettings.Development.json
 
 # Database
 *.db

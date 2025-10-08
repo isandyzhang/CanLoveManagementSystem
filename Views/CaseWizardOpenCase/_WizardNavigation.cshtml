@@ -1,0 +1,131 @@
+@{
+    var currentStep = ViewBag.CurrentStep ?? 1;
+    var caseId = ViewBag.CaseId ?? "";
+    
+    var steps = new List<(int StepNumber, string Title, string Description)>
+    {
+        (1, "個案詳細資料", "CaseDetail"),
+        (2, "社會工作服務內容", "CaseSocialWorkerContent"),
+        (3, "經濟狀況評估 (FQ)", "CaseFQeconomicStatus"),
+        (4, "家庭身心概況 (HQ)", "CaseHQhealthStatus"),
+        (5, "學業表現評估 (IQ)", "CaseIQacademicPerformance"),
+        (6, "情緒評估 (EQ)", "CaseEQemotionalEvaluation"),
+        (7, "最後評估表", "FinalAssessmentSummary")
+    };
+    
+    var totalSteps = steps.Count;
+    var progressPercentage = ((double)currentStep / totalSteps) * 100;
+}
+
+<style>
+    .wizard-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+    }
+    
+    .wizard-nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem 0.25rem;
+        cursor: pointer;
+        text-decoration: none;
+        color: #6c757d;
+        border-radius: 0.25rem;
+        transition: all 0.3s;
+        min-width: 80px;
+    }
+    
+    .wizard-nav-item:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .wizard-nav-item.active {
+        background: #0d6efd;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .wizard-nav-item .step-number {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+    
+    .wizard-nav-item .step-title {
+        display: block;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .wizard-nav-item .step-description {
+        display: block;
+        font-size: 0.625rem;
+        opacity: 0.7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    @@media (max-width: 768px) {
+        .wizard-nav {
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+        }
+        
+        .wizard-nav-item {
+            min-width: 60px;
+        }
+        
+        .step-description {
+            display: none !important;
+        }
+    }
+</style>
+
+<!-- 分頁導航 -->
+<div class="wizard-nav">
+    @foreach (var step in steps)
+    {
+        <a href="@Url.Action($"Step{step.StepNumber}", "CaseWizardOpenCase", new { caseId = caseId })" 
+           class="wizard-nav-item @(currentStep == step.StepNumber ? "active" : "")">
+            <span class="step-number">步驟 @step.StepNumber</span>
+            <span class="step-title">@step.Title</span>
+            <span class="step-description">@step.Description</span>
+        </a>
+    }
+</div>
+
+<!-- 進度條 -->
+<div class="progress mb-4" style="height: 10px;">
+    <div class="progress-bar bg-primary" 
+         role="progressbar" 
+         style="width: @progressPercentage%" 
+         aria-valuenow="@progressPercentage" 
+         aria-valuemin="0" 
+         aria-valuemax="100">
+    </div>
+</div>
+
+<!-- 步驟資訊 -->
+<div class="alert alert-info mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <strong><i class="bi bi-info-circle me-2"></i>目前進度：</strong>
+            步驟 @currentStep / @totalSteps (@string.Format("{0:F1}", progressPercentage)%)
+        </div>
+        <div>
+            <small class="text-muted">個案編號：<code>@caseId</code></small>
+        </div>
+    </div>
+</div>
+

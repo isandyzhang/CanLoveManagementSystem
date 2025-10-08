@@ -14,15 +14,15 @@
                     <h2 class="mb-1">@ViewData["Title"]</h2>
                     <p class="text-muted mb-0">填寫兒少情緒評估問卷</p>
                 </div>
-                <div class="text-end">
-                    <small class="text-muted">步驟 6 / 8</small>
-                </div>
             </div>
 
-            <!-- 進度條 -->
-            <div class="progress mb-4" style="height: 8px;">
-                <div class="progress-bar bg-primary" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
+            @{
+                ViewBag.CurrentStep = 6;
+                ViewBag.CaseId = Model.CaseId;
+            }
+            
+            <!-- 導航分頁和進度條 -->
+            @await Html.PartialAsync("_WizardNavigation")
 
             <!-- 表單 -->
             <form asp-action="Step6" method="post" class="needs-validation" novalidate>
