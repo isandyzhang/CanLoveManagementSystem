@@ -11,27 +11,29 @@ using Microsoft.Identity.Web.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 暫時註解掉所有可能有問題的設定進行測試
+
 // 添加 Key Vault 配置（支援開發和正式環境）
-builder.Configuration.AddAzureKeyVaultWithIdentity(builder.Environment);
+// builder.Configuration.AddAzureKeyVaultWithIdentity(builder.Environment);
 
 // 添加 Microsoft Identity Web 驗證
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
-    .EnableTokenAcquisitionToCallDownstreamApi()
-    .AddInMemoryTokenCaches();
+// builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+//     .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+//     .EnableTokenAcquisitionToCallDownstreamApi()
+//     .AddInMemoryTokenCaches();
 
 // 添加授權策略
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("RequireAdmin", policy => 
-        policy.RequireRole("admin"));
-    options.AddPolicy("RequireSocialWorker", policy => 
-        policy.RequireRole("socialworker", "admin"));
-    options.AddPolicy("RequireViewer", policy => 
-        policy.RequireRole("viewer", "socialworker", "admin"));
-    options.AddPolicy("RequireAssistant", policy => 
-        policy.RequireRole("assistant", "socialworker", "admin"));
-});
+// builder.Services.AddAuthorization(options =>
+// {
+//     options.AddPolicy("RequireAdmin", policy => 
+//         policy.RequireRole("admin"));
+//     options.AddPolicy("RequireSocialWorker", policy => 
+//         policy.RequireRole("socialworker", "admin"));
+//     options.AddPolicy("RequireViewer", policy => 
+//         policy.RequireRole("viewer", "socialworker", "admin"));
+//     options.AddPolicy("RequireAssistant", policy => 
+//         policy.RequireRole("assistant", "socialworker", "admin"));
+// });
 
 // 添加服務
 builder.Services.AddDbContext<CanLoveDbContext>(options =>
@@ -58,9 +60,8 @@ builder.Services.AddScoped<CanLove_Backend.Services.CaseWizardOpenCase.Steps.Cas
 // 添加 AutoMapper
 builder.Services.AddAutoMapper(typeof(CanLove_Backend.Mappings.CaseMappingProfile));
 
-// 添加 MVC 支援
-builder.Services.AddControllersWithViews()
-    .AddMicrosoftIdentityUI();
+// 添加 MVC 支援（暫時移除認證）
+builder.Services.AddControllersWithViews();
 
 // 添加 API 支援
 builder.Services.AddControllers();
@@ -93,9 +94,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// 添加驗證和授權中介軟體
-app.UseAuthentication();
-app.UseAuthorization();
+// 暫時註解掉驗證和授權中介軟體
+// app.UseAuthentication();
+// app.UseAuthorization();
 
 app.UseCors("AllowAll");
 
