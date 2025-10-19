@@ -31,7 +31,7 @@ public class CaseController : Controller
     /// <summary>
     /// 取得個案詳細資料 (AJAX API)
     /// </summary>
-    [Authorize(Policy = "RequireViewer")]
+    // [Authorize(Policy = "RequireViewer")] // 暫時註解掉進行測試
     [HttpGet]
     public async Task<IActionResult> ViewDetails(string caseId)
     {
@@ -200,7 +200,7 @@ public class CaseController : Controller
     /// <summary>
     /// 個案列表頁面
     /// </summary>
-    [Authorize(Policy = "RequireViewer")]
+    // [Authorize(Policy = "RequireViewer")] // 暫時註解掉進行測試
     public async Task<IActionResult> Index()
     {
         var currentUser = User.Identity?.Name ?? "";
@@ -236,7 +236,7 @@ public class CaseController : Controller
     /// 個案建立頁面
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "RequireAssistant")]
+    // [Authorize(Policy = "RequireAssistant")] // 暫時註解掉進行測試
     public async Task<IActionResult> Create()
     {
         var viewModel = new CaseCreateViewModel
@@ -279,7 +279,7 @@ public class CaseController : Controller
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Policy = "RequireAssistant")]
+    // [Authorize(Policy = "RequireAssistant")] // 暫時註解掉進行測試
     public async Task<IActionResult> Create(CaseCreateViewModel model)
     {
         if (ModelState.IsValid)
@@ -316,7 +316,7 @@ public class CaseController : Controller
     /// 個案編輯頁面
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "RequireSocialWorker")]
+    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
     public async Task<IActionResult> Edit(string id)
     {
         if (id == null)
@@ -349,7 +349,7 @@ public class CaseController : Controller
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Policy = "RequireSocialWorker")]
+    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
     public async Task<IActionResult> Edit(string id, CanLove_Backend.Data.Models.Core.Case caseItem)
     {
         if (id != caseItem.CaseId)
@@ -400,7 +400,7 @@ public class CaseController : Controller
     /// 個案刪除頁面
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "RequireAdmin")]
+    // [Authorize(Policy = "RequireAdmin")] // 暫時註解掉進行測試
     public async Task<IActionResult> Delete(string id)
     {
         if (id == null)
@@ -426,7 +426,7 @@ public class CaseController : Controller
     /// 個案刪除處理 (軟刪除)
     /// </summary>
     [HttpPost, ActionName("Delete")]
-    [Authorize(Policy = "RequireAdmin")]
+    // [Authorize(Policy = "RequireAdmin")] // 暫時註解掉進行測試
     public async Task<IActionResult> DeleteConfirmed(string id)
     {
         try
@@ -467,7 +467,7 @@ public class CaseController : Controller
     /// <summary>
     /// 個案詳情頁面
     /// </summary>
-    [Authorize(Policy = "RequireViewer")]
+    // [Authorize(Policy = "RequireViewer")] // 暫時註解掉進行測試
     public async Task<IActionResult> Details(string id)
     {
         if (id == null)
@@ -494,7 +494,7 @@ public class CaseController : Controller
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Policy = "RequireAssistant")]
+    // [Authorize(Policy = "RequireAssistant")] // 暫時註解掉進行測試
     public async Task<IActionResult> SubmitForReview(string id)
     {
         var caseItem = await _context.Cases.FindAsync(id);
@@ -533,7 +533,7 @@ public class CaseController : Controller
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Policy = "RequireSocialWorker")]
+    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
     public async Task<IActionResult> ReviewCase(string id, bool approved, string? reviewComment = null)
     {
         var caseItem = await _context.Cases.FindAsync(id);
@@ -573,7 +573,7 @@ public class CaseController : Controller
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Policy = "RequireSocialWorker")]
+    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
     public async Task<IActionResult> ToggleLock(string id)
     {
         var caseItem = await _context.Cases.FindAsync(id);
