@@ -191,6 +191,9 @@ appsettings.Local.json
 appsettings.Development.Local.json
 appsettings.Development.json
 
+# Data Protection Keys
+DataProtection-Keys/
+
 # Database
 *.db
 *.sqlite
