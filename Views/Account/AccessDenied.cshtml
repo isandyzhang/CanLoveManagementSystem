@@ -1,22 +1,67 @@
 @{
-    ViewData["Title"] = "存取被拒絕";
+    ViewData["Title"] = "權限不足";
+    Layout = "_LoginLayout";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card border-warning">
-                <div class="card-body text-center">
-                    <i class="bi bi-shield-exclamation text-warning" style="font-size: 4rem;"></i>
-                    <h2 class="mt-3">存取被拒絕</h2>
-                    <p class="text-muted">您沒有權限存取此頁面。</p>
-                    <p class="text-muted">如果您認為這是錯誤，請聯絡系統管理員。</p>
-                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3">
-                        <i class="bi bi-house me-1"></i>回到首頁
-                    </a>
-                </div>
+<div class="login-container">
+    <div class="login-card">
+        <!-- 錯誤標題 -->
+        <div class="login-header" style="background: linear-gradient(135deg, #F44336 0%, #E57373 100%);">
+            <h1><i class="fas fa-exclamation-triangle"></i> 權限不足</h1>
+            <p>您沒有權限存取此功能</p>
+        </div>
+        
+        <!-- 錯誤內容 -->
+        <div class="login-content">
+            <div class="text-center">
+                <i class="fas fa-lock" style="font-size: 48px; color: var(--error-color); margin-bottom: var(--spacing-lg);"></i>
+                <h3>存取被拒絕</h3>
+                <p class="text-secondary">
+                    很抱歉，您目前沒有權限存取此功能。<br>
+                    如需協助，請聯繫系統管理員。
+                </p>
+            </div>
+            
+            <!-- 操作按鈕 -->
+            <div style="margin-top: var(--spacing-xl);">
+                <a href="/Home/Index" class="btn btn-primary" style="width: 100%; margin-bottom: var(--spacing-md);">
+                    <i class="fas fa-home"></i>
+                    返回首頁
+                </a>
+                
+                <a href="/Account/SignOut" class="btn btn-outline" style="width: 100%;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    重新登入
+                </a>
             </div>
         </div>
     </div>
 </div>
 
+@section Scripts {
+    <script>
+        // 自動重導向到首頁 (5秒後)
+        setTimeout(function() {
+            window.location.href = '/Home/Index';
+        }, 5000);
+        
+        // 顯示倒數計時
+        let countdown = 5;
+        const countdownElement = document.createElement('p');
+        countdownElement.className = 'text-secondary';
+        countdownElement.style.marginTop = 'var(--spacing-lg)';
+        countdownElement.innerHTML = `將在 <strong>${countdown}</strong> 秒後自動返回首頁...`;
+        
+        document.querySelector('.login-content .text-center').appendChild(countdownElement);
+        
+        const timer = setInterval(function() {
+            countdown--;
+            countdownElement.innerHTML = `將在 <strong>${countdown}</strong> 秒後自動返回首頁...`;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                countdownElement.innerHTML = '正在重導向...';
+            }
+        }, 1000);
+    </script>
+}

@@ -17,9 +17,17 @@ namespace CanLove_Backend.Extensions
 
             Azure.Core.TokenCredential credential;
 
-            if (environment.IsProduction())
+            // 1) 若提供 Client Secret，優先使用（便於在本機或 CI 指定服務主體）
+            var clientId = configuration["KeyVault:ClientId"];
+            var clientSecret = configuration["KeyVault:ClientSecret"];
+            var tenantId = configuration["KeyVault:TenantId"];
+            if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret) && !string.IsNullOrEmpty(tenantId))
             {
-                // 正式環境：使用 Managed Identity
+                credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+            }
+            else
+            {
+                // 2) 否則走 DefaultAzureCredential（支援 az login / VS 登入 / Managed Identity）
                 var defaultOptions = new DefaultAzureCredentialOptions();
                 var userAssignedManagedIdentityClientId = configuration["ManagedIdentityClientId"];
                 if (!string.IsNullOrEmpty(userAssignedManagedIdentityClientId))
@@ -27,20 +35,6 @@ namespace CanLove_Backend.Extensions
                     defaultOptions.ManagedIdentityClientId = userAssignedManagedIdentityClientId;
                 }
                 credential = new DefaultAzureCredential(defaultOptions);
-            }
-            else
-            {
-                // 開發環境：使用 Client Secret
-                var clientId = configuration["KeyVault:ClientId"];
-                var clientSecret = configuration["KeyVault:ClientSecret"];
-                var tenantId = configuration["KeyVault:TenantId"];
-
-                if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret) || string.IsNullOrEmpty(tenantId))
-                {
-                    throw new InvalidOperationException("開發環境需要設定 KeyVault:ClientId, KeyVault:ClientSecret, KeyVault:TenantId");
-                }
-
-                credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
             }
 
             configuration.AddAzureKeyVault(new Uri(keyVaultUri), credential);

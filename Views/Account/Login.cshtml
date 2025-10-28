@@ -1,0 +1,95 @@
+@{
+    ViewData["Title"] = "登入";
+    Layout = "_LoginLayout";
+}
+
+<div class="login-container">
+    <div class="login-card">
+        <!-- 登入卡片標題 -->
+        <div class="login-header">
+            <h1>CanLove 協會管理系統</h1>
+            <p>請登入以存取協會管理功能</p>
+        </div>
+        
+        <!-- 登入內容 -->
+        <div class="login-content">
+            <!-- 錯誤訊息 -->
+            <div class="login-error" id="errorMessage"></div>
+            
+            <!-- 成功訊息 -->
+            <div class="login-success" id="successMessage"></div>
+            
+            <!-- 登入按鈕 -->
+            <a href="/Account/SignIn?returnUrl=@ViewBag.ReturnUrl" class="btn-login" id="loginButton">
+                <i class="fab fa-microsoft"></i>
+                使用 Microsoft 帳戶登入
+            </a>
+            
+            <!-- 載入動畫 -->
+            <div class="login-loading" id="loadingDiv">
+                <div class="spinner"></div>
+                <p>正在重導向到 Microsoft 登入...</p>
+            </div>
+            
+            <!-- 返回頁面提示 -->
+            @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl))
+            {
+                <div class="return-notice">
+                    <i class="fas fa-info-circle"></i>
+                    登入後將返回：<code>@ViewBag.ReturnUrl</code>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 頁面特定 JavaScript -->
+@section Scripts {
+    <script>
+        // 頁面載入完成後的處理
+        document.addEventListener('DOMContentLoaded', function() {
+            // 檢查是否有 TempData 訊息
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                showError('@Html.Raw(TempData["ErrorMessage"])');
+                </text>
+            }
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                showSuccess('@Html.Raw(TempData["SuccessMessage"])');
+                </text>
+            }
+            
+            // 自動隱藏訊息
+            setTimeout(function() {
+                const errorMsg = document.getElementById('errorMessage');
+                const successMsg = document.getElementById('successMessage');
+                
+                if (errorMsg) errorMsg.classList.remove('show');
+                if (successMsg) successMsg.classList.remove('show');
+            }, 5000);
+        });
+        
+        // 鍵盤快捷鍵支援
+        document.addEventListener('keydown', function(e) {
+            // Enter 鍵觸發登入
+            if (e.key === 'Enter') {
+                const loginBtn = document.getElementById('loginButton');
+                if (loginBtn) {
+                    loginBtn.click();
+                }
+            }
+            
+            // Escape 鍵清除錯誤訊息
+            if (e.key === 'Escape') {
+                const errorMsg = document.getElementById('errorMessage');
+                if (errorMsg) {
+                    errorMsg.classList.remove('show');
+                }
+            }
+        });
+    </script>
+}
