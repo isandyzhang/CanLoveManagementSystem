@@ -8,11 +8,21 @@ using Microsoft.Identity.Web.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 添加 Key Vault 配置（支援開發和正式環境）
-// 只在正式環境啟用 Key Vault
-if (builder.Environment.IsProduction())
+// 添加 Key Vault 配置（可透過環境變數關閉以利除錯）
+// 只在正式環境啟用 Key Vault，且 DISABLE_KEYVAULT != true
+var disableKeyVault = Environment.GetEnvironmentVariable("DISABLE_KEYVAULT");
+if (builder.Environment.IsProduction() && !string.Equals(disableKeyVault, "true", StringComparison.OrdinalIgnoreCase))
 {
-    builder.Configuration.AddAzureKeyVaultWithIdentity(builder.Environment);
+    try
+    {
+        builder.Configuration.AddAzureKeyVaultWithIdentity(builder.Environment);
+        Console.WriteLine("[Startup] Azure Key Vault 已載入。");
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"[Startup][KeyVault] 載入失敗：{ex.Message}");
+        // 繼續啟動流程，讓後續記錄能輸出（搭配環境變數可快速除錯）
+    }
 }
 
 // 添加 Microsoft Identity Web 驗證
@@ -35,8 +45,14 @@ builder.Services.AddAuthorization(options =>
 });
 
 // 添加 Entity Framework
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    Console.Error.WriteLine("[Startup][Db] 未取得 ConnectionStrings:DefaultConnection，請確認 Key Vault 或 App Settings 覆寫。");
+}
+
 builder.Services.AddDbContext<CanLoveDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
 // 註冊自定義服務
 // === 共用服務 ===
