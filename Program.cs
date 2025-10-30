@@ -8,15 +8,16 @@ using Microsoft.Identity.Web.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 已停用 Azure Key Vault 載入，先確保應用可啟動部署
+// 啟用 Microsoft Identity Web（OpenIdConnect）
+builder.Services
+    .AddAuthentication(Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
 
-// 已停用 Microsoft Identity Web 驗證，先開放存取以利部署
-
-// 授權改為全開放（忽略 [Authorize]），避免因權限阻擋導致無法存取
+// 授權：預設要求已驗證使用者；需要匿名的頁面請加 [AllowAnonymous]
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAssertion(_ => true)
+        .RequireAuthenticatedUser()
         .Build();
 });
 
@@ -87,7 +88,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// 已停用驗證中介軟體，僅保留授權（已設為全開放）
+// 驗證與授權中介軟體（順序不可對調）
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseCors("AllowAll");
