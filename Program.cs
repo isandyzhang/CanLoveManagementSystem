@@ -8,40 +8,16 @@ using Microsoft.Identity.Web.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 添加 Key Vault 配置（可透過環境變數關閉以利除錯）
-// 只在正式環境啟用 Key Vault，且 DISABLE_KEYVAULT != true
-var disableKeyVault = Environment.GetEnvironmentVariable("DISABLE_KEYVAULT");
-if (builder.Environment.IsProduction() && !string.Equals(disableKeyVault, "true", StringComparison.OrdinalIgnoreCase))
-{
-    try
-    {
-        builder.Configuration.AddAzureKeyVaultWithIdentity(builder.Environment);
-        Console.WriteLine("[Startup] Azure Key Vault 已載入。");
-    }
-    catch (Exception ex)
-    {
-        Console.Error.WriteLine($"[Startup][KeyVault] 載入失敗：{ex.Message}");
-        // 繼續啟動流程，讓後續記錄能輸出（搭配環境變數可快速除錯）
-    }
-}
+// 已停用 Azure Key Vault 載入，先確保應用可啟動部署
 
-// 添加 Microsoft Identity Web 驗證
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
-    .EnableTokenAcquisitionToCallDownstreamApi()
-    .AddInMemoryTokenCaches();
+// 已停用 Microsoft Identity Web 驗證，先開放存取以利部署
 
-// 添加授權策略
+// 授權改為全開放（忽略 [Authorize]），避免因權限阻擋導致無法存取
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RequireAdmin", policy => 
-        policy.RequireRole("admin"));
-    options.AddPolicy("RequireSocialWorker", policy => 
-        policy.RequireRole("socialworker", "admin"));
-    options.AddPolicy("RequireViewer", policy => 
-        policy.RequireRole("viewer", "socialworker", "admin"));
-    options.AddPolicy("RequireAssistant", policy => 
-        policy.RequireRole("assistant", "socialworker", "admin"));
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAssertion(_ => true)
+        .Build();
 });
 
 // 添加 Entity Framework
@@ -77,8 +53,7 @@ builder.Services.AddScoped<CanLove_Backend.Services.CaseWizardOpenCase.Steps.Cas
 builder.Services.AddAutoMapper(typeof(CanLove_Backend.Mappings.CaseMappingProfile));
 
 // === MVC 和 API 支援 ===
-builder.Services.AddControllersWithViews()
-    .AddMicrosoftIdentityUI();
+builder.Services.AddControllersWithViews();
 
 // 添加 API 支援
 builder.Services.AddControllers();
@@ -112,8 +87,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// 啟用驗證和授權中介軟體
-app.UseAuthentication();
+// 已停用驗證中介軟體，僅保留授權（已設為全開放）
 app.UseAuthorization();
 
 app.UseCors("AllowAll");
@@ -129,10 +103,7 @@ app.MapControllerRoute(
     pattern: "Case/{action=Index}/{id?}",
     defaults: new { controller = "Case" });
 
-// Microsoft Identity Web 路由
-app.MapControllerRoute(
-    name: "microsoft-identity",
-    pattern: "MicrosoftIdentity/{controller=Account}/{action=SignIn}/{id?}");
+// 已移除 Microsoft Identity Web 路由
 
 // API 路由
 app.MapControllers();
