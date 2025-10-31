@@ -1,0 +1,92 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    bool isCaseSection = string.Equals(currentController, "Case", StringComparison.OrdinalIgnoreCase);
+}
+
+<div class="sticky top-0 z-30 p-4">
+    <div class="w-full h-20 border-b flex px-4 items-center mb-8">
+        <a href="@Url.Action("Index","Home")" class="flex items-center gap-2" title="首頁">
+            <img src="~/logo.png" alt="Logo" class="h-14 w-auto" />
+            <span class="sr-only">CanLove</span>
+        </a>
+    </div>
+    <div class="mt-2 rounded-md bg-white">
+        <details class="group">
+        <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover @(isCaseSection ? "sidebar-parent--active" : string.Empty)">
+                <span class="flex items-center gap-2">
+                    <i class="bi bi-people text-slate-600"></i>
+                    <span class="text-slate-900">個案管理</span>
+                </span>
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180"></i>
+                </div>
+            </summary>
+            <nav class="px-2 pb-2 mt-3 flex flex-col gap-4 sidebar-subnav">
+                <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Create","Case")">
+                    <span class="sidebar-link__label text-slate-900">新增個案</span>
+                </a>
+                <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Index","Case")">
+                    <span class="sidebar-link__label text-slate-900">查詢個案</span>
+                </a>
+            </nav>
+        </details>
+    </div>
+    
+    <div class="mt-2 rounded-md bg-white">
+        <details class="group">
+            <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover">
+                <span class="flex items-center gap-2">
+                    <i class="bi bi-box-seam text-slate-600"></i>
+                    <span class="text-slate-900">物資管理</span>
+                </span>
+                <div class="flex items-center gap-2">
+                    <span class="badge-pill">尚未開發</span>
+                    <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180"></i>
+                </div>
+            </summary>
+            <nav class="px-2 pb-2 mt-3 flex flex-col gap-4 sidebar-subnav">
+                <a class="sidebar-link" href="#">
+                    <span class="sidebar-link__label text-slate-900">物資清單</span>
+                </a>
+                <a class="sidebar-link" href="#">
+                    <span class="sidebar-link__label text-slate-900">物資入庫</span>
+                </a>
+            </nav>
+        </details>
+    </div>
+    
+    <div class="mt-2 rounded-md bg-white">
+        <details class="group">
+            <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover">
+                <span class="flex items-center gap-2">
+                    <i class="bi bi-calendar-check text-slate-600"></i>
+                    <span class="text-slate-900">內部考勤管理</span>
+                </span>
+                <div class="flex items-center gap-2">
+                    <span class="badge-pill">尚未開發</span>
+                    <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180"></i>
+                </div>
+            </summary>
+            <nav class="px-2 pb-2 mt-3 flex flex-col gap-4 sidebar-subnav">
+                <a class="sidebar-link" href="#">
+                    <span class="sidebar-link__label text-slate-900">考勤記錄</span>
+                </a>
+                <a class="sidebar-link" href="#">
+                    <span class="sidebar-link__label text-slate-900">請假申請</span>
+                </a>
+            </nav>
+        </details>
+    </div>
+    
+    <div class="mt-2 rounded-md bg-white">
+        <a class="sidebar-link w-full" href="#">
+            <span class="sidebar-link__label text-slate-900">
+                <i class="bi bi-gear text-slate-600"></i>
+                <span>設定</span>
+            </span>
+        </a>
+    </div>
+</div>
+
+

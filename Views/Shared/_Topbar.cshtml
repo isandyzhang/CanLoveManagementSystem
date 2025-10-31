@@ -1,0 +1,39 @@
+@{
+    var userName = User?.FindFirst("name")?.Value ?? User?.Identity?.Name ?? "使用者";
+}
+<header class="sticky top-0 z-40 border-b border-border bg-white text-slate-900">
+    <div class="w-full h-20 px-6 flex items-center justify-end gap-4">
+        <button class="relative p-2 rounded-md hover:bg-muted text-slate-600" title="Settings">
+            <i class="bi bi-gear"></i>
+        </button>
+        <button class="relative p-2 rounded-md hover:bg-muted text-slate-600" title="Calendar">
+            <i class="bi bi-calendar"></i>
+        </button>
+        <button class="relative p-2 rounded-md hover:bg-muted text-slate-600" title="Notifications">
+            <i class="bi bi-bell"></i>
+            <span class="absolute -top-0.5 -right-0.5 h-2 w-2 bg-red-500 rounded-full"></span>
+        </button>
+        <button class="relative p-2 rounded-md hover:bg-muted text-slate-600" title="Messages">
+            <i class="bi bi-envelope"></i>
+            <span class="absolute -top-0.5 -right-0.5 h-2 w-2 bg-red-500 rounded-full"></span>
+        </button>
+
+        <details class="relative">
+            <summary class="list-none flex items-center gap-3 cursor-pointer select-none">
+                <div class="flex flex-col items-end leading-tight">
+                    <span class="text-sm font-medium">@userName</span>
+                </div>
+                <i class="bi bi-chevron-down text-slate-500"></i>
+            </summary>
+            <div class="absolute right-0 mt-3 w-64 rounded-lg border border-border bg-background shadow-card overflow-hidden">
+                <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted" href="#"><i class="bi bi-person"></i><span>My Profile</span></a>
+                <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted" href="#"><i class="bi bi-journal-bookmark"></i><span>My Contacts</span></a>
+                <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted" href="#"><i class="bi bi-gear"></i><span>Account Settings</span></a>
+                <div class="border-t border-border"></div>
+                <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted text-red-600" href="@Url.Action("SignOut","Account")"><i class="bi bi-box-arrow-right"></i><span>Log Out</span></a>
+            </div>
+        </details>
+    </div>
+</header>
+
+

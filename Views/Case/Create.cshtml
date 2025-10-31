@@ -4,193 +4,166 @@
     ViewData["Title"] = "新增個案 - 開始";
 }
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="mb-0">
-                        <i class="fas fa-user-plus me-2"></i>新增個案 - 開始
-                    </h3>
-                    <p class="text-muted mb-0">請填寫個案基本資訊，完成後將進入詳細資料填寫流程</p>
-                </div>
-                <div class="card-body">
-                    <form asp-controller="Case" asp-action="Create" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Case.CaseId" class="form-label">個案編號 <small class="text-muted d-block">caseID（必填，主鍵，手動輸入）</small></label>
-                                    <input asp-for="Case.CaseId" class="form-control" placeholder="請輸入個案編號" />
-                                    <span asp-validation-for="Case.CaseId" class="text-danger"></span>
-                                    <div class="form-text">請輸入個案編號（例如：CASE2024001）</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Case.Name" class="form-label">姓名 <small class="text-muted d-block">name（必填，NVARCHAR(20)）</small></label>
-                                    <input asp-for="Case.Name" class="form-control" placeholder="請輸入個案姓名" />
-                                    <span asp-validation-for="Case.Name" class="text-danger"></span>
-                                </div>
-                            </div>
-                        </div>
+<div class="max-w-7xl mx-auto p-8 bg-slate-50">
+    <div class="max-w-6xl mx-auto">
+        <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border-0">
+            <div class="px-6 py-6 border-b border-border">
+                <h3 class="text-2xl font-semibold leading-tight mb-2 text-slate-900">
+                    <i class="bi bi-person-plus me-1"></i>新增個案 - 開始
+                </h3>
+                <p class="text-slate-500 text-sm mb-0">請填寫個案基本資訊，完成後將進入詳細資料填寫流程</p>
+            </div>
+            <div class="px-6 py-6">
+                <form asp-controller="Case" asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="mb-3 rounded-md border border-border bg-white text-red-600 p-4" role="alert"></div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Case.AssessmentDate" class="form-label">評估日期 <small class="text-muted d-block">assessment_date（可空，DATE）</small></label>
-                                    <input asp-for="Case.AssessmentDate" class="form-control" type="date" />
-                                    <span asp-validation-for="Case.AssessmentDate" class="text-danger"></span>
-                                </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label asp-for="Case.CaseId" class="block text-lg font-medium mb-2 text-slate-900">個案編號 <small class="block text-slate-500">caseID（必填，主鍵，手動輸入）</small></label>
+                            <input asp-for="Case.CaseId" class="input" placeholder="請輸入個案編號" />
+                            <span asp-validation-for="Case.CaseId" class="text-red-600 text-sm"></span>
+                            <div class="text-slate-500 text-xs mt-1">請輸入個案編號（例如：CASE2024001）</div>
+                        </div>
+                        <div>
+                            <label asp-for="Case.Name" class="block text-lg font-medium mb-2 text-slate-900">姓名 <small class="block text-slate-500">name（必填，NVARCHAR(20)）</small></label>
+                            <input asp-for="Case.Name" class="input" placeholder="請輸入個案姓名" />
+                            <span asp-validation-for="Case.Name" class="text-red-600 text-sm"></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
+                        <div>
+                            <label asp-for="Case.AssessmentDate" class="block text-lg font-medium mb-2 text-slate-900">評估日期 <small class="block text-slate-500">assessment_date（可空，DATE）</small></label>
+                            <input asp-for="Case.AssessmentDate" class="input" type="date" />
+                            <span asp-validation-for="Case.AssessmentDate" class="text-red-600 text-sm"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Case.Gender" class="block text-lg font-medium mb-2 text-slate-900">性別 <small class="block text-slate-500">gender（可空，NVARCHAR(30)，存儲 value_code）</small></label>
+                            <select asp-for="Case.Gender" class="input">
+                                <option value="">請選擇性別</option>
+                                @if (Model.GenderOptions != null)
+                                {
+                                @foreach (var option in Model.GenderOptions)
+                                    {
+                                <option value="@option.ValueCode">@option.ValueName</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Case.Gender" class="text-red-600 text-sm"></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
+                        <div>
+                            <label asp-for="Case.BirthDate" class="block text-lg font-medium mb-2 text-slate-900">出生日期 <small class="block text-slate-500">birth_date（必填，DATE）</small></label>
+                            <input asp-for="Case.BirthDate" class="input" type="date" />
+                            <span asp-validation-for="Case.BirthDate" class="text-red-600 text-sm"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Case.IdNumber" class="block text-lg font-medium mb-2 text-slate-900">身分證字號 <small class="block text-slate-500">id_number（必填，NVARCHAR(255)，加密後唯一）</small></label>
+                            <input asp-for="Case.IdNumber" class="input" placeholder="請輸入身分證字號" />
+                            <span asp-validation-for="Case.IdNumber" class="text-red-600 text-sm"></span>
+                        </div>
+                    </div>
+
+                    <!-- 地址選項 - 城市、地區、詳細地址同一行 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
+                        <div>
+                            <label asp-for="Case.CityId" class="block text-lg font-medium mb-2 text-slate-900">城市 <small class="block text-slate-500">city_id（可空，外鍵 Cities.city_id）</small></label>
+                            <select asp-for="Case.CityId" class="input" id="citySelect">
+                                <option value="">請選擇城市</option>
+                                @if (Model.Cities != null)
+                                {
+                                @foreach (var city in Model.Cities)
+                                    {
+                                <option value="@city.CityId">@city.CityName</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Case.CityId" class="text-red-600 text-sm"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Case.DistrictId" class="block text-lg font-medium mb-2 text-slate-900">地區 <small class="block text-slate-500">district_id（可空，外鍵 Districts.district_id）</small></label>
+                            <select asp-for="Case.DistrictId" class="input" id="districtSelect" disabled>
+                                <option value="">請先選擇城市</option>
+                            </select>
+                            <span asp-validation-for="Case.DistrictId" class="text-red-600 text-sm"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Case.Address" class="block text-lg font-medium mb-2 text-slate-900">詳細地址 <small class="block text-slate-500">address（可空，NVARCHAR(25)）</small></label>
+                            <input asp-for="Case.Address" class="input" placeholder="請輸入詳細地址" />
+                            <span asp-validation-for="Case.Address" class="text-red-600 text-sm"></span>
+                        </div>
+                    </div>
+
+                    <!-- 學校選項 - 獨立選擇 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
+                        <div>
+                            <div class="flex items-center mb-2 gap-2">
+                                <label asp-for="Case.SchoolId" class="block text-lg font-medium mb-0 text-slate-900">學校 <small class="block text-slate-500">school_id（可空，外鍵 Schools.school_id）</small></label>
+                                <button type="button" id="addSchoolBtn" class="text-primary text-sm inline-flex items-center gap-1">
+                                    <i class="bi bi-plus"></i> 新增學校
+                                </button>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Case.Gender" class="form-label">性別 <small class="text-muted d-block">gender（可空，NVARCHAR(30)，存儲 value_code）</small></label>
-                                    <select asp-for="Case.Gender" class="form-select">
-                                        <option value="">請選擇性別</option>
-                                        @if (Model.GenderOptions != null)
-                                        {
-                                            @foreach (var option in Model.GenderOptions)
-                                            {
-                                                <option value="@option.ValueCode">@option.ValueName</option>
-                                            }
-                                        }
+                            <select asp-for="Case.SchoolId" class="input" id="schoolSelect">
+                                <option value="">請選擇學校</option>
+                                @if (Model.Schools != null)
+                                {
+                                @foreach (var school in Model.Schools)
+                                    {
+                                <option value="@school.SchoolId">@school.SchoolName</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Case.SchoolId" class="text-red-600 text-sm"></span>
+                        </div>
+                        <div>
+                            <!-- 新增學校輸入區域 -->
+                            <div id="addSchoolForm" class="mb-3" style="display: none;">
+                                <label class="block text-lg font-medium mb-2 text-slate-900">新增學校</label>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <input type="text" class="input flex-1 min-w-48" id="newSchoolName" placeholder="學校名稱" />
+                                    <select class="input" id="newSchoolType">
+                                        <option value="">選擇類型</option>
+                                        <option value="國小">國小</option>
+                                        <option value="國中">國中</option>
+                                        <option value="高中">高中</option>
+                                        <option value="大學">大學</option>
+                                        <option value="其他">其他</option>
                                     </select>
-                                    <span asp-validation-for="Case.Gender" class="text-danger"></span>
+                                    <button type="button" class="btn" id="submitNewSchool">
+                                        <i class="bi bi-check me-1"></i> 新增
+                                    </button>
+                                    <button type="button" class="btn btn--secondary" id="cancelAddSchool">
+                                        <i class="bi bi-x me-1"></i> 取消
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Case.BirthDate" class="form-label">出生日期 <small class="text-muted d-block">birth_date（必填，DATE）</small></label>
-                                    <input asp-for="Case.BirthDate" class="form-control" type="date" />
-                                    <span asp-validation-for="Case.BirthDate" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Case.IdNumber" class="form-label">身分證字號 <small class="text-muted d-block">id_number（必填，NVARCHAR(255)，加密後唯一）</small></label>
-                                    <input asp-for="Case.IdNumber" class="form-control" placeholder="請輸入身分證字號" />
-                                    <span asp-validation-for="Case.IdNumber" class="text-danger"></span>
-                                </div>
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
+                        <div>
+                            <label asp-for="Case.Phone" class="block text-lg font-medium mb-2 text-slate-900">連絡電話 <small class="block text-slate-500">phone（可空，NVARCHAR(15)）</small></label>
+                            <input asp-for="Case.Phone" class="input" placeholder="請輸入連絡電話" />
+                            <span asp-validation-for="Case.Phone" class="text-red-600 text-sm"></span>
                         </div>
-
-                        <!-- 地址選項 - 城市、地區、詳細地址同一行 -->
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label asp-for="Case.CityId" class="form-label">城市 <small class="text-muted d-block">city_id（可空，外鍵 Cities.city_id）</small></label>
-                                    <select asp-for="Case.CityId" class="form-select" id="citySelect">
-                                        <option value="">請選擇城市</option>
-                                        @if (Model.Cities != null)
-                                        {
-                                            @foreach (var city in Model.Cities)
-                                            {
-                                                <option value="@city.CityId">@city.CityName</option>
-                                            }
-                                        }
-                                    </select>
-                                    <span asp-validation-for="Case.CityId" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label asp-for="Case.DistrictId" class="form-label">地區 <small class="text-muted d-block">district_id（可空，外鍵 Districts.district_id）</small></label>
-                                    <select asp-for="Case.DistrictId" class="form-select" id="districtSelect" disabled>
-                                        <option value="">請先選擇城市</option>
-                                    </select>
-                                    <span asp-validation-for="Case.DistrictId" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label asp-for="Case.Address" class="form-label">詳細地址 <small class="text-muted d-block">address（可空，NVARCHAR(25)）</small></label>
-                                    <input asp-for="Case.Address" class="form-control" placeholder="請輸入詳細地址" />
-                                    <span asp-validation-for="Case.Address" class="text-danger"></span>
-                                </div>
-                            </div>
+                        <div>
+                            <label asp-for="Case.Email" class="block text-lg font-medium mb-2 text-slate-900">電子郵箱 <small class="block text-slate-500">email（可空，NVARCHAR(50)）</small></label>
+                            <input asp-for="Case.Email" class="input" placeholder="請輸入電子郵箱" />
+                            <span asp-validation-for="Case.Email" class="text-red-600 text-sm"></span>
                         </div>
+                    </div>
 
-                        <!-- 學校選項 - 獨立選擇 -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <label asp-for="Case.SchoolId" class="form-label mb-0 me-2">學校 <small class="text-muted d-block">school_id（可空，外鍵 Schools.school_id）</small></label>
-                                        <button type="button" class="btn btn-link btn-sm p-0" id="addSchoolBtn" style="text-decoration: none;">
-                                            <i class="fas fa-plus text-primary"></i> 新增學校
-                                        </button>
-                                    </div>
-                                    <select asp-for="Case.SchoolId" class="form-select" id="schoolSelect">
-                                        <option value="">請選擇學校</option>
-                                        @if (Model.Schools != null)
-                                        {
-                                            @foreach (var school in Model.Schools)
-                                            {
-                                                <option value="@school.SchoolId">@school.SchoolName</option>
-                                            }
-                                        }
-                                    </select>
-                                    <span asp-validation-for="Case.SchoolId" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <!-- 新增學校輸入區域 -->
-                                <div id="addSchoolForm" class="mb-3" style="display: none;">
-                                    <label class="form-label">新增學校</label>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" id="newSchoolName" placeholder="學校名稱" />
-                                        <select class="form-select" id="newSchoolType">
-                                            <option value="">選擇類型</option>
-                                            <option value="國小">國小</option>
-                                            <option value="國中">國中</option>
-                                            <option value="高中">高中</option>
-                                            <option value="大學">大學</option>
-                                            <option value="其他">其他</option>
-                                        </select>
-                                        <button type="button" class="btn btn-primary" id="submitNewSchool">
-                                            <i class="fas fa-check"></i> 新增
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" id="cancelAddSchool">
-                                            <i class="fas fa-times"></i> 取消
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Case.Phone" class="form-label">連絡電話 <small class="text-muted d-block">phone（可空，NVARCHAR(15)）</small></label>
-                                    <input asp-for="Case.Phone" class="form-control" placeholder="請輸入連絡電話" />
-                                    <span asp-validation-for="Case.Phone" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="Case.Email" class="form-label">電子郵箱 <small class="text-muted d-block">email（可空，NVARCHAR(50)）</small></label>
-                                    <input asp-for="Case.Email" class="form-control" placeholder="請輸入電子郵箱" />
-                                    <span asp-validation-for="Case.Email" class="text-danger"></span>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a asp-controller="Case" asp-action="Index" class="btn btn-outline-secondary me-md-2">
-                                <i class="fas fa-arrow-left me-1"></i>返回個案列表
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-arrow-right me-1"></i>開始填寫詳細資料
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="mt-6 flex justify-end gap-3">
+                        <a asp-controller="Case" asp-action="Index" class="btn btn--secondary">
+                            <i class="bi bi-arrow-left me-1"></i>返回個案列表
+                        </a>
+                        <button type="submit" class="btn">
+                            <i class="bi bi-arrow-right me-1"></i>開始填寫詳細資料
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -205,11 +178,11 @@
         document.getElementById('citySelect').addEventListener('change', function() {
             const cityId = this.value;
             const districtSelect = document.getElementById('districtSelect');
-            
+
             // 清空地區選項
             districtSelect.innerHTML = '<option value="">請選擇地區</option>';
             districtSelect.disabled = !cityId;
-            
+
             if (cityId && districtsByCity[cityId]) {
                 // 直接使用預載入的資料，無需等待
                 districtsByCity[cityId].forEach(district => {

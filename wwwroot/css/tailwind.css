@@ -1,3 +1,247 @@
 @import "tailwindcss";
 
+/* Design tokens: light/dark variables */
+@layer base {
+  :root {
+    --bg: #ffffff;
+    --fg: #0f172a; /* slate-900 */
 
+    /* Primary brand: #90B44B and scale */
+    --primary-50: #F3F8E9;
+    --primary-100: #E7F1D3;
+    --primary-200: #CFE3A8;
+    --primary-300: #B7D57E;
+    --primary-400: #A3C862;
+    --primary-500: #90B44B;
+    --primary-600: #7EA043;
+    --primary-700: #67833A;
+    --primary-800: #4F6630;
+    --primary-900: #3E5127;
+
+    /* Secondary: deep ink green */
+    --secondary-50: #E9F5F0;
+    --secondary-100: #D4EAE2;
+    --secondary-200: #A8D5C5;
+    --secondary-300: #7CBFA7;
+    --secondary-400: #52A88B;
+    --secondary-500: #2E5E4E;
+    --secondary-600: #284F42;
+    --secondary-700: #204136;
+    --secondary-800: #193329;
+    --secondary-900: #13271F;
+
+    /* On-colors */
+    --on-primary: #ffffff;
+    --on-secondary: #e6f4ef;
+
+    /* Surface tokens */
+    --muted: #f1f5f9;  /* slate-100 */
+    --border: #e2e8f0; /* slate-200 */
+
+    /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+  }
+
+  .dark {
+    --bg: #0b1220;
+    --fg: #e5e7eb; /* slate-200 */
+    /* brighten brand on dark */
+    --primary-500: #a7ce63; /* a touch brighter */
+    --primary-600: #90b44b;
+    --secondary-500: #52A88B;
+    --secondary-600: #2E5E4E;
+    --on-primary: #0b1220;
+    --on-secondary: #071018;
+    --muted: #111827;  /* gray-900 */
+    --border: #1f2937; /* gray-800 */
+  }
+}
+
+/* Bind tokens to Tailwind theme color names */
+@theme {
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+  --color-on-primary: var(--on-primary);
+
+  --color-secondary-50: var(--secondary-50);
+  --color-secondary-100: var(--secondary-100);
+  --color-secondary-200: var(--secondary-200);
+  --color-secondary-300: var(--secondary-300);
+  --color-secondary-400: var(--secondary-400);
+  --color-secondary: var(--secondary-500);
+  --color-secondary-600: var(--secondary-600);
+  --color-secondary-700: var(--secondary-700);
+  --color-secondary-800: var(--secondary-800);
+  --color-secondary-900: var(--secondary-900);
+  --color-on-secondary: var(--on-secondary);
+
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  /* radius tokens */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+}
+
+/* Base styles */
+@layer base {
+  html, body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+  }
+}
+
+/* Utilities for radius/shadow */
+@utility shadow-card {
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.06), 0 4px 12px 0 rgb(0 0 0 / 0.06);
+  box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+
+/* Stronger elevation for main content cards */
+@utility shadow-card-lg {
+  --tw-shadow: 0 6px 20px 0 rgb(0 0 0 / 0.08), 0 16px 40px 0 rgb(0 0 0 / 0.08);
+  box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+
+/* Component layer: buttons, inputs, cards */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md font-medium transition shadow-sm;
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  .btn:hover { @apply opacity-90; }
+  .btn:active { @apply opacity-80; }
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 25%, transparent);
+  }
+
+  .btn--secondary {
+    background-color: var(--color-secondary);
+    color: #ffffff;
+  }
+
+  .input {
+    @apply w-full rounded-md px-3 py-2 text-sm;
+    /* 統一在白底卡片上視覺一致，深色模式也維持白色 */
+    background-color: #ffffff;
+    color: #0f172a; /* slate-900 */
+    border: 1px solid var(--color-border);
+  }
+  .input::placeholder { @apply text-slate-400; }
+  .input:focus { box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 25%, transparent); border-color: color-mix(in oklab, var(--color-primary) 50%, var(--color-border)); outline: none; }
+
+  .card {
+    @apply bg-white dark:bg-slate-900 border shadow-card;
+    border-color: var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .sidebar-link {
+    @apply text-xl rounded-md transition flex items-center justify-between px-3 py-2.5;
+    color: #0f172a; /* slate-900 */
+    font-family: 'Noto Sans TC', sans-serif;
+    text-decoration: none;
+  }
+  /* 放大側欄圖示尺寸 */
+  .sidebar-link i { font-size: 1.25rem; }
+  a.sidebar-link,
+  a.sidebar-link:link,
+  a.sidebar-link:visited,
+  a.sidebar-link:hover,
+  a.sidebar-link:focus {
+    text-decoration: none !important;
+  }
+  .sidebar-link:hover {
+    background-color: var(--primary-50); /* green-tinted hover */
+    color: var(--primary-700);
+  }
+  .sidebar-link--active {
+    background-color: var(--primary-100); /* green-tinted active */
+    color: var(--primary-700);
+    font-weight: 400;
+  }
+  .sidebar-parent--active {
+    background-color: var(--primary-50);
+    color: var(--primary-700);
+  }
+  /* 子選單縮排 */
+  .sidebar-subnav { padding-left: calc(var(--spacing) * 14); }
+  /* Expand/collapse animation for submenus */
+  .sidebar-subnav {
+    overflow: hidden;
+    transition: max-height 250ms var(--default-transition-timing-function, cubic-bezier(0.4,0,0.2,1)),
+                opacity 200ms var(--default-transition-timing-function, cubic-bezier(0.4,0,0.2,1)),
+                transform 200ms var(--default-transition-timing-function, cubic-bezier(0.4,0,0.2,1));
+    opacity: 1;
+  }
+  .group:not([open]) .sidebar-subnav {
+    max-height: 0px;
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  .group[open] .sidebar-subnav {
+    max-height: 640px; /* enough for several items */
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .sidebar-link__label { @apply flex items-center gap-2; }
+  .sidebar-link__label { text-decoration: none !important; }
+  .sidebar-link__right { @apply flex items-center gap-2; }
+  .sidebar-menu-toggle {
+    @apply text-xl;
+    font-family: 'Noto Sans TC', sans-serif;
+    text-decoration: none;
+  }
+  .sidebar-menu-toggle i { font-size: 1.25rem; }
+  .sidebar-menu-toggle:focus { text-decoration: none; }
+
+  /* Ensure any links inside the sidebar container never show underline */
+  .sticky.top-0 .sidebar-link,
+  .sticky.top-0 .sidebar-link *,
+  .sticky.top-0 a { text-decoration: none !important; }
+  .sidebar-menu-toggle::-webkit-details-marker {
+    display: none;
+  }
+  .sidebar-menu-toggle::marker {
+    display: none;
+  }
+  .sidebar-menu-toggle-hover:hover {
+    background-color: var(--primary-50);
+  }
+  .sidebar-menu-toggle-hover:hover .text-slate-900 {
+    color: var(--primary-700);
+  }
+  .badge-new {
+    @apply inline-flex items-center rounded-full px-2 text-[10px] font-semibold h-5;
+    background-color: #dcfce7; /* green-100 */
+    color: #16a34a; /* green-600 */
+  }
+  .badge-pill {
+    @apply inline-flex items-center rounded-full px-3 h-6 text-xs font-medium;
+    background-color: #e5e7eb; /* gray-200 */
+    color: #374151; /* gray-700 */
+    line-height: 1;
+    white-space: nowrap;
+  }
+  /* Simple data table styling */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table thead th { padding: 0.75rem 1rem; color: var(--color-slate-600); font-weight: 600; border-bottom: 1px solid var(--color-border); }
+  .data-table tbody td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
+  .data-table tbody tr:hover { background-color: var(--primary-50); }
+}
