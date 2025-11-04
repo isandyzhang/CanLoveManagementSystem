@@ -354,7 +354,7 @@ public class CaseController : Controller
                             // 上傳檔案到 Blob Storage
                             // 使用個案編號作為檔案名稱的一部分
                             var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-                            var blobName = $"{model.Case.CaseId}_photo_{timestamp}{fileExtension}";
+                            var blobName = $"avatars/{model.Case.CaseId}/photo_{timestamp}{fileExtension}";
                             var blobStorage = await _blobService.UploadFileAsync(
                                 model.PhotoFile.OpenReadStream(),
                                 "cases",
