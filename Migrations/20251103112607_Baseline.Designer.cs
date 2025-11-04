@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CanLove_Backend.Migrations
 {
     [DbContext(typeof(CanLoveDbContext))]
-    [Migration("20250912055522_AddOptionSetsData")]
-    partial class AddOptionSetsData
+    [Migration("20251103112607_Baseline")]
+    partial class Baseline
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace CanLove_Backend.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .UseCollation("Chinese_PRC_CI_AS")
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -321,10 +321,9 @@ namespace CanLove_Backend.Migrations
                         .HasColumnType("nvarchar(20)")
                         .HasColumnName("main_caregiver_name");
 
-                    b.Property<string>("MainCaregiverRelation")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)")
-                        .HasColumnName("main_caregiver_relation");
+                    b.Property<int?>("MainCaregiverRelationValueId")
+                        .HasColumnType("int")
+                        .HasColumnName("main_caregiver_relation_value_id");
 
                     b.Property<string>("Note")
                         .HasMaxLength(1000)
@@ -361,6 +360,8 @@ namespace CanLove_Backend.Migrations
                     b.HasIndex("MainCaregiverEduValueId");
 
                     b.HasIndex("MainCaregiverMarryStatusValueId");
+
+                    b.HasIndex("MainCaregiverRelationValueId");
 
                     b.HasIndex("ParentNationFatherId");
 
@@ -1117,6 +1118,113 @@ namespace CanLove_Backend.Migrations
                     b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
+            modelBuilder.Entity("CanLove_Backend.Data.Models.Core.BlobStorage", b =>
+                {
+                    b.Property<int>("BlobId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("blob_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BlobId"));
+
+                    b.Property<string>("BlobName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("blob_name");
+
+                    b.Property<string>("BlobUri")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("blob_uri");
+
+                    b.Property<string>("BlobUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("blob_url");
+
+                    b.Property<string>("ContainerName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("container_name");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("deleted");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("FileExtension")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("file_extension");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint")
+                        .HasColumnName("file_size");
+
+                    b.Property<bool>("IsTemp")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_temp");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("metadata");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("original_file_name");
+
+                    b.Property<string>("StorageAccount")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("storage_account");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("uploaded_at");
+
+                    b.Property<int?>("UploadedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("uploaded_by");
+
+                    b.HasKey("BlobId");
+
+                    b.HasIndex("UploadedBy");
+
+                    b.ToTable("BlobStorage");
+                });
+
             modelBuilder.Entity("CanLove_Backend.Data.Models.Core.Case", b =>
                 {
                     b.Property<string>("CaseId")
@@ -1166,22 +1274,15 @@ namespace CanLove_Backend.Migrations
                         .HasColumnType("int")
                         .HasColumnName("district_id");
 
-                    b.Property<bool?>("DraftStatus")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("draft_status");
-
                     b.Property<string>("Email")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("email");
 
                     b.Property<string>("Gender")
-                        .HasMaxLength(2)
-                        .HasColumnType("nchar(2)")
-                        .HasColumnName("gender")
-                        .IsFixedLength();
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("gender");
 
                     b.Property<string>("IdNumber")
                         .IsRequired()
@@ -1215,10 +1316,9 @@ namespace CanLove_Backend.Migrations
                         .HasColumnType("nvarchar(15)")
                         .HasColumnName("phone");
 
-                    b.Property<string>("Photo")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("photo");
+                    b.Property<int?>("PhotoBlobId")
+                        .HasColumnType("int")
+                        .HasColumnName("photo_blob_id");
 
                     b.Property<DateTime?>("ReviewedAt")
                         .HasColumnType("datetime2")
@@ -1232,6 +1332,14 @@ namespace CanLove_Backend.Migrations
                     b.Property<int?>("SchoolId")
                         .HasColumnType("int")
                         .HasColumnName("school_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Draft")
+                        .HasColumnName("status");
 
                     b.Property<DateTime?>("SubmittedAt")
                         .HasColumnType("datetime2")
@@ -1255,11 +1363,13 @@ namespace CanLove_Backend.Migrations
 
                     b.HasIndex("DistrictId");
 
+                    b.HasIndex("PhotoBlobId");
+
                     b.HasIndex("SchoolId");
 
                     b.HasIndex(new[] { "AssessmentDate" }, "IX_Cases_assessment_date");
 
-                    b.HasIndex(new[] { "DraftStatus" }, "IX_Cases_draft_status");
+                    b.HasIndex(new[] { "Status" }, "IX_Cases_status");
 
                     b.HasIndex(new[] { "SubmittedBy" }, "IX_Cases_submitted_by");
 
@@ -1272,6 +1382,114 @@ namespace CanLove_Backend.Migrations
                         });
 
                     b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
+                });
+
+            modelBuilder.Entity("CanLove_Backend.Data.Models.Core.Staff", b =>
+                {
+                    b.Property<int>("StaffId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("staff_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StaffId"));
+
+                    b.Property<string>("AzureObjectId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("azure_object_id");
+
+                    b.Property<string>("AzureTenantId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("azure_tenant_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("deleted");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("Department")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("department");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("display_name");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("EmployeeId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("employee_id");
+
+                    b.Property<DateOnly?>("HireDate")
+                        .HasColumnType("date")
+                        .HasColumnName("hire_date");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("JobTitle")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("job_title");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("last_login_at");
+
+                    b.Property<DateTime?>("LastSyncAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("last_sync_at");
+
+                    b.Property<DateTime?>("LineBindingAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("line_binding_at");
+
+                    b.Property<string>("LineUserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("line_user_id");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("photo_url");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("StaffId");
+
+                    b.ToTable("Staff");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Data.Models.History.CaseDetailHistory", b =>
@@ -1694,6 +1912,11 @@ namespace CanLove_Backend.Migrations
                         .HasForeignKey("MainCaregiverMarryStatusValueId")
                         .HasConstraintName("FK__CaseDetai__main___0B91BA14");
 
+                    b.HasOne("CanLove_Backend.Data.Models.Options.OptionSetValue", "MainCaregiverRelationValue")
+                        .WithMany("CaseDetailMainCaregiverRelationValues")
+                        .HasForeignKey("MainCaregiverRelationValueId")
+                        .HasConstraintName("FK__CaseDetai__main_caregiver_relation__07C12931");
+
                     b.HasOne("CanLove_Backend.Data.Models.Options.Nationality", "ParentNationFather")
                         .WithMany("CaseDetailParentNationFathers")
                         .HasForeignKey("ParentNationFatherId")
@@ -1720,6 +1943,8 @@ namespace CanLove_Backend.Migrations
                     b.Navigation("MainCaregiverEduValue");
 
                     b.Navigation("MainCaregiverMarryStatusValue");
+
+                    b.Navigation("MainCaregiverRelationValue");
 
                     b.Navigation("ParentNationFather");
 
@@ -1885,6 +2110,15 @@ namespace CanLove_Backend.Migrations
                     b.Navigation("Case");
                 });
 
+            modelBuilder.Entity("CanLove_Backend.Data.Models.Core.BlobStorage", b =>
+                {
+                    b.HasOne("CanLove_Backend.Data.Models.Core.Staff", "Uploader")
+                        .WithMany()
+                        .HasForeignKey("UploadedBy");
+
+                    b.Navigation("Uploader");
+                });
+
             modelBuilder.Entity("CanLove_Backend.Data.Models.Core.Case", b =>
                 {
                     b.HasOne("CanLove_Backend.Data.Models.Options.City", "City")
@@ -1897,6 +2131,11 @@ namespace CanLove_Backend.Migrations
                         .HasForeignKey("DistrictId")
                         .HasConstraintName("FK__Cases__district___01142BA1");
 
+                    b.HasOne("CanLove_Backend.Data.Models.Core.BlobStorage", "PhotoBlob")
+                        .WithMany()
+                        .HasForeignKey("PhotoBlobId")
+                        .HasConstraintName("FK_Cases_PhotoBlob");
+
                     b.HasOne("CanLove_Backend.Data.Models.Options.School", "School")
                         .WithMany("Cases")
                         .HasForeignKey("SchoolId")
@@ -1905,6 +2144,8 @@ namespace CanLove_Backend.Migrations
                     b.Navigation("City");
 
                     b.Navigation("District");
+
+                    b.Navigation("PhotoBlob");
 
                     b.Navigation("School");
                 });
@@ -2022,6 +2263,8 @@ namespace CanLove_Backend.Migrations
                     b.Navigation("CaseDetailMainCaregiverEduValues");
 
                     b.Navigation("CaseDetailMainCaregiverMarryStatusValues");
+
+                    b.Navigation("CaseDetailMainCaregiverRelationValues");
 
                     b.Navigation("CaseDetailSourceValues");
 

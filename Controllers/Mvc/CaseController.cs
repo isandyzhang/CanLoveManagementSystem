@@ -7,6 +7,7 @@ using CanLove_Backend.Services.Case;
 using CanLove_Backend.Services.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using System.IO;
 
 namespace CanLove_Backend.Controllers.Mvc;
 
@@ -19,13 +20,15 @@ public class CaseController : Controller
     private readonly SchoolService _schoolService;
     private readonly OptionService _optionService;
     private readonly CaseService _caseService;
+    private readonly Services.Shared.IBlobService _blobService;
 
-    public CaseController(CanLoveDbContext context, SchoolService schoolService, OptionService optionService, CaseService caseService)
+    public CaseController(CanLoveDbContext context, SchoolService schoolService, OptionService optionService, CaseService caseService, Services.Shared.IBlobService blobService)
     {
         _context = context;
         _schoolService = schoolService;
         _optionService = optionService;
         _caseService = caseService;
+        _blobService = blobService;
     }
 
     /// <summary>
@@ -174,7 +177,7 @@ public class CaseController : Controller
                     eqSummary = caseData.FinalAssessmentSummary?.EqSummary,
                     
                     // 審核狀態
-                    draftStatus = caseData.DraftStatus,
+                    status = caseData.Status,
                     submittedBy = caseData.SubmittedBy,
                     submittedAt = caseData.SubmittedAt?.ToString("yyyy-MM-dd HH:mm"),
                     reviewedBy = caseData.ReviewedBy,
@@ -198,80 +201,114 @@ public class CaseController : Controller
     }
 
     /// <summary>
-    /// 個案列表頁面
+    /// 個案列表頁面 - 簡化版（用於診斷問題）
     /// </summary>
-    // [Authorize(Policy = "RequireViewer")] // 暫時註解掉進行測試
+    [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var currentUser = User.Identity?.Name ?? "";
-        var userRoles = User.FindAll("roles").Select(c => c.Value).ToList();
-        
-        IQueryable<Case> query = _context.Cases
-            .Include(c => c.City)
-            .Include(c => c.District)
-            .Include(c => c.School)
-            .Where(c => c.Deleted != true);
-
-        // 根據角色過濾個案
-        if (userRoles.Contains("assistant"))
+        try
         {
-            // Assistant 只能看到自己建立的個案
-            query = query.Where(c => c.SubmittedBy == currentUser);
+            // 最小查詢（加強版）：僅選取安全欄位以避免 DB/模型型別不一致造成的轉型錯誤
+            var cases = await _context.Cases
+                .Include(c => c.City) // City 驗證完成
+                .Include(c => c.District) // District 驗證完成
+                .Include(c => c.School) // 加入第三層關聯：School
+                .Where(c => c.Deleted != true && c.Status == "Approved")
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new CanLove_Backend.Data.Models.Core.Case
+                {
+                    CaseId = c.CaseId,
+                    Name = c.Name,
+                    Gender = c.Gender,
+                    Status = c.Status,
+                    BirthDate = c.BirthDate,
+                    City = c.City,
+                    District = c.District,
+                    School = c.School,
+                    SubmittedBy = c.SubmittedBy,
+                    SubmittedAt = c.SubmittedAt,
+                    ReviewedBy = c.ReviewedBy,
+                    ReviewedAt = c.ReviewedAt,
+                    IsLocked = c.IsLocked,
+                    LockedBy = c.LockedBy,
+                    LockedAt = c.LockedAt,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return View("Index", cases);
         }
-        else if (userRoles.Contains("socialworker") && !userRoles.Contains("admin"))
+        catch (Exception ex)
         {
-            // SocialWorker 可以看到所有個案，但優先顯示待審核的
-            query = query.Where(c => c.SubmittedAt != null && c.ReviewedAt == null);
+            // 錯誤處理：顯示錯誤訊息
+            ViewBag.ErrorMessage = $"查詢資料時發生錯誤：{ex.Message}";
+            return View("Index", new List<Case>());
         }
-        // Admin 和 Viewer 可以看到所有個案
-
-        var cases = await query
-            .OrderByDescending(c => c.CreatedAt)
-            .ToListAsync();
-
-        return View(cases);
     }
+    
 
     /// <summary>
     /// 個案建立頁面
     /// </summary>
     [HttpGet]
-    // [Authorize(Policy = "RequireAssistant")] // 暫時註解掉進行測試
     public async Task<IActionResult> Create()
     {
-        var viewModel = new CaseCreateViewModel
+        // 設置麵包屑父級
+        ViewData["BreadcrumbParent"] = "個案管理";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Case");
+        
+        // 設置 Sidebar 項目名稱（父層維持「新增個案」）
+        ViewData["Sidebar.CreateCase"] = "新增個案";
+        
+        try
         {
-            Case = new CanLove_Backend.Data.Models.Core.Case
+            var viewModel = new CaseCreateViewModel
             {
-                CaseId = string.Empty, // 讓使用者自己輸入
-                AssessmentDate = DateOnly.FromDateTime(DateTime.Today)
-            },
-            Cities = await _context.Cities.OrderBy(c => c.CityId).ToListAsync(),
-            Districts = new List<District>(), // 初始為空，等選擇城市後載入
-            Schools = await _schoolService.GetAllSchoolsAsync(), // 載入所有學校供獨立選擇
-            GenderOptions = await _optionService.GetGenderOptionsAsync()
-        };
+                Case = new CanLove_Backend.Data.Models.Core.Case
+                {
+                    CaseId = string.Empty,
+                    AssessmentDate = DateOnly.FromDateTime(DateTime.Today)
+                },
+                Cities = await _context.Cities.OrderBy(c => c.CityId).ToListAsync(),
+                Districts = new List<District>(),
+                Schools = await _schoolService.GetAllSchoolsAsync(),
+                GenderOptions = await _optionService.GetGenderOptionsAsync()
+            };
 
-        // 載入所有地區資料並按城市分組，供前端JavaScript使用
-        var allDistricts = await _context.Districts
-            .Include(d => d.City)
-            .OrderBy(d => d.CityId)
-            .ThenBy(d => d.DistrictName)
-            .ToListAsync();
+            var allDistricts = await _context.Districts
+                .Include(d => d.City)
+                .OrderBy(d => d.CityId)
+                .ThenBy(d => d.DistrictName)
+                .ToListAsync();
 
-        var districtsByCity = allDistricts
-            .GroupBy(d => d.CityId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Select(d => new { 
-                    districtId = d.DistrictId, 
-                    districtName = d.DistrictName 
-                }).ToList()
-            );
+            var districtsByCity = allDistricts
+                .GroupBy(d => d.CityId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(d => new { 
+                        districtId = d.DistrictId, 
+                        districtName = d.DistrictName 
+                    }).ToList()
+                );
 
-        ViewBag.DistrictsByCity = districtsByCity;
+            ViewBag.DistrictsByCity = districtsByCity;
 
-        return View(viewModel);
+            return View(viewModel);
+        }
+        catch (Exception ex)
+        {
+            ViewBag.ErrorMessage = $"載入頁面時發生錯誤：{ex.Message}";
+            return View(new CaseCreateViewModel
+            {
+                Case = new CanLove_Backend.Data.Models.Core.Case(),
+                Cities = new List<City>(),
+                Districts = new List<District>(),
+                Schools = new List<School>(),
+                GenderOptions = new List<OptionSetValue>()
+            });
+        }
     }
 
     /// <summary>
@@ -284,9 +321,73 @@ public class CaseController : Controller
     {
         if (ModelState.IsValid)
         {
-            // 設定個案為草稿狀態
-            model.Case.DraftStatus = false; // 0=草稿
+            // 處理照片上傳
+            if (model.PhotoFile != null && model.PhotoFile.Length > 0)
+            {
+                try
+                {
+                    // 驗證檔案類型
+                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                    var fileExtension = Path.GetExtension(model.PhotoFile.FileName).ToLowerInvariant();
+                    if (!allowedExtensions.Contains(fileExtension))
+                    {
+                        ModelState.AddModelError("PhotoFile", "僅支援 JPG、PNG、GIF 格式的圖片");
+                    }
+                    else
+                    {
+                        // 驗證檔案大小（限制 5MB）
+                        if (model.PhotoFile.Length > 5 * 1024 * 1024)
+                        {
+                            ModelState.AddModelError("PhotoFile", "檔案大小不能超過 5MB");
+                        }
+                        else
+                        {
+                            // 取得目前使用者ID（如果有的話）
+                            int? uploadedBy = null;
+                            if (User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(User.Identity.Name))
+                            {
+                                var staff = await _context.Staff
+                                    .FirstOrDefaultAsync(s => s.Email == User.Identity.Name && !s.Deleted);
+                                uploadedBy = staff?.StaffId;
+                            }
+
+                            // 上傳檔案到 Blob Storage
+                            // 使用個案編號作為檔案名稱的一部分
+                            var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                            var blobName = $"{model.Case.CaseId}_photo_{timestamp}{fileExtension}";
+                            var blobStorage = await _blobService.UploadFileAsync(
+                                model.PhotoFile.OpenReadStream(),
+                                "cases",
+                                blobName,
+                                model.PhotoFile.ContentType,
+                                uploadedBy,
+                                false);
+
+                            // 設定 PhotoBlobId
+                            model.Case.PhotoBlobId = blobStorage.BlobId;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("PhotoFile", $"照片上傳失敗：{ex.Message}");
+                }
+            }
+
+            // 如果照片上傳失敗，不繼續建立個案
+            if (!ModelState.IsValid)
+            {
+                model.Cities = await _context.Cities.OrderBy(c => c.CityId).ToListAsync();
+                model.Districts = new List<District>();
+                model.Schools = await _schoolService.GetAllSchoolsAsync();
+                model.GenderOptions = await _optionService.GetGenderOptionsAsync();
+                return View(model);
+            }
+
+            // 設定個案為待審閱狀態（點擊「存檔送審」表示要送審）
+            model.Case.Status = "PendingReview";
             model.Case.SubmittedBy = User.Identity?.Name ?? "";
+            model.Case.SubmittedAt = DateTime.UtcNow;
             model.Case.CreatedAt = DateTime.UtcNow;
             model.Case.UpdatedAt = DateTime.UtcNow;
             
@@ -295,7 +396,22 @@ public class CaseController : Controller
             if (response.Success)
             {
                 TempData["SuccessMessage"] = "個案建立成功";
-                return RedirectToAction("Step1", "CaseWizardOpenCase", new { caseId = model.Case.CaseId });
+
+                // 留在建立頁，並重設表單預設值與下拉資料
+                var resetViewModel = new CaseCreateViewModel
+                {
+                    Case = new CanLove_Backend.Data.Models.Core.Case
+                    {
+                        CaseId = string.Empty,
+                        AssessmentDate = DateOnly.FromDateTime(DateTime.Today)
+                    },
+                    Cities = await _context.Cities.OrderBy(c => c.CityId).ToListAsync(),
+                    Districts = new List<District>(),
+                    Schools = await _schoolService.GetAllSchoolsAsync(),
+                    GenderOptions = await _optionService.GetGenderOptionsAsync()
+                };
+
+                return View("Create", resetViewModel);
             }
             else
             {
@@ -313,12 +429,73 @@ public class CaseController : Controller
     }
 
     /// <summary>
+    /// 搜尋個案頁面（用於開案記錄表）
+    /// </summary>
+    [HttpGet]
+    public IActionResult SearchForOpenCase()
+    {
+        // 設置 Sidebar 項目名稱
+        ViewData["Sidebar.CreateCase"] = "新增開案紀錄表";
+        return View();
+    }
+
+    /// <summary>
+    /// 搜尋個案 API（AJAX）
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> SearchCases(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Json(new { success = true, cases = new List<object>() });
+        }
+
+        try
+        {
+            var searchTerm = query.Trim();
+
+            var cases = await _context.Cases
+                .Include(c => c.City)
+                .Include(c => c.District)
+                .Include(c => c.School)
+                .Where(c => c.Deleted != true && (
+                    c.CaseId.Contains(searchTerm) ||
+                    (c.Name != null && c.Name.Contains(searchTerm)) ||
+                    (c.Phone != null && c.Phone.Contains(searchTerm))
+                ))
+                .OrderByDescending(c => c.CreatedAt)
+                .Take(50)
+                .Select(c => new
+                {
+                    caseId = c.CaseId,
+                    name = c.Name,
+                    phone = c.Phone ?? "",
+                    birthDate = c.BirthDate.ToString("yyyy-MM-dd"),
+                    city = c.City != null ? c.City.CityName : "",
+                    district = c.District != null ? c.District.DistrictName : "",
+                    school = c.School != null ? c.School.SchoolName : ""
+                })
+                .ToListAsync();
+
+            return Json(new { success = true, cases = cases });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = $"搜尋失敗：{ex.Message}" });
+        }
+    }
+
+    /// <summary>
     /// 個案編輯頁面
     /// </summary>
     [HttpGet]
     // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
     public async Task<IActionResult> Edit(string id)
     {
+        // 設置麵包屑父級
+        ViewData["BreadcrumbParent"] = "個案管理";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Case");
+        
         if (id == null)
         {
             return View("NotFound");
@@ -518,7 +695,7 @@ public class CaseController : Controller
         }
 
         caseItem.SubmittedAt = DateTime.UtcNow;
-        caseItem.DraftStatus = true; // 1=完成
+        caseItem.Status = "PendingReview";
         caseItem.UpdatedAt = DateTime.UtcNow;
         
         _context.Update(caseItem);
@@ -553,11 +730,16 @@ public class CaseController : Controller
         caseItem.ReviewedAt = DateTime.UtcNow;
         caseItem.UpdatedAt = DateTime.UtcNow;
         
-        if (!approved)
+        if (approved)
+        {
+            // 審核通過
+            caseItem.Status = "Approved";
+        }
+        else
         {
             // 退回：重置提交狀態
             caseItem.SubmittedAt = null;
-            caseItem.DraftStatus = false; // 回到草稿狀態
+            caseItem.Status = "Rejected";
         }
         
         _context.Update(caseItem);
@@ -614,6 +796,148 @@ public class CaseController : Controller
         await _context.SaveChangesAsync();
         
         return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>
+    /// 開案記錄表頁面（重定向到開案流程 Step1）
+    /// </summary>
+    [HttpGet]
+    public IActionResult OpenCaseRecord()
+    {
+        // 重定向到開案記錄表 Step1（會顯示選擇個案搜尋功能）
+        return RedirectToAction("Step1", "CaseWizardOpenCase");
+    }
+
+    /// <summary>
+    /// 關懷訪視記錄表頁面
+    /// </summary>
+    [HttpGet]
+    public IActionResult CareVisitRecord()
+    {
+        // 設置 Sidebar 項目名稱
+        ViewData["Sidebar.CareVisitRecord"] = "關懷訪視記錄表";
+        return View();
+    }
+
+    /// <summary>
+    /// 會談服務記錄表頁面
+    /// </summary>
+    [HttpGet]
+    public IActionResult ConsultationRecord()
+    {
+        // 設置 Sidebar 項目名稱
+        ViewData["Sidebar.ConsultationRecord"] = "會談服務紀錄表";
+        return View();
+    }
+
+    /// <summary>
+    /// 個案審核頁面
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> Review()
+    {
+        ViewData["Title"] = "個案審核";
+        var userRoles = User.FindAll("roles").Select(c => c.Value).ToList();
+        
+        IQueryable<Case> query = _context.Cases
+            .Include(c => c.City)
+            .Include(c => c.District)
+            .Include(c => c.School)
+            .Where(c => c.Deleted != true);
+
+        // 只顯示待審閱的個案
+        query = query.Where(c => c.Status == "PendingReview");
+
+        var cases = await query
+            .OrderByDescending(c => c.SubmittedAt)
+            .Select(c => new CanLove_Backend.Data.Models.Core.Case
+            {
+                CaseId = c.CaseId,
+                Name = c.Name,
+                Gender = c.Gender,
+                Status = c.Status,
+                BirthDate = c.BirthDate,
+                City = c.City,
+                District = c.District,
+                School = c.School,
+                SubmittedBy = c.SubmittedBy,
+                SubmittedAt = c.SubmittedAt,
+                ReviewedBy = c.ReviewedBy,
+                ReviewedAt = c.ReviewedAt,
+                IsLocked = c.IsLocked,
+                LockedBy = c.LockedBy,
+                LockedAt = c.LockedAt,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt
+            })
+            .AsNoTracking()
+            .ToListAsync();
+
+        return View("Review", cases); // 使用專用 Review 視圖顯示待審閱個案
+    }
+
+    /// <summary>
+    /// 審閱用的基本資料表單（僅 Case 資料）
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ReviewForm(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return View("NotFound");
+
+        var item = await _context.Cases
+            .Where(c => c.CaseId == id)
+            .Select(c => new CanLove_Backend.Data.Models.Core.Case
+            {
+                CaseId = c.CaseId,
+                AssessmentDate = c.AssessmentDate,
+                Name = c.Name,
+                Gender = c.Gender,
+                SchoolId = c.SchoolId,
+                BirthDate = c.BirthDate,
+                IdNumber = c.IdNumber,
+                Address = c.Address,
+                CityId = c.CityId,
+                DistrictId = c.DistrictId,
+                Phone = c.Phone,
+                Email = c.Email,
+                Status = c.Status
+            })
+            .AsNoTracking()
+            .SingleOrDefaultAsync();
+
+        if (item == null) return View("NotFound");
+        return View("ReviewForm", item);
+    }
+
+    /// <summary>
+    /// 審閱用基本資料更新（僅更新 Case 基本欄位）
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateBasic(CanLove_Backend.Data.Models.Core.Case form)
+    {
+        if (string.IsNullOrWhiteSpace(form.CaseId)) return View("NotFound");
+
+        var item = await _context.Cases.FindAsync(form.CaseId);
+        if (item == null) return View("NotFound");
+
+        // 僅更新基本欄位
+        item.Name = form.Name;
+        item.Gender = form.Gender;
+        item.BirthDate = form.BirthDate;
+        item.Phone = form.Phone;
+        item.Email = form.Email;
+        item.Address = form.Address;
+        item.CityId = form.CityId;
+        item.DistrictId = form.DistrictId;
+        item.SchoolId = form.SchoolId;
+        item.UpdatedAt = DateTime.UtcNow;
+
+        _context.Update(item);
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "已儲存基本資料";
+        return RedirectToAction(nameof(ReviewForm), new { id = form.CaseId });
     }
 
     private bool CaseExists(string id)

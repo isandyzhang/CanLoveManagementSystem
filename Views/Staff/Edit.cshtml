@@ -1,0 +1,39 @@
+@model CanLove_Backend.Models.Mvc.ViewModels.Staff.StaffEditViewModel
+@{
+    ViewData["Title"] = "編輯員工";
+}
+
+<div class="p-4 max-w-2xl">
+    <h2 class="text-xl font-semibold mb-4">編輯員工</h2>
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="StaffId" />
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">姓名</label>
+            <input class="w-full border rounded px-3 py-2 bg-gray-100" value="@Model.DisplayName" readonly />
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">部門</label>
+            <select name="DepartmentCode" class="w-full border rounded px-3 py-2">
+                <option value="">-- 請選擇 --</option>
+                @foreach (var opt in Model.DepartmentOptions)
+                {
+                    <option value="@opt.ValueCode" selected="@(Model.DepartmentCode == opt.ValueCode)">@opt.ValueName</option>
+                }
+            </select>
+        </div>
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-1">職稱</label>
+            <select name="JobTitleCode" class="w-full border rounded px-3 py-2">
+                <option value="">-- 請選擇 --</option>
+                @foreach (var opt in Model.JobTitleOptions)
+                {
+                    <option value="@opt.ValueCode" selected="@(Model.JobTitleCode == opt.ValueCode)">@opt.ValueName</option>
+                }
+            </select>
+        </div>
+        <div class="flex gap-3">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">儲存</button>
+            <a href="@Url.Action("Index", "Staff")" class="px-4 py-2 bg-gray-200 rounded">取消</a>
+        </div>
+    </form>
+</div>

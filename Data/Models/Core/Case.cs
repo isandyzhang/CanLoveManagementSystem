@@ -3,10 +3,9 @@ using CanLove_Backend.Data.Models.CaseDetails;
 using CanLove_Backend.Data.Models.Options;
 using CanLove_Backend.Data.Models.History;
 using CanLove_Backend.Data.Models.Audit;
-
-
-
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CanLove_Backend.Data.Models.Core;
 
@@ -36,9 +35,14 @@ public partial class Case
 
     public string? Email { get; set; }
 
+    [NotMapped]
     public string? Photo { get; set; }
 
-    public bool? DraftStatus { get; set; }
+    public int? PhotoBlobId { get; set; }
+
+    [MaxLength(20)]
+    [Column("status")]
+    public string Status { get; set; } = "Draft";
 
     public string? SubmittedBy { get; set; }
 
@@ -93,5 +97,8 @@ public partial class Case
     public virtual FinalAssessmentSummary? FinalAssessmentSummary { get; set; }
 
     public virtual School? School { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.ForeignKey("PhotoBlobId")]
+    public virtual BlobStorage? PhotoBlob { get; set; }
 
 }

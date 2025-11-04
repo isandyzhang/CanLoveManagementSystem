@@ -1,74 +1,81 @@
 @model IEnumerable<CanLove_Backend.Data.Models.Core.Case>
-@using Microsoft.AspNetCore.Authorization
-@inject IAuthorizationService AuthorizationService
-
 @{
-    ViewData["Title"] = "個案管理";
-    
-    // 從 Microsoft Identity 標準的 role claim 讀取角色
-    var userRoles = User.FindAll("http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(c => c.Value).ToList();
-    
-    // 如果沒有找到，嘗試其他常見的 claim 名稱
-    if (!userRoles.Any())
+    ViewData["Title"] = ViewData["Title"] ?? "查詢個案";
+    var modelCount = Model?.Count() ?? 0;
+    var isReviewPage = string.Equals(ViewData["Title"]?.ToString(), "個案審核");
+    // 自訂麵包屑：個案管理 > 查詢個案
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        userRoles = User.FindAll("roles").Select(c => c.Value).ToList();
-    }
-    if (!userRoles.Any())
-    {
-        userRoles = User.FindAll("role").Select(c => c.Value).ToList();
-    }
-    
-    var isAdmin = userRoles.Contains("admin") || User.IsInRole("admin");
-    var isSocialWorker = userRoles.Contains("socialworker") || User.IsInRole("socialworker");
-    var isAssistant = userRoles.Contains("assistant") || User.IsInRole("assistant");
-    var isViewer = userRoles.Contains("viewer") || User.IsInRole("viewer");
+        ("個案管理", Url.Action("Index", "Case") ?? string.Empty),
+        ("查詢個案", string.Empty)
+    };
 }
 
 <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
-        <i class="bi bi-people"></i>個案管理
+        <i class="bi bi-search"></i>@ViewData["Title"]
     </h2>
+    <div></div>
 </div>
 
-
-@if (Model.Any())
+@* 顯示錯誤訊息 *@
+@if (ViewBag.ErrorMessage != null)
 {
-    <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border-0">
-        <div class="p-4 bg-white text-slate-900">
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>錯誤：</strong> @ViewBag.ErrorMessage
+    </div>
+}
+
+@* 顯示資料計數（用於調試） *@
+<div class="mb-2 text-sm text-slate-600">
+    共找到 @modelCount 筆個案
+</div>
+
+@* 顯示資料 *@
+@if (Model != null && Model.Any())
+{
+    <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-border dark:border-slate-800">
+        <div class="p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
             <div class="overflow-auto">
-                <table class="data-table text-left">
+                <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
                     <thead>
-                        <tr>
-                            <th>個案編號</th>
-                            <th>姓名</th>
-                            <th>性別</th>
-                            <th>出生日期</th>
-                            <th>學校</th>
-                            <th>城市</th>
-                            <th>審核狀態</th>
-                            <th>建立者</th>
-                            <th>建立時間</th>
-                            <th>操作</th>
+                        <tr class="bg-slate-50 dark:bg-slate-800">
+                            <th class="text-slate-700 dark:text-slate-300">個案編號</th>
+                            <th class="text-slate-700 dark:text-slate-300">姓名</th>
+                            <th class="text-slate-700 dark:text-slate-300">性別</th>
+                            <th class="text-slate-700 dark:text-slate-300">出生日期</th>
+                            @if (!isReviewPage)
+                            {
+                            <th class="text-slate-700 dark:text-slate-300">城市</th>
+                            }
+                            <th class="text-slate-700 dark:text-slate-300">建立者</th>
+                            <th class="text-slate-700 dark:text-slate-300">建立時間</th>
+                            @if (isReviewPage)
+                            {
+                                <th class="text-slate-700 dark:text-slate-300">審閱</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>
-                                <td>
-                                    <code>@item.CaseId</code>
+                            <tr class="border-b border-border dark:border-slate-700">
+                                <td class="text-slate-900 dark:text-slate-100">
+                                    <code class="text-slate-900 dark:text-slate-100">@item.CaseId</code>
                                 </td>
-                                <td>@item.Name</td>
+                                <td class="text-slate-900 dark:text-slate-100">@item.Name</td>
                                 <td>
-                                    @if (item.Gender == "M" || item.Gender == "男")
+                                    @{ var g = (item.Gender ?? string.Empty).Trim().ToUpper(); }
+                                    @if (g == "M" || g == "男")
                                     {
-                                        <span class="badge-pill bg-primary text-white">男</span>
+                                        <span class="badge-pill" style="background-color:#DBEAFE;color:#1E3A8A;font-size:14px;">男</span>
                                     }
-                                    else if (item.Gender == "F" || item.Gender == "女")
+                                    else if (g == "F" || g == "女")
                                     {
-                                        <span class="badge-pill bg-secondary text-white">女</span>
+                                        <span class="badge-pill" style="background-color:#FCE7F3;color:#9D174D;font-size:14px;">女</span>
                                     }
-                                    else if (item.Gender == "O" || item.Gender == "其他")
+                                    else if (g == "O" || g == "其他")
                                     {
                                         <span class="badge-pill bg-muted">其他</span>
                                     }
@@ -77,45 +84,12 @@
                                         <span class="badge-pill bg-muted">未設定</span>
                                     }
                                 </td>
-                                <td>@item.BirthDate.ToTaiwanDateString()</td>
-                                <td>@(item.School?.SchoolName ?? "未設定")</td>
-                                <td>@(item.City?.CityName ?? "未設定")</td>
-                                <td>
-                                    @{
-                                        var statusClass = ""; // map to Tailwind theme classes
-                                        var statusText = "";
-                                        var tooltipText = "";
-                                        if (item.ReviewedAt != null)
-                                        {
-                                            statusClass = "bg-secondary text-white"; // 已審核
-                                            statusText = "已審核";
-                                            var reviewedBy = item.ReviewedBy ?? "系統";
-                                            if (reviewedBy.Contains("@")) reviewedBy = reviewedBy.Split('@')[0];
-                                            tooltipText = $"審核者：{reviewedBy} | {item.ReviewedAt:yyyy/MM/dd HH:mm}";
-                                        }
-                                        else if (item.SubmittedAt != null)
-                                        {
-                                            statusClass = "bg-primary text-white"; // 待審核
-                                            statusText = "待審核";
-                                            tooltipText = $"提交時間：{item.SubmittedAt:yyyy/MM/dd HH:mm}";
-                                        }
-                                        else
-                                        {
-                                            statusClass = "bg-muted"; // 草稿
-                                            statusText = "草稿";
-                                            tooltipText = "個案尚未提交審核";
-                                        }
-                                        if (item.IsLocked == true)
-                                        {
-                                            statusText += " 🔒";
-                                            statusClass = "bg-primary text-white";
-                                            var lockedBy = item.LockedBy ?? "系統";
-                                            if (lockedBy.Contains("@")) lockedBy = lockedBy.Split('@')[0];
-                                            tooltipText += $" | 鎖定者：{lockedBy} {item.LockedAt:yyyy/MM/dd HH:mm}";
-                                        }
-                                    }
-                                    <span class="badge-pill @statusClass" title="@tooltipText">@statusText</span>
-                                </td>
+                                <td class="text-slate-900 dark:text-slate-100">@item.BirthDate.ToTaiwanDateString()</td>
+                                @if (!isReviewPage)
+                                {
+                                <td class="text-slate-900 dark:text-slate-100">@(item.City?.CityName ?? "未設定")</td>
+                                }
+                                
                                 <td>
                                     @{
                                         var displayName = item.SubmittedBy ?? "系統";
@@ -125,67 +99,15 @@
                                             displayName = displayName.Split('@')[0];
                                         }
                                     }
-                                    <small class="text-slate-900">@displayName</small>
+                                    <small class="text-slate-900 dark:text-slate-100">@displayName</small>
                                 </td>
-                                <td><datetime value="@item.CreatedAt"></datetime></td>
-                                <td>
-                                    <!-- 查看詳情移除 -->
-
-                                    <!-- 編輯 - Admin 和 SocialWorker 都可以 -->
-                                    @if (isAdmin || isSocialWorker)
-                                    {
-                                        <a href="@Url.Action("Step1", "CaseWizardOpenCase", new { caseId = item.CaseId })" 
-                                           class="badge-pill me-1 bg-primary text-white"
-                                           style="cursor: pointer;">
-                                            編輯
-                                        </a>
-                                    }
-                                    
-                                    <!-- 提交審核 - Assistant 自己的草稿才能提交 -->
-                                    @if (isAssistant && item.SubmittedAt == null)
-                                    {
-                                        <form method="post" action="@Url.Action("SubmitForReview", "Case", new { id = item.CaseId })" 
-                                              style="display: inline;" onsubmit="return confirm('確定要提交此個案進行審核嗎？')">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="badge-pill bg-primary text-white border-0" 
-                                                    style="cursor: pointer;">
-                                                提交審核
-                                            </button>
-                                        </form>
-                                    }
-                                    
-                                    <!-- 審核按鈕 - SocialWorker 和 Admin 可以審核待審核的個案 -->
-                                    @if ((isSocialWorker || isAdmin) && item.SubmittedAt != null && item.ReviewedAt == null)
-                                    {
-                                        <form method="post" action="@Url.Action("ReviewCase", "Case", new { id = item.CaseId, approved = true })" 
-                                              style="display: inline;" onsubmit="return confirm('確定要通過此個案嗎？')">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="badge-pill bg-secondary text-white border-0 me-1" 
-                                                    style="cursor: pointer;">
-                                                通過
-                                            </button>
-                                        </form>
-                                        <form method="post" action="@Url.Action("ReviewCase", "Case", new { id = item.CaseId, approved = false })" 
-                                              style="display: inline;" onsubmit="return confirm('確定要退回此個案嗎？')">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="badge-pill bg-primary text-white border-0 me-1" 
-                                                    style="cursor: pointer;">
-                                                退回
-                                            </button>
-                                        </form>
-                                    }
-                                    
-                                    <!-- 刪除 - 只有 Admin 可以 -->
-                                    @if (isAdmin)
-                                    {
-                                        <a href="javascript:void(0)" 
-                                           class="badge-pill bg-primary text-white me-1" 
-                                           style="cursor: pointer;"
-                                           onclick="deleteCase('@item.CaseId', '@item.Name')">
-                                            刪除
-                                        </a>
-                                    }
-                                </td>
+                                <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.CreatedAt"></datetime></td>
+                                @if (isReviewPage)
+                                {
+                                <td class="text-slate-900 dark:text-slate-100">
+                                        <button type="button" class="badge-pill bg-primary text-white" onclick="openReviewModal('@item.CaseId')">審閱</button>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
@@ -196,9 +118,91 @@
 }
 else
 {
-    <div class="text-center py-10 text-slate-500">
-        <i class="bi bi-inbox text-slate-400" style="font-size: 3rem;"></i>
-        <h4 class="mt-3">尚無個案資料</h4>
-        <p>目前沒有符合條件的個案記錄</p>
+    <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-border dark:border-slate-800">
+        <div class="p-6">
+            <div class="text-center py-10 text-slate-500 dark:text-slate-400">
+                <i class="bi bi-inbox text-slate-400 dark:text-slate-500" style="font-size: 3rem;"></i>
+                <h4 class="mt-3 text-slate-900 dark:text-slate-100">尚無個案資料</h4>
+                <p class="text-slate-600 dark:text-slate-400">目前沒有符合條件的個案記錄</p>
+                @if (Model == null)
+                {
+                    <p class="text-sm text-red-600 dark:text-red-400 mt-2">警告：資料模型為 null，請檢查控制器是否正確傳遞資料</p>
+                }
+            </div>
+        </div>
     </div>
 }
+
+@section Scripts {
+    <script>
+        function openReviewModal(caseId) {
+            const modal = document.getElementById('review-modal');
+            const iframe = document.getElementById('review-frame');
+            iframe.src = `/CaseWizardOpenCase/Step1?caseId=${encodeURIComponent(caseId)}`;
+            document.getElementById('review-id').value = caseId;
+            modal.style.display = 'block';
+        }
+        function closeReviewModal() {
+            const modal = document.getElementById('review-modal');
+            const iframe = document.getElementById('review-frame');
+            iframe.src = 'about:blank';
+            modal.style.display = 'none';
+        }
+        function submitReview(id, approved) {
+            const form = document.getElementById('review-form');
+            document.getElementById('review-id').value = id;
+            document.getElementById('review-approved').value = approved ? 'true' : 'false';
+            form.submit();
+        }
+        // 刪除個案函數
+        async function deleteCase(caseId, caseName) {
+            if (!confirm(`確定要刪除個案「${caseName}」嗎？此操作無法復原。`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Case/Delete/${caseId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message || '個案已成功刪除');
+                    location.reload(); // 重新載入頁面
+                } else {
+                    alert(result.message || '刪除失敗');
+                }
+            } catch (error) {
+                console.error('刪除個案時發生錯誤:', error);
+                alert('刪除個案時發生錯誤，請稍後再試');
+            }
+        }
+    </script>
+}
+
+<div id="review-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center" style="display:none;">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-[90vw] h-[85vh] overflow-hidden border border-border dark:border-slate-700 relative">
+        <div class="p-3 flex justify-between items-center border-b border-border dark:border-slate-700">
+            <strong class="text-slate-900 dark:text-slate-100">審閱個案（可編輯）</strong>
+            <button class="badge-pill bg-muted" onclick="closeReviewModal()">關閉</button>
+        </div>
+        <iframe id="review-frame" class="w-full h-[calc(85vh-90px)]" src="about:blank"></iframe>
+        <div class="p-3 border-t border-border dark:border-slate-700 flex justify-end gap-2">
+            <form id="review-form" method="post" action="/Case/ReviewCase">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="review-id" />
+                <input type="hidden" name="approved" id="review-approved" />
+            </form>
+            <button class="badge-pill bg-secondary text-white" onclick="submitReview(document.getElementById('review-frame').contentWindow?.document?.querySelector('[name=CaseId]')?.value || document.getElementById('review-id').value, true)">通過</button>
+            <button class="badge-pill bg-red-600 text-white" onclick="submitReview(document.getElementById('review-frame').contentWindow?.document?.querySelector('[name=CaseId]')?.value || document.getElementById('review-id').value, false)">拒絕</button>
+        </div>
+    </div>
+    <style>
+        .fixed{position:fixed}.inset-0{top:0;right:0;bottom:0;left:0}
+    </style>
+</div>

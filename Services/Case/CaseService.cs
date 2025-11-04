@@ -103,14 +103,24 @@ public class CaseService
 
             caseData.CreatedAt = DateTime.UtcNow;
             caseData.UpdatedAt = DateTime.UtcNow;
-            caseData.DraftStatus = true;
+            caseData.Status = caseData.Status ?? "Draft"; // 如果已有狀態就保留，否則設為 Draft
             caseData.Deleted = false;
 
             _context.Cases.Add(caseData);
             await _context.SaveChangesAsync();
 
-            // 🎯 原本需要手動對應每個屬性，現在只需要 1 行！
-            var response = _mapper.Map<CaseResponse>(caseData);
+            // 為避免個別環境的 AutoMapper/導覽屬性延遲載入造成型別轉換異常，
+            // 這裡回傳最小成功響應，僅帶必需欄位。
+            var response = new CaseResponse
+            {
+                CaseId = caseData.CaseId,
+                Name = caseData.Name,
+                Gender = caseData.Gender,
+                BirthDate = caseData.BirthDate,
+                CityName = caseData.City?.CityName,
+                SchoolName = caseData.School?.SchoolName,
+                CreatedAt = caseData.CreatedAt ?? DateTime.UtcNow
+            };
 
             return ApiResponse<CaseResponse>.SuccessResponse(response, "個案建立成功");
         }

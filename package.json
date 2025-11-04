@@ -8,7 +8,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:css": "tailwindcss -i ./wwwroot/css/tailwind.css -o ./wwwroot/css/theme.css --watch --content \"./Views/**/*.cshtml\"",
-    "build:css": "tailwindcss -i ./wwwroot/css/tailwind.css -o ./wwwroot/css/theme.css --minify --content \"./Views/**/*.cshtml\""
+    "build:css": "tailwindcss -i ./wwwroot/css/tailwind.css -o ./wwwroot/css/theme.css --minify --content \"./Views/**/*.cshtml\"",
+    "dev": "npm run dev:css"
   },
   "repository": {
     "type": "git",

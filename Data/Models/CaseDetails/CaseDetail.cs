@@ -14,6 +14,7 @@ namespace CanLove_Backend.Data.Models.CaseDetails;
 public partial class CaseDetail
 {
     public string CaseId { get; set; } = null!;
+    public int OpeningId { get; set; }
 
     public string? ContactName { get; set; }
 
@@ -62,6 +63,8 @@ public partial class CaseDetail
     public DateTime? UpdatedAt { get; set; }
 
     public virtual Case Case { get; set; } = null!;
+
+    public virtual CaseOpening CaseOpening { get; set; } = null!;
 
     public virtual OptionSetValue? ContactRelationValue { get; set; }
 

@@ -16,6 +16,7 @@ public partial class CaseHqhealthStatus
     public int CaregiverId { get; set; }
 
     public string CaseId { get; set; } = null!;
+    public int OpeningId { get; set; }
 
     public int CaregiverRoleValueId { get; set; }
 
@@ -52,4 +53,6 @@ public partial class CaseHqhealthStatus
     public virtual OptionSetValue CaregiverRoleValue { get; set; } = null!;
 
     public virtual Case Case { get; set; } = null!;
+
+    public virtual CaseOpening CaseOpening { get; set; } = null!;
 }

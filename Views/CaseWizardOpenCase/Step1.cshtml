@@ -1,61 +1,121 @@
 @model CanLove_Backend.Models.Mvc.ViewModels.CaseWizardOpenCase.CaseWizard_S1_CD_ViewModel
 
 @{
-    ViewData["Title"] = "步驟1: 個案詳細資料";
+    ViewData["Title"] = "開案記錄表";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    // 自訂麵包屑：首頁 > 個案管理 > 新增個案 > 開案記錄表
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Index", "Case") ?? string.Empty),
+        ("新增個案", Url.Action("Create", "Case") ?? string.Empty),
+        ("開案記錄表", string.Empty)
+    };
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- 頁面標題 -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1">@ViewData["Title"]</h2>
-                    <p class="text-muted mb-0">填寫個案的詳細聯絡資訊、家庭結構與背景資料</p>
-                </div>
-            </div>
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="w-full">
 
             @{
                 ViewBag.CurrentStep = 1;
                 ViewBag.CaseId = Model.CaseId;
+                var hasCaseId = !string.IsNullOrEmpty(Model.CaseId);
             }
             
-            <!-- 導航分頁和進度條 -->
-            @await Html.PartialAsync("_WizardNavigation")
+            <!-- 如果沒有選擇個案，顯示選擇個案區塊 -->
+            @if (!hasCaseId)
+            {
+                <div class="row justify-content-center mb-4">
+                    <div class="col-lg-8">
+                        <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border-0">
+                            <div class="px-6 py-4 border-b border-border">
+                                <h5 class="mb-0 text-slate-900">
+                                    <i class="bi bi-person-plus me-1"></i>請先選擇個案
+                                </h5>
+                            </div>
+                            <div class="px-6 py-6">
+                                <p class="text-slate-600 dark:text-slate-400 mb-4">請輸入個案編號、姓名或電話號碼進行搜尋</p>
+                                
+                                <!-- 搜尋輸入框 -->
+                                <div class="mb-4">
+                                    <label for="caseSearchInput" class="block text-sm text-slate-700 mb-1">搜尋個案</label>
+                                    <div class="flex">
+                                        <span class="inline-flex items-center px-3 border border-r-0 border-border rounded-l-md bg-slate-50 text-slate-500"><i class="fas fa-search"></i></span>
+                                        <input type="text" id="caseSearchInput" class="input flex-1 rounded-l-none" placeholder="請輸入個案編號、姓名或電話號碼..." autocomplete="off" />
+                                        <span id="caseSearchLoading" class="hidden items-center px-3 border border-l-0 border-border rounded-r-md"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                                    </div>
+                                </div>
 
-            <!-- 表單 -->
+                                <!-- 搜尋結果（表格樣式，對齊個案審核列表） -->
+                                <div id="caseSearchResults" class="d-none">
+                                    <div class="card bg-white rounded-xl border border-border shadow-sm">
+                                        <div class="p-3 pb-0">
+                                            <h6 class="text-slate-900 mb-2">搜尋結果</h6>
+                                        </div>
+                                        <div class="p-3 pt-0 overflow-auto">
+                                            <table class="data-table text-left w-full text-slate-900">
+                                                <thead>
+                                                    <tr class="bg-slate-50">
+                                                        <th class="text-slate-700">姓名</th>
+                                                        <th class="text-slate-700">出生日期</th>
+                                                        <th class="text-slate-700">操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="caseResultsList">
+                                                    <!-- 動態插入 -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 移除多餘提示，保持乾淨介面 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            <!-- 導航分頁和進度條（只在有 caseId 時顯示） -->
+            @if (hasCaseId)
+            {
+                @await Html.PartialAsync("~/Views/CaseWizardOpenCase/_WizardNavigation.cshtml")
+            }
+
+            <!-- 表單（只在有 caseId 時顯示） -->
+            @if (hasCaseId)
+            {
             <form asp-action="Step1" method="post" class="needs-validation" novalidate>
                 <div class="row justify-content-center">
                     <div class="col-lg-10">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-light">
-                                <h5 class="card-title mb-0">
+                        <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border border-border">
+                            <div class="px-6 py-6 border-b border-border">
+                                <h3 class="text-xl font-semibold leading-tight mb-0 text-slate-900">
                                     <i class="fas fa-user-friends me-2"></i>個案詳細資料
-                                </h5>
+                                </h3>
                             </div>
-                            <div class="card-body">
+                            <div class="px-6 py-6">
                                 <!-- 隱藏欄位 -->
                                 <input asp-for="CaseId" type="hidden" />
 
                                 <!-- 聯絡人資訊 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-phone me-2"></i>聯絡人資訊
                                         </h6>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="ContactName" class="form-label">聯絡人姓名 <small class="text-muted d-block">contact_name（可空，NVARCHAR(20)）</small></label>
-                                            <input asp-for="ContactName" class="form-control" placeholder="請輸入聯絡人姓名" />
-                                            <span asp-validation-for="ContactName" class="text-danger"></span>
+                                            <label asp-for="ContactName" class="block text-lg font-medium mb-2 text-slate-900">聯絡人姓名 <small class="block text-slate-500">contact_name（可空，NVARCHAR(20)）</small></label>
+                                            <input asp-for="ContactName" class="input" placeholder="請輸入聯絡人姓名" />
+                                            <span asp-validation-for="ContactName" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="ContactRelationValueId" class="form-label">與案主關係 <small class="text-muted d-block">contact_relation_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
-                                            <select asp-for="ContactRelationValueId" class="form-select">
+                                            <label asp-for="ContactRelationValueId" class="block text-lg font-medium mb-2 text-slate-900">與案主關係 <small class="block text-slate-500">contact_relation_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
+                                            <select asp-for="ContactRelationValueId" class="input">
                                                 <option value="">請選擇關係</option>
                                                 @if (Model.ContactRelationOptions != null)
                                                 {
@@ -65,21 +125,21 @@
                                                     }
                                                 }
                                             </select>
-                                            <span asp-validation-for="ContactRelationValueId" class="text-danger"></span>
+                                            <span asp-validation-for="ContactRelationValueId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="ContactPhone" class="form-label">聯絡人電話 <small class="text-muted d-block">contact_phone（可空，NVARCHAR(15)）</small></label>
-                                            <input asp-for="ContactPhone" class="form-control" placeholder="請輸入聯絡人電話" />
-                                            <span asp-validation-for="ContactPhone" class="text-danger"></span>
+                                            <label asp-for="ContactPhone" class="block text-lg font-medium mb-2 text-slate-900">聯絡人電話 <small class="block text-slate-500">contact_phone（可空，NVARCHAR(15)）</small></label>
+                                            <input asp-for="ContactPhone" class="input" placeholder="請輸入聯絡人電話" />
+                                            <span asp-validation-for="ContactPhone" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="HomePhone" class="form-label">住家電話 <small class="text-muted d-block">home_phone（可空，NVARCHAR(15)）</small></label>
-                                            <input asp-for="HomePhone" class="form-control" placeholder="請輸入住家電話" />
-                                            <span asp-validation-for="HomePhone" class="text-danger"></span>
+                                            <label asp-for="HomePhone" class="block text-lg font-medium mb-2 text-slate-900">住家電話 <small class="block text-slate-500">home_phone（可空，NVARCHAR(15)）</small></label>
+                                            <input asp-for="HomePhone" class="input" placeholder="請輸入住家電話" />
+                                            <span asp-validation-for="HomePhone" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -87,14 +147,14 @@
                                 <!-- 家庭結構 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-home me-2"></i>家庭結構
                                         </h6>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="FamilyStructureTypeId" class="form-label">家庭結構類型 <small class="text-muted d-block">family_structure_type_id（可空，外鍵 FamilyStructureTypes.family_structure_type_id）</small></label>
-                                            <select asp-for="FamilyStructureTypeId" class="form-select" id="familyStructureSelect">
+                                            <label asp-for="FamilyStructureTypeId" class="block text-lg font-medium mb-2 text-slate-900">家庭結構類型 <small class="block text-slate-500">family_structure_type_id（可空，外鍵 FamilyStructureTypes.family_structure_type_id）</small></label>
+                                            <select asp-for="FamilyStructureTypeId" class="input" id="familyStructureSelect">
                                                 <option value="">請選擇家庭結構類型</option>
                                                 @if (Model.FamilyStructureTypeOptions != null)
                                                 {
@@ -104,14 +164,14 @@
                                                     }
                                                 }
                                             </select>
-                                            <span asp-validation-for="FamilyStructureTypeId" class="text-danger"></span>
+                                            <span asp-validation-for="FamilyStructureTypeId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="FamilyStructureOtherDesc" class="form-label">其他結構描述 <small class="text-muted d-block">family_structure_other_desc（可空，NVARCHAR(100)）</small></label>
-                                            <input asp-for="FamilyStructureOtherDesc" class="form-control" placeholder="請描述其他家庭結構類型" />
-                                            <span asp-validation-for="FamilyStructureOtherDesc" class="text-danger"></span>
+                                            <label asp-for="FamilyStructureOtherDesc" class="block text-lg font-medium mb-2 text-slate-900">其他結構描述 <small class="block text-slate-500">family_structure_other_desc（可空，NVARCHAR(100)）</small></label>
+                                            <input asp-for="FamilyStructureOtherDesc" class="input" placeholder="請描述其他家庭結構類型" />
+                                            <span asp-validation-for="FamilyStructureOtherDesc" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -119,14 +179,14 @@
                                 <!-- 父母國籍 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-globe me-2"></i>父母國籍
                                         </h6>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="ParentNationFatherId" class="form-label">父親國籍 <small class="text-muted d-block">parent_nation_father_id（可空，外鍵 Nationalities.nationality_id）</small></label>
-                                            <select asp-for="ParentNationFatherId" class="form-select">
+                                            <label asp-for="ParentNationFatherId" class="block text-lg font-medium mb-2 text-slate-900">父親國籍 <small class="block text-slate-500">parent_nation_father_id（可空，外鍵 Nationalities.nationality_id）</small></label>
+                                            <select asp-for="ParentNationFatherId" class="input">
                                                 <option value="">請選擇父親國籍</option>
                                                 @if (Model.NationalityOptions != null)
                                                 {
@@ -136,13 +196,13 @@
                                                     }
                                                 }
                                             </select>
-                                            <span asp-validation-for="ParentNationFatherId" class="text-danger"></span>
+                                            <span asp-validation-for="ParentNationFatherId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="ParentNationMotherId" class="form-label">母親國籍 <small class="text-muted d-block">parent_nation_mother_id（可空，外鍵 Nationalities.nationality_id）</small></label>
-                                            <select asp-for="ParentNationMotherId" class="form-select">
+                                            <label asp-for="ParentNationMotherId" class="block text-lg font-medium mb-2 text-slate-900">母親國籍 <small class="block text-slate-500">parent_nation_mother_id（可空，外鍵 Nationalities.nationality_id）</small></label>
+                                            <select asp-for="ParentNationMotherId" class="input">
                                                 <option value="">請選擇母親國籍</option>
                                                 @if (Model.NationalityOptions != null)
                                                 {
@@ -152,7 +212,7 @@
                                                     }
                                                 }
                                             </select>
-                                            <span asp-validation-for="ParentNationMotherId" class="text-danger"></span>
+                                            <span asp-validation-for="ParentNationMotherId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -160,51 +220,51 @@
                                 <!-- 主要照顧者資訊 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-user-tie me-2"></i>主要照顧者資訊
                                         </h6>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="MainCaregiverName" class="form-label">主要照顧者姓名 <small class="text-muted d-block">main_caregiver_name（可空，NVARCHAR(20)）</small></label>
-                                            <input asp-for="MainCaregiverName" class="form-control" placeholder="請輸入主要照顧者姓名" />
-                                            <span asp-validation-for="MainCaregiverName" class="text-danger"></span>
+                                            <label asp-for="MainCaregiverName" class="block text-lg font-medium mb-2 text-slate-900">主要照顧者姓名 <small class="block text-slate-500">main_caregiver_name（可空，NVARCHAR(20)）</small></label>
+                                            <input asp-for="MainCaregiverName" class="input" placeholder="請輸入主要照顧者姓名" />
+                                            <span asp-validation-for="MainCaregiverName" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="MainCaregiverRelationValueId" class="form-label">與案主關係 <small class="text-muted d-block">main_caregiver_relation_value_id（可空，INT）</small></label>
-                                            <select asp-for="MainCaregiverRelationValueId" class="form-select" asp-items="@(new SelectList(Model.MainCaregiverRelationOptions, "OptionValueId", "ValueName", Model.MainCaregiverRelationValueId))">
+                                            <label asp-for="MainCaregiverRelationValueId" class="block text-lg font-medium mb-2 text-slate-900">與案主關係 <small class="block text-slate-500">main_caregiver_relation_value_id（可空，INT）</small></label>
+                                            <select asp-for="MainCaregiverRelationValueId" class="input" asp-items="@(new SelectList(Model.MainCaregiverRelationOptions, "OptionValueId", "ValueName", Model.MainCaregiverRelationValueId))">
                                                 <option value="">請選擇與案主關係</option>
                                             </select>
-                                            <span asp-validation-for="MainCaregiverRelationValueId" class="text-danger"></span>
+                                            <span asp-validation-for="MainCaregiverRelationValueId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="MainCaregiverId" class="form-label">身分證字號(加密) <small class="text-muted d-block">main_caregiver_id（可空，NVARCHAR(255)）</small></label>
-                                            <input asp-for="MainCaregiverId" class="form-control" placeholder="請輸入身分證字號" />
-                                            <span asp-validation-for="MainCaregiverId" class="text-danger"></span>
+                                            <label asp-for="MainCaregiverId" class="block text-lg font-medium mb-2 text-slate-900">身分證字號(加密) <small class="block text-slate-500">main_caregiver_id（可空，NVARCHAR(255)）</small></label>
+                                            <input asp-for="MainCaregiverId" class="input" placeholder="請輸入身分證字號" />
+                                            <span asp-validation-for="MainCaregiverId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="MainCaregiverBirth" class="form-label">生日 <small class="text-muted d-block">main_caregiver_birth（可空，DATE）</small></label>
-                                            <input asp-for="MainCaregiverBirth" type="date" class="form-control" />
-                                            <span asp-validation-for="MainCaregiverBirth" class="text-danger"></span>
+                                            <label asp-for="MainCaregiverBirth" class="block text-lg font-medium mb-2 text-slate-900">生日 <small class="block text-slate-500">main_caregiver_birth（可空，DATE）</small></label>
+                                            <input asp-for="MainCaregiverBirth" type="date" class="input" />
+                                            <span asp-validation-for="MainCaregiverBirth" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="MainCaregiverJob" class="form-label">職業 <small class="text-muted d-block">main_caregiver_job（可空，NVARCHAR(30)）</small></label>
-                                            <input asp-for="MainCaregiverJob" class="form-control" placeholder="請輸入職業" />
-                                            <span asp-validation-for="MainCaregiverJob" class="text-danger"></span>
+                                            <label asp-for="MainCaregiverJob" class="block text-lg font-medium mb-2 text-slate-900">職業 <small class="block text-slate-500">main_caregiver_job（可空，NVARCHAR(30)）</small></label>
+                                            <input asp-for="MainCaregiverJob" class="input" placeholder="請輸入職業" />
+                                            <span asp-validation-for="MainCaregiverJob" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="MainCaregiverMarryStatusValueId" class="form-label">婚姻狀況 <small class="text-muted d-block">main_caregiver_marry_status_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
-                                            <select asp-for="MainCaregiverMarryStatusValueId" class="form-select">
+                                            <label asp-for="MainCaregiverMarryStatusValueId" class="block text-lg font-medium mb-2 text-slate-900">婚姻狀況 <small class="block text-slate-500">main_caregiver_marry_status_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
+                                            <select asp-for="MainCaregiverMarryStatusValueId" class="input">
                                                 <option value="">請選擇婚姻狀況</option>
                                                 @if (Model.MarryStatusOptions != null)
                                                 {
@@ -214,13 +274,13 @@
                                                     }
                                                 }
                                             </select>
-                                            <span asp-validation-for="MainCaregiverMarryStatusValueId" class="text-danger"></span>
+                                            <span asp-validation-for="MainCaregiverMarryStatusValueId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="MainCaregiverEduValueId" class="form-label">教育程度 <small class="text-muted d-block">main_caregiver_edu_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
-                                            <select asp-for="MainCaregiverEduValueId" class="form-select">
+                                            <label asp-for="MainCaregiverEduValueId" class="block text-lg font-medium mb-2 text-slate-900">教育程度 <small class="block text-slate-500">main_caregiver_edu_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
+                                            <select asp-for="MainCaregiverEduValueId" class="input">
                                                 <option value="">請選擇教育程度</option>
                                                 @if (Model.EducationLevelOptions != null)
                                                 {
@@ -230,7 +290,7 @@
                                                     }
                                                 }
                                             </select>
-                                            <span asp-validation-for="MainCaregiverEduValueId" class="text-danger"></span>
+                                            <span asp-validation-for="MainCaregiverEduValueId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -238,14 +298,14 @@
                                 <!-- 個案來源與經驗 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-info-circle me-2"></i>個案來源與經驗
                                         </h6>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="SourceValueId" class="form-label">個案來源 <small class="text-muted d-block">source_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
-                                            <select asp-for="SourceValueId" class="form-select">
+                                            <label asp-for="SourceValueId" class="block text-lg font-medium mb-2 text-slate-900">個案來源 <small class="block text-slate-500">source_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
+                                            <select asp-for="SourceValueId" class="input">
                                                 <option value="">請選擇個案來源</option>
                                                 @if (Model.SourceOptions != null)
                                                 {
@@ -255,13 +315,13 @@
                                                     }
                                                 }
                                             </select>
-                                            <span asp-validation-for="SourceValueId" class="text-danger"></span>
+                                            <span asp-validation-for="SourceValueId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="HelpExperienceValueId" class="form-label">求助經驗 <small class="text-muted d-block">help_experience_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
-                                            <select asp-for="HelpExperienceValueId" class="form-select">
+                                            <label asp-for="HelpExperienceValueId" class="block text-lg font-medium mb-2 text-slate-900">求助經驗 <small class="block text-slate-500">help_experience_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
+                                            <select asp-for="HelpExperienceValueId" class="input">
                                                 <option value="">請選擇求助經驗</option>
                                                 @if (Model.HelpExperienceOptions != null)
                                                 {
@@ -271,7 +331,7 @@
                                                     }
                                                 }
                                             </select>
-                                            <span asp-validation-for="HelpExperienceValueId" class="text-danger"></span>
+                                            <span asp-validation-for="HelpExperienceValueId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -279,29 +339,29 @@
                                 <!-- 備註 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-sticky-note me-2"></i>備註
                                         </h6>
                                     </div>
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label asp-for="Note" class="form-label">備註 <small class="text-muted d-block">note（可空，NVARCHAR(1000)）</small></label>
-                                            <textarea asp-for="Note" class="form-control" rows="4" placeholder="請輸入備註資訊"></textarea>
-                                            <span asp-validation-for="Note" class="text-danger"></span>
+                                            <label asp-for="Note" class="block text-lg font-medium mb-2 text-slate-900">備註 <small class="block text-slate-500">note（可空，NVARCHAR(1000)）</small></label>
+                                            <textarea asp-for="Note" class="input" rows="4" placeholder="請輸入備註資訊"></textarea>
+                                            <span asp-validation-for="Note" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- 按鈕區域 -->
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                                    <a asp-action="Start" asp-route-caseId="@Model.CaseId" class="btn btn-outline-secondary me-md-2">
+                                <div class="mt-6 flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-3">
+                                    <a asp-action="Start" asp-route-caseId="@Model.CaseId" class="btn btn--secondary w-full md:w-auto">
                                         <i class="fas fa-arrow-left me-1"></i>返回上一步
                                     </a>
-                                    <div>
-                                        <button type="submit" class="btn btn-primary me-md-2">
+                                    <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                                        <button type="submit" class="btn w-full md:w-auto">
                                             <i class="fas fa-save me-1"></i>儲存並繼續
                                         </button>
-                                        <a asp-controller="Case" asp-action="Index" class="btn btn-outline-danger">
+                                        <a asp-controller="Case" asp-action="Index" class="btn btn--secondary w-full md:w-auto">
                                             <i class="fas fa-times me-1"></i>取消
                                         </a>
                                     </div>
@@ -311,11 +371,96 @@
                     </div>
                 </div>
             </form>
+            }
         </div>
     </div>
 </div>
 
 @section Scripts {
+    @if (!hasCaseId)
+    {
+    <script>
+        // 個案搜尋功能
+        (function() {
+            const searchInput = document.getElementById('caseSearchInput');
+            const searchResults = document.getElementById('caseSearchResults');
+            const resultsList = document.getElementById('caseResultsList');
+            const searchLoading = document.getElementById('caseSearchLoading');
+
+            let searchTimeout;
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+
+                // 清除之前的延遲
+                clearTimeout(searchTimeout);
+
+                // 如果輸入為空，清空並隱藏結果
+                if (query === '') {
+                    hideAll();
+                    return;
+                }
+
+                // 顯示載入中
+                searchLoading.classList.remove('d-none');
+
+                // 設定延遲搜尋（防抖，500ms）
+                searchTimeout = setTimeout(async function() {
+                    try {
+                        const response = await fetch(`/Case/SearchCases?query=${encodeURIComponent(query)}`);
+                        const data = await response.json();
+
+                        searchLoading.classList.add('d-none');
+
+                        if (data.success && data.cases && data.cases.length > 0) {
+                            displayResults(data.cases);
+                        } else {
+                            hideAll();
+                        }
+                    } catch (error) {
+                        console.error('搜尋失敗:', error);
+                        searchLoading.classList.add('d-none');
+                        hideAll();
+                        alert('搜尋時發生錯誤，請稍後再試');
+                    }
+                }, 500);
+            });
+
+            function displayResults(cases) {
+                hideAll();
+                searchResults.classList.remove('d-none');
+
+                // 表格列渲染：姓名 / 出生日期 / 操作
+                resultsList.innerHTML = cases.map(c => `
+                    <tr class="border-b border-border">
+                        <td class="text-slate-900">
+                            <span class="fw-semibold">${escapeHtml(c.name || '')}</span>
+                        </td>
+                        <td class="text-slate-900">${c.birthDate ? escapeHtml(c.birthDate) : ''}</td>
+                        <td>
+                            <a class="badge-pill bg-primary text-white" href="/CaseWizardOpenCase/Step1?caseId=${encodeURIComponent(c.caseId)}">選擇</a>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            function hideAll() {
+                searchResults.classList.add('d-none');
+                resultsList.innerHTML = '';
+            }
+
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // 初始聚焦到搜尋框
+            searchInput.focus();
+        })();
+    </script>
+    }
     <script>
         // 表單驗證
         (function() {

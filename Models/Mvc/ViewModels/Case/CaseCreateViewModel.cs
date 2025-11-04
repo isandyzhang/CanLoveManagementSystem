@@ -1,5 +1,6 @@
 using CanLove_Backend.Data.Models.Core;
 using CanLove_Backend.Data.Models.Options;
+using Microsoft.AspNetCore.Http;
 
 namespace CanLove_Backend.Models.Mvc.ViewModels;
 
@@ -12,6 +13,11 @@ namespace CanLove_Backend.Models.Mvc.ViewModels;
         /// 個案資料
         /// </summary>
         public Case Case { get; set; } = new Case();
+
+        /// <summary>
+        /// 個案照片檔案
+        /// </summary>
+        public IFormFile? PhotoFile { get; set; }
 
         /// <summary>
         /// 城市選項

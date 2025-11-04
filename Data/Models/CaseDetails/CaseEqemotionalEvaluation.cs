@@ -14,6 +14,7 @@ namespace CanLove_Backend.Data.Models.CaseDetails;
 public partial class CaseEqemotionalEvaluation
 {
     public string CaseId { get; set; } = null!;
+    public int OpeningId { get; set; }
 
     public int? EqQ1 { get; set; }
 
@@ -40,4 +41,6 @@ public partial class CaseEqemotionalEvaluation
     public DateTime? UpdatedAt { get; set; }
 
     public virtual Case Case { get; set; } = null!;
+
+    public virtual CaseOpening CaseOpening { get; set; } = null!;
 }

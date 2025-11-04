@@ -120,4 +120,20 @@ public class OptionService
             .OrderBy(o => o)
             .ToListAsync();
     }
+
+    /// <summary>
+    /// 取得員工部門選項
+    /// </summary>
+    public async Task<List<OptionSetValue>> GetStaffDepartmentOptionsAsync()
+    {
+        return await GetOptionsByKeyAsync("STAFF_DEPARTMENT");
+    }
+
+    /// <summary>
+    /// 取得員工職稱選項
+    /// </summary>
+    public async Task<List<OptionSetValue>> GetStaffJobTitleOptionsAsync()
+    {
+        return await GetOptionsByKeyAsync("STAFF_JOB_TITLE");
+    }
 }

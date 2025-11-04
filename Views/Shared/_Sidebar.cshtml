@@ -1,92 +1,233 @@
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
-    bool isCaseSection = string.Equals(currentController, "Case", StringComparison.OrdinalIgnoreCase);
+    bool isCaseSection = string.Equals(currentController, "Case", StringComparison.OrdinalIgnoreCase) || string.Equals(currentController, "CaseWizardOpenCase", StringComparison.OrdinalIgnoreCase);
+    
+    // 輔助函數：獲取 Sidebar 項目名稱（優先使用 ViewData，否則使用預設值）
+    string GetSidebarItemName(string key, string defaultValue)
+    {
+        var viewDataKey = $"Sidebar.{key}";
+        return ViewData[viewDataKey]?.ToString() ?? defaultValue;
+    }
+    
+    // 設定預設的 Sidebar 項目名稱（可通過 ViewData 覆蓋）
+    var caseManagementName = GetSidebarItemName("CaseManagement", "個案管理");
+    var createCaseName = GetSidebarItemName("CreateCase", "新增個案");
+    var openCaseRecordName = GetSidebarItemName("OpenCaseRecord", "開案記錄表");
+    var careVisitRecordName = GetSidebarItemName("CareVisitRecord", "關懷訪視記錄表");
+    var consultationRecordName = GetSidebarItemName("ConsultationRecord", "會談服務記錄表");
+    var queryCaseName = GetSidebarItemName("QueryCase", "查詢個案");
+    var caseReviewName = GetSidebarItemName("CaseReview", "個案審核");
+    var supplyManagementName = GetSidebarItemName("SupplyManagement", "物資管理");
+    var supplyInventoryName = GetSidebarItemName("SupplyInventory", "物資清單");
+    var supplyStockInName = GetSidebarItemName("SupplyStockIn", "物資入庫");
+    var attendanceManagementName = GetSidebarItemName("AttendanceManagement", "內部考勤管理");
+    var attendanceRecordName = GetSidebarItemName("AttendanceRecord", "考勤記錄");
+    var leaveRequestName = GetSidebarItemName("LeaveRequest", "請假申請");
+    var settingsName = GetSidebarItemName("Settings", "設定");
 }
 
-<div class="sticky top-0 z-30 p-4">
-    <div class="w-full h-20 border-b flex px-4 items-center mb-8">
+<div class="sticky top-0 z-30 p-4" id="sidebar-container">
+    <div class="w-full h-20 border-b flex px-4 items-center mb-8 dark:border-slate-800" style="border-color: var(--color-border-light);">
         <a href="@Url.Action("Index","Home")" class="flex items-center gap-2" title="首頁">
             <img src="~/logo.png" alt="Logo" class="h-14 w-auto" />
             <span class="sr-only">CanLove</span>
         </a>
     </div>
-    <div class="mt-2 rounded-md bg-white">
+    <div class="mt-2 rounded-md bg-white dark:bg-slate-700">
         <details class="group">
         <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover @(isCaseSection ? "sidebar-parent--active" : string.Empty)">
                 <span class="flex items-center gap-2">
-                    <i class="bi bi-people text-slate-600"></i>
-                    <span class="text-slate-900">個案管理</span>
+                    <i class="bi bi-people text-slate-600 dark:text-slate-400"></i>
+                    <span class="text-slate-900 dark:text-slate-100">@caseManagementName</span>
                 </span>
                 <div class="flex items-center gap-2">
                     <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180"></i>
                 </div>
             </summary>
             <nav class="px-2 pb-2 mt-3 flex flex-col gap-4 sidebar-subnav">
-                <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Create","Case")">
-                    <span class="sidebar-link__label text-slate-900">新增個案</span>
-                </a>
+                @{
+                    bool isStep1 = string.Equals(currentAction, "Step1", StringComparison.OrdinalIgnoreCase) && string.Equals(currentController, "CaseWizardOpenCase", StringComparison.OrdinalIgnoreCase);
+                    bool shouldOpenSubmenu = isCaseSection && (string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) || isStep1 || string.Equals(currentAction, "CareVisitRecord", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "ConsultationRecord", StringComparison.OrdinalIgnoreCase));
+                }
+                <details class="group" @(shouldOpenSubmenu ? Html.Raw("open") : Html.Raw(""))>
+                    <summary class="sidebar-link @(isCaseSection && (string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) || isStep1 || string.Equals(currentAction, "CareVisitRecord", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "ConsultationRecord", StringComparison.OrdinalIgnoreCase)) ? "sidebar-link--active" : string.Empty) cursor-pointer list-none">
+                        <div class="flex items-center justify-between w-full">
+                            <span class="sidebar-link__label text-slate-900 dark:text-slate-100 flex-1" onclick="event.stopPropagation();">@createCaseName</span>
+                            <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180 text-slate-600 dark:text-slate-400"></i>
+                        </div>
+                    </summary>
+                    <div class="mt-2 ml-4 flex flex-col gap-2 sidebar-subnav">
+                        <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) && string.Equals(currentController, "Case", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Create","Case")">
+                            <span class="sidebar-link__label text-slate-900 dark:text-slate-100">個案基本資料</span>
+                        </a>
+                        <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Step1", StringComparison.OrdinalIgnoreCase) && string.Equals(currentController, "CaseWizardOpenCase", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Step1","CaseWizardOpenCase")">
+                            <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@openCaseRecordName</span>
+                        </a>
+                        <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "CareVisitRecord", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("CareVisitRecord","Case")">
+                            <div class="flex items-center justify-between w-full">
+                                <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@careVisitRecordName</span>
+                                <span class="badge-pill">尚未開發</span>
+                            </div>
+                        </a>
+                        <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "ConsultationRecord", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("ConsultationRecord","Case")">
+                            <div class="flex items-center justify-between w-full">
+                                <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@consultationRecordName</span>
+                                <span class="badge-pill">尚未開發</span>
+                            </div>
+                        </a>
+                    </div>
+                </details>
                 <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Index","Case")">
-                    <span class="sidebar-link__label text-slate-900">查詢個案</span>
+                    <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@queryCaseName</span>
+                </a>
+                <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Review", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Review","Case")">
+                    <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@caseReviewName</span>
                 </a>
             </nav>
         </details>
     </div>
     
-    <div class="mt-2 rounded-md bg-white">
+    <div class="mt-2 rounded-md bg-white dark:bg-slate-700">
         <details class="group">
             <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover">
                 <span class="flex items-center gap-2">
-                    <i class="bi bi-box-seam text-slate-600"></i>
-                    <span class="text-slate-900">物資管理</span>
+                    <i class="bi bi-box-seam text-slate-600 dark:text-slate-400"></i>
+                    <span class="text-slate-900 dark:text-slate-100">@supplyManagementName</span>
                 </span>
                 <div class="flex items-center gap-2">
                     <span class="badge-pill">尚未開發</span>
-                    <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180"></i>
+                    <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180 text-slate-600 dark:text-slate-400"></i>
                 </div>
             </summary>
             <nav class="px-2 pb-2 mt-3 flex flex-col gap-4 sidebar-subnav">
-                <a class="sidebar-link" href="#">
-                    <span class="sidebar-link__label text-slate-900">物資清單</span>
+                <a class="sidebar-link" href="@Url.Action("Inventory", "Supply")">
+                    <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@supplyInventoryName</span>
                 </a>
-                <a class="sidebar-link" href="#">
-                    <span class="sidebar-link__label text-slate-900">物資入庫</span>
+                <a class="sidebar-link" href="@Url.Action("StockIn", "Supply")">
+                    <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@supplyStockInName</span>
                 </a>
             </nav>
         </details>
     </div>
     
-    <div class="mt-2 rounded-md bg-white">
+    <div class="mt-2 rounded-md bg-white dark:bg-slate-700">
+        <a class="sidebar-link w-full" href="@Url.Action("Index", "Staff")">
+            <span class="sidebar-link__label text-slate-900 dark:text-slate-100">
+                <i class="bi bi-person-badge text-slate-600 dark:text-slate-400"></i>
+                <span>員工管理</span>
+            </span>
+        </a>
+    </div>
+
+    <div class="mt-2 rounded-md bg-white dark:bg-slate-700">
         <details class="group">
             <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover">
                 <span class="flex items-center gap-2">
-                    <i class="bi bi-calendar-check text-slate-600"></i>
-                    <span class="text-slate-900">內部考勤管理</span>
+                    <i class="bi bi-calendar-check text-slate-600 dark:text-slate-400"></i>
+                    <span class="text-slate-900 dark:text-slate-100">@attendanceManagementName</span>
                 </span>
                 <div class="flex items-center gap-2">
                     <span class="badge-pill">尚未開發</span>
-                    <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180"></i>
+                    <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180 text-slate-600 dark:text-slate-400"></i>
                 </div>
             </summary>
             <nav class="px-2 pb-2 mt-3 flex flex-col gap-4 sidebar-subnav">
-                <a class="sidebar-link" href="#">
-                    <span class="sidebar-link__label text-slate-900">考勤記錄</span>
+                <a class="sidebar-link" href="@Url.Action("Record", "Attendance")">
+                    <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@attendanceRecordName</span>
                 </a>
-                <a class="sidebar-link" href="#">
-                    <span class="sidebar-link__label text-slate-900">請假申請</span>
+                <a class="sidebar-link" href="@Url.Action("LeaveRequest", "Attendance")">
+                    <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@leaveRequestName</span>
                 </a>
             </nav>
         </details>
     </div>
     
-    <div class="mt-2 rounded-md bg-white">
-        <a class="sidebar-link w-full" href="#">
-            <span class="sidebar-link__label text-slate-900">
-                <i class="bi bi-gear text-slate-600"></i>
-                <span>設定</span>
+    <div class="mt-2 rounded-md bg-white dark:bg-slate-700">
+        <a class="sidebar-link w-full" href="@Url.Action("Index", "Settings")">
+            <span class="sidebar-link__label text-slate-900 dark:text-slate-100">
+                <i class="bi bi-gear text-slate-600 dark:text-slate-400"></i>
+                <span>@settingsName</span>
             </span>
         </a>
     </div>
 </div>
+
+<script>
+    (function() {
+        'use strict';
+        
+        // Sidebar 状态保持功能
+        const sidebarContainer = document.getElementById('sidebar-container');
+        if (!sidebarContainer) return;
+        
+        const STORAGE_KEY = 'sidebar-state';
+        
+        // 保存状态到 localStorage
+        function saveSidebarState() {
+            try {
+                const details = sidebarContainer.querySelectorAll('details');
+                const state = {};
+                details.forEach((detail, index) => {
+                    state[index] = detail.hasAttribute('open');
+                });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.warn('无法保存 sidebar 状态:', e);
+            }
+        }
+        
+        // 恢复状态从 localStorage
+        function restoreSidebarState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
+                
+                const state = JSON.parse(saved);
+                const details = sidebarContainer.querySelectorAll('details');
+                details.forEach((detail, index) => {
+                    if (state[index] === true) {
+                        detail.setAttribute('open', '');
+                    } else {
+                        detail.removeAttribute('open');
+                    }
+                });
+            } catch (e) {
+                console.warn('无法恢复 sidebar 状态:', e);
+            }
+        }
+        
+        // 监听 details 元素的变化
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'open') {
+                    saveSidebarState();
+                }
+            });
+        });
+        
+        // 观察所有 details 元素
+        const details = sidebarContainer.querySelectorAll('details');
+        details.forEach(function(detail) {
+            observer.observe(detail, {
+                attributes: true,
+                attributeFilter: ['open']
+            });
+        });
+        
+        // 页面加载时恢复状态
+        restoreSidebarState();
+        
+        // 确保当前活跃的菜单项所在的父菜单是展开的
+        const activeLink = sidebarContainer.querySelector('.sidebar-link--active');
+        if (activeLink) {
+            let parent = activeLink.closest('details');
+            while (parent) {
+                parent.setAttribute('open', '');
+                parent = parent.parentElement?.closest('details');
+            }
+        }
+    })();
+</script>
 
 

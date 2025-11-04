@@ -14,6 +14,7 @@ namespace CanLove_Backend.Data.Models.CaseDetails;
 public partial class CaseIqacademicPerformance
 {
     public string CaseId { get; set; } = null!;
+    public int OpeningId { get; set; }
 
     public string? AcademicPerformanceSummary { get; set; }
 
@@ -28,4 +29,6 @@ public partial class CaseIqacademicPerformance
     public DateTime? UpdatedAt { get; set; }
 
     public virtual Case Case { get; set; } = null!;
+
+    public virtual CaseOpening CaseOpening { get; set; } = null!;
 }

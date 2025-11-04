@@ -5,9 +5,9 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="w-full">
             <!-- 頁面標題 -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -22,19 +22,19 @@
             }
             
             <!-- 導航分頁和進度條 -->
-            @await Html.PartialAsync("_WizardNavigation")
+            @await Html.PartialAsync("~/Views/CaseWizardOpenCase/_WizardNavigation.cshtml")
 
             <!-- 表單 -->
             <form asp-action="Step4" method="post" class="needs-validation" novalidate>
                 <div class="row justify-content-center">
                     <div class="col-lg-10">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-light">
-                                <h5 class="card-title mb-0">
+                        <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border-0">
+                            <div class="px-6 py-6 border-b border-border">
+                                <h3 class="text-xl font-semibold leading-tight mb-0 text-slate-900">
                                     <i class="fas fa-heartbeat me-2"></i>健康狀況評估
-                                </h5>
+                                </h3>
                             </div>
-                            <div class="card-body">
+                            <div class="px-6 py-6">
                                 <!-- 隱藏欄位 -->
                                 <input asp-for="CaseId" type="hidden" />
                                 <input asp-for="CaregiverId" type="hidden" />
@@ -42,14 +42,14 @@
                                 <!-- 照顧者基本資訊 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-user me-2"></i>照顧者基本資訊
                                         </h6>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="CaregiverRoleValueId" class="form-label">照顧者角色 <small class="text-muted d-block">caregiver_role_value_id（必填，外鍵 OptionSetValues.value_id）</small></label>
-                                            <select asp-for="CaregiverRoleValueId" class="form-select" required>
+                                            <label asp-for="CaregiverRoleValueId" class="block text-lg font-medium mb-2 text-slate-900">照顧者角色 <small class="block text-slate-500">caregiver_role_value_id（必填，外鍵 OptionSetValues.value_id）</small></label>
+                                            <select asp-for="CaregiverRoleValueId" class="input" required>
                                                 <option value="">請選擇照顧者角色</option>
                                                 @if (Model.CaregiverRoleOptions != null)
                                                 {
@@ -59,25 +59,25 @@
                                                     }
                                                 }
                                             </select>
-                                            <span asp-validation-for="CaregiverRoleValueId" class="text-danger"></span>
+                                            <span asp-validation-for="CaregiverRoleValueId" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="CaregiverName" class="form-label">照顧者姓名 <small class="text-muted d-block">caregiver_name（可空，NVARCHAR(50)）</small></label>
-                                            <input asp-for="CaregiverName" class="form-control" placeholder="請輸入照顧者姓名" />
-                                            <span asp-validation-for="CaregiverName" class="text-danger"></span>
+                                            <label asp-for="CaregiverName" class="block text-lg font-medium mb-2 text-slate-900">照顧者姓名 <small class="block text-slate-500">caregiver_name（可空，NVARCHAR(50)）</small></label>
+                                            <input asp-for="CaregiverName" class="input" placeholder="請輸入照顧者姓名" />
+                                            <span asp-validation-for="CaregiverName" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="IsPrimary" class="form-label">是否主要照顧者 <small class="text-muted d-block">is_primary（可空，BIT）</small></label>
-                                            <select asp-for="IsPrimary" class="form-select">
+                                            <label asp-for="IsPrimary" class="block text-lg font-medium mb-2 text-slate-900">是否主要照顧者 <small class="block text-slate-500">is_primary（可空，BIT）</small></label>
+                                            <select asp-for="IsPrimary" class="input">
                                                 <option value="">請選擇</option>
                                                 <option value="true">是</option>
                                                 <option value="false">否</option>
                                             </select>
-                                            <span asp-validation-for="IsPrimary" class="text-danger"></span>
+                                            <span asp-validation-for="IsPrimary" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -85,48 +85,48 @@
                                 <!-- 照顧者健康評估 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-user-md me-2"></i>照顧者健康評估
                                         </h6>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="EmotionalExpressionRating" class="form-label">情緒表現分數 <small class="text-muted d-block">emotional_expression_rating（可空，TINYINT 1-4）</small></label>
-                                            <select asp-for="EmotionalExpressionRating" class="form-select">
+                                            <label asp-for="EmotionalExpressionRating" class="block text-lg font-medium mb-2 text-slate-900">情緒表現分數 <small class="block text-slate-500">emotional_expression_rating（可空，TINYINT 1-4）</small></label>
+                                            <select asp-for="EmotionalExpressionRating" class="input">
                                                 <option value="">請選擇分數</option>
                                                 <option value="1">1分 - 非常不穩定</option>
                                                 <option value="2">2分 - 不穩定</option>
                                                 <option value="3">3分 - 穩定</option>
                                                 <option value="4">4分 - 非常穩定</option>
                                             </select>
-                                            <span asp-validation-for="EmotionalExpressionRating" class="text-danger"></span>
+                                            <span asp-validation-for="EmotionalExpressionRating" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="EmotionalExpressionNote" class="form-label">情緒表現說明 <small class="text-muted d-block">emotional_expression_note（可空，NVARCHAR(50)）</small></label>
-                                            <input asp-for="EmotionalExpressionNote" class="form-control" placeholder="請輸入情緒表現說明" />
-                                            <span asp-validation-for="EmotionalExpressionNote" class="text-danger"></span>
+                                            <label asp-for="EmotionalExpressionNote" class="block text-lg font-medium mb-2 text-slate-900">情緒表現說明 <small class="block text-slate-500">emotional_expression_note（可空，NVARCHAR(50)）</small></label>
+                                            <input asp-for="EmotionalExpressionNote" class="input" placeholder="請輸入情緒表現說明" />
+                                            <span asp-validation-for="EmotionalExpressionNote" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="HealthStatusRating" class="form-label">身體健康分數 <small class="text-muted d-block">health_status_rating（可空，TINYINT 1-4）</small></label>
-                                            <select asp-for="HealthStatusRating" class="form-select">
+                                            <label asp-for="HealthStatusRating" class="block text-lg font-medium mb-2 text-slate-900">身體健康分數 <small class="block text-slate-500">health_status_rating（可空，TINYINT 1-4）</small></label>
+                                            <select asp-for="HealthStatusRating" class="input">
                                                 <option value="">請選擇分數</option>
                                                 <option value="1">1分 - 非常差</option>
                                                 <option value="2">2分 - 差</option>
                                                 <option value="3">3分 - 好</option>
                                                 <option value="4">4分 - 非常好</option>
                                             </select>
-                                            <span asp-validation-for="HealthStatusRating" class="text-danger"></span>
+                                            <span asp-validation-for="HealthStatusRating" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="HealthStatusNote" class="form-label">身體健康說明 <small class="text-muted d-block">health_status_note（可空，NVARCHAR(50)）</small></label>
-                                            <input asp-for="HealthStatusNote" class="form-control" placeholder="請輸入身體健康說明" />
-                                            <span asp-validation-for="HealthStatusNote" class="text-danger"></span>
+                                            <label asp-for="HealthStatusNote" class="block text-lg font-medium mb-2 text-slate-900">身體健康說明 <small class="block text-slate-500">health_status_note（可空，NVARCHAR(50)）</small></label>
+                                            <input asp-for="HealthStatusNote" class="input" placeholder="請輸入身體健康說明" />
+                                            <span asp-validation-for="HealthStatusNote" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -134,62 +134,62 @@
                                 <!-- 兒少健康評估 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-child me-2"></i>兒少健康評估
                                         </h6>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="ChildHealthStatusRating" class="form-label">兒少健康狀態分數 <small class="text-muted d-block">child_health_status_rating（可空，TINYINT 1-4）</small></label>
-                                            <select asp-for="ChildHealthStatusRating" class="form-select">
+                                            <label asp-for="ChildHealthStatusRating" class="block text-lg font-medium mb-2 text-slate-900">兒少健康狀態分數 <small class="block text-slate-500">child_health_status_rating（可空，TINYINT 1-4）</small></label>
+                                            <select asp-for="ChildHealthStatusRating" class="input">
                                                 <option value="">請選擇分數</option>
                                                 <option value="1">1分 - 非常差</option>
                                                 <option value="2">2分 - 差</option>
                                                 <option value="3">3分 - 好</option>
                                                 <option value="4">4分 - 非常好</option>
                                             </select>
-                                            <span asp-validation-for="ChildHealthStatusRating" class="text-danger"></span>
+                                            <span asp-validation-for="ChildHealthStatusRating" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="ChildHealthStatusNote" class="form-label">兒少健康狀態說明 <small class="text-muted d-block">child_health_status_note（可空，NVARCHAR(50)）</small></label>
-                                            <input asp-for="ChildHealthStatusNote" class="form-control" placeholder="請輸入兒少健康狀態說明" />
-                                            <span asp-validation-for="ChildHealthStatusNote" class="text-danger"></span>
+                                            <label asp-for="ChildHealthStatusNote" class="block text-lg font-medium mb-2 text-slate-900">兒少健康狀態說明 <small class="block text-slate-500">child_health_status_note（可空，NVARCHAR(50)）</small></label>
+                                            <input asp-for="ChildHealthStatusNote" class="input" placeholder="請輸入兒少健康狀態說明" />
+                                            <span asp-validation-for="ChildHealthStatusNote" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="ChildCareStatusRating" class="form-label">兒少受照顧狀態分數 <small class="text-muted d-block">child_care_status_rating（可空，TINYINT 1-4）</small></label>
-                                            <select asp-for="ChildCareStatusRating" class="form-select">
+                                            <label asp-for="ChildCareStatusRating" class="block text-lg font-medium mb-2 text-slate-900">兒少受照顧狀態分數 <small class="block text-slate-500">child_care_status_rating（可空，TINYINT 1-4）</small></label>
+                                            <select asp-for="ChildCareStatusRating" class="input">
                                                 <option value="">請選擇分數</option>
                                                 <option value="1">1分 - 非常差</option>
                                                 <option value="2">2分 - 差</option>
                                                 <option value="3">3分 - 好</option>
                                                 <option value="4">4分 - 非常好</option>
                                             </select>
-                                            <span asp-validation-for="ChildCareStatusRating" class="text-danger"></span>
+                                            <span asp-validation-for="ChildCareStatusRating" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label asp-for="ChildCareStatusNote" class="form-label">兒少受照顧狀態說明 <small class="text-muted d-block">child_care_status_note（可空，NVARCHAR(50)）</small></label>
-                                            <input asp-for="ChildCareStatusNote" class="form-control" placeholder="請輸入兒少受照顧狀態說明" />
-                                            <span asp-validation-for="ChildCareStatusNote" class="text-danger"></span>
+                                            <label asp-for="ChildCareStatusNote" class="block text-lg font-medium mb-2 text-slate-900">兒少受照顧狀態說明 <small class="block text-slate-500">child_care_status_note（可空，NVARCHAR(50)）</small></label>
+                                            <input asp-for="ChildCareStatusNote" class="input" placeholder="請輸入兒少受照顧狀態說明" />
+                                            <span asp-validation-for="ChildCareStatusNote" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- 按鈕區域 -->
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                                    <a asp-action="Step3" asp-route-caseId="@Model.CaseId" class="btn btn-outline-secondary me-md-2">
+                                <div class="mt-6 flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-3">
+                                    <a asp-action="Step3" asp-route-caseId="@Model.CaseId" class="btn btn--secondary w-full md:w-auto">
                                         <i class="fas fa-arrow-left me-1"></i>返回上一步
                                     </a>
-                                    <div>
-                                        <button type="submit" class="btn btn-primary me-md-2">
+                                    <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                                        <button type="submit" class="btn w-full md:w-auto">
                                             <i class="fas fa-save me-1"></i>儲存並繼續
                                         </button>
-                                        <a asp-controller="Case" asp-action="Index" class="btn btn-outline-danger">
+                                        <a asp-controller="Case" asp-action="Index" class="btn btn--secondary w-full md:w-auto">
                                             <i class="fas fa-times me-1"></i>取消
                                         </a>
                                     </div>

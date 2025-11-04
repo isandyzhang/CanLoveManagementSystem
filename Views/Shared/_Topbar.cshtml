@@ -1,39 +1,113 @@
 @{
     var userName = User?.FindFirst("name")?.Value ?? User?.Identity?.Name ?? "使用者";
 }
-<header class="sticky top-0 z-40 border-b border-border bg-white text-slate-900">
-    <div class="w-full h-20 px-6 flex items-center justify-end gap-4">
-        <button class="relative p-2 rounded-md hover:bg-muted text-slate-600" title="Settings">
-            <i class="bi bi-gear"></i>
-        </button>
-        <button class="relative p-2 rounded-md hover:bg-muted text-slate-600" title="Calendar">
-            <i class="bi bi-calendar"></i>
-        </button>
-        <button class="relative p-2 rounded-md hover:bg-muted text-slate-600" title="Notifications">
-            <i class="bi bi-bell"></i>
-            <span class="absolute -top-0.5 -right-0.5 h-2 w-2 bg-red-500 rounded-full"></span>
-        </button>
-        <button class="relative p-2 rounded-md hover:bg-muted text-slate-600" title="Messages">
-            <i class="bi bi-envelope"></i>
-            <span class="absolute -top-0.5 -right-0.5 h-2 w-2 bg-red-500 rounded-full"></span>
-        </button>
+<header class="sticky top-0 z-40 border-b border-border bg-white dark:bg-slate-900 dark:border-slate-800">
+    <div class="w-full h-20 px-6 flex items-center justify-end">
+        <!-- 右側：明亮切換、通知和用戶資料 -->
+        <div class="flex items-center gap-4">
+            <!-- 明亮切換按鈕 -->
+            <button 
+                id="theme-toggle" 
+                class="relative w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 transition-colors" 
+                title="切換日夜模式"
+                aria-label="切換日夜模式">
+                <i id="theme-icon" class="bi bi-sun text-lg"></i>
+            </button>
+            <!-- 通知按鈕 -->
+            <button 
+                class="relative w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 transition-colors"
+                title="通知"
+                aria-label="通知">
+                <i class="bi bi-bell text-lg"></i>
+                <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+            </button>
 
-        <details class="relative">
-            <summary class="list-none flex items-center gap-3 cursor-pointer select-none">
-                <div class="flex flex-col items-end leading-tight">
-                    <span class="text-sm font-medium">@userName</span>
+            <!-- 用戶資料區 -->
+            <details class="relative">
+                <summary class="list-none flex items-center gap-3 cursor-pointer select-none hover:opacity-80 transition-opacity">
+                    <!-- Mock 大頭貼 -->
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-lg">
+                        <span>@(userName.Length > 0 ? userName.Substring(0, 1).ToUpper() : "U")</span>
+                    </div>
+                    <!-- 用戶名 -->
+                    <span class="text-sm font-medium text-slate-900 dark:text-slate-100">@userName</span>
+                    <!-- 下拉箭頭 -->
+                    <i class="bi bi-chevron-down text-slate-500 dark:text-slate-400 text-xs"></i>
+                </summary>
+                <!-- 下拉選單 -->
+                <div class="absolute right-0 mt-3 w-64 rounded-lg border border-border dark:border-slate-800 bg-white dark:bg-slate-900 shadow-card-lg overflow-hidden z-50">
+                    <div class="px-4 py-3 border-b border-border dark:border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-lg">
+                                <span>@(userName.Length > 0 ? userName.Substring(0, 1).ToUpper() : "U")</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-slate-900 dark:text-slate-100">@userName</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">使用者</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 transition-colors" href="#">
+                        <i class="bi bi-person text-slate-600 dark:text-slate-400"></i>
+                        <span>我的資料</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 transition-colors" href="#">
+                        <i class="bi bi-gear text-slate-600 dark:text-slate-400"></i>
+                        <span>帳戶設定</span>
+                    </a>
+                    <div class="border-t border-border dark:border-slate-800"></div>
+                    <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted dark:hover:bg-slate-800 text-red-600 dark:text-red-400 transition-colors" href="@Url.Action("SignOut","Account")">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>登出</span>
+                    </a>
                 </div>
-                <i class="bi bi-chevron-down text-slate-500"></i>
-            </summary>
-            <div class="absolute right-0 mt-3 w-64 rounded-lg border border-border bg-background shadow-card overflow-hidden">
-                <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted" href="#"><i class="bi bi-person"></i><span>My Profile</span></a>
-                <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted" href="#"><i class="bi bi-journal-bookmark"></i><span>My Contacts</span></a>
-                <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted" href="#"><i class="bi bi-gear"></i><span>Account Settings</span></a>
-                <div class="border-t border-border"></div>
-                <a class="flex items-center gap-3 px-4 py-3 hover:bg-muted text-red-600" href="@Url.Action("SignOut","Account")"><i class="bi bi-box-arrow-right"></i><span>Log Out</span></a>
-            </div>
-        </details>
+            </details>
+        </div>
     </div>
 </header>
+
+<script>
+    (function() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const root = document.documentElement;
+
+        // 更新圖標和主題
+        function updateTheme(isDark) {
+            if (isDark) {
+                root.classList.add('dark');
+                themeIcon.className = 'bi bi-moon';
+            } else {
+                root.classList.remove('dark');
+                themeIcon.className = 'bi bi-sun';
+            }
+        }
+
+        // 初始化圖標
+        function initThemeIcon() {
+            const isDark = root.classList.contains('dark');
+            updateTheme(isDark);
+        }
+
+        // 切換主題
+        themeToggle.addEventListener('click', function() {
+            const isDark = root.classList.contains('dark');
+            const newTheme = isDark ? 'light' : 'dark';
+            
+            // 更新 localStorage
+            try {
+                localStorage.setItem('theme', newTheme);
+            } catch (e) {
+                console.warn('無法保存主題設定:', e);
+            }
+            
+            // 更新 UI
+            updateTheme(!isDark);
+        });
+
+        // 頁面載入時初始化圖標
+        initThemeIcon();
+    })();
+</script>
 
 

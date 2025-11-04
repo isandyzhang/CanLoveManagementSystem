@@ -1,0 +1,90 @@
+@{
+    // 檢查是否有自定義麵包屑（優先使用）
+    var customBreadcrumbs = ViewData["Breadcrumbs"] as List<(string Text, string Url)>;
+    
+    // 建立麵包屑列表
+    var breadcrumbs = new List<(string Text, string Url, bool IsActive)>();
+    
+    if (customBreadcrumbs != null && customBreadcrumbs.Any())
+    {
+        // 使用自定義麵包屑
+        for (int i = 0; i < customBreadcrumbs.Count; i++)
+        {
+            var isLast = i == customBreadcrumbs.Count - 1;
+            breadcrumbs.Add((customBreadcrumbs[i].Text, customBreadcrumbs[i].Url, isLast));
+        }
+    }
+    else
+    {
+        // 動態生成麵包屑
+        var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+        var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+        var currentTitle = ViewData["Title"]?.ToString() ?? "";
+        
+        // 獲取父級名稱和 URL（如果設置了）
+        var parentName = ViewData["BreadcrumbParent"]?.ToString();
+        var parentUrl = ViewData["BreadcrumbParentUrl"]?.ToString();
+        
+        // 如果是首頁，不顯示麵包屑
+        if (controller == "Home" && action == "Index" && string.IsNullOrEmpty(parentName))
+        {
+            // 不顯示麵包屑
+        }
+        else
+        {
+            // 如果有父級，添加父級
+            if (!string.IsNullOrEmpty(parentName))
+            {
+                var parentUrlValue = !string.IsNullOrEmpty(parentUrl) 
+                    ? parentUrl 
+                    : (Url.Action("Index", controller) ?? "");
+                breadcrumbs.Add((parentName, parentUrlValue, false));
+            }
+            
+            // 添加當前頁面（使用 Title）
+            if (!string.IsNullOrEmpty(currentTitle) && currentTitle != "首頁")
+            {
+                // 如果有父級，當前頁面是子頁面；如果沒有父級且是 Index，當前頁面是列表頁
+                var isCurrentPage = action != "Index" || !string.IsNullOrEmpty(parentName);
+                breadcrumbs.Add((currentTitle, "", isCurrentPage));
+            }
+        }
+    }
+}
+
+@if (breadcrumbs.Count >= 1)
+{
+    <nav class="border-b border-border dark:border-slate-800 bg-white dark:bg-slate-900" aria-label="麵包屑導航">
+        <div class="px-6 py-3">
+            <ol class="flex items-center gap-2 text-base">
+                <!-- 固定首頁圖示 -->
+                <li class="flex items-center gap-2">
+                    <a href="@Url.Action("Index", "Home")" class="text-slate-900 dark:text-slate-100 hover:text-primary dark:hover:text-primary transition-colors" title="首頁">
+                        <i class="bi bi-house"></i>
+                    </a>
+                </li>
+                @for (int i = 0; i < breadcrumbs.Count; i++)
+                {
+                    var breadcrumb = breadcrumbs[i];
+                    
+                    <li class="flex items-center gap-2">
+                        <i class="bi bi-chevron-right text-slate-400 dark:text-slate-500 text-xs"></i>
+                        
+                        @if (breadcrumb.IsActive)
+                        {
+                            <span class="text-slate-900 dark:text-slate-100 font-semibold" aria-current="page">
+                                @breadcrumb.Text
+                            </span>
+                        }
+                        else
+                        {
+                            <a href="@breadcrumb.Url" class="text-slate-900 dark:text-slate-100 hover:text-primary dark:hover:text-primary transition-colors">
+                                @breadcrumb.Text
+                            </a>
+                        }
+                    </li>
+                }
+            </ol>
+        </div>
+    </nav>
+}

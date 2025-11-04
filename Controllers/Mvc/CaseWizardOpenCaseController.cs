@@ -24,6 +24,16 @@ namespace CanLove_Backend.Controllers.Mvc
             _step1Service = step1Service;
         }
 
+        /// <summary>
+        /// 開案前：選擇個案頁
+        /// </summary>
+        [HttpGet]
+        public IActionResult SelectCase()
+        {
+            ViewData["Sidebar.OpenCaseRecord"] = "開案紀錄表";
+            return View();
+        }
+
 
         /// <summary>
         /// 步驟1: 個案詳細資料 (CaseDetail 表格)
@@ -31,9 +41,23 @@ namespace CanLove_Backend.Controllers.Mvc
         [HttpGet]
         public async Task<IActionResult> Step1(string caseId)
         {
+            // 設置 Sidebar 項目名稱
+            ViewData["Sidebar.OpenCaseRecord"] = "開案紀錄表";
+            
+            // 若未選擇個案，導向選擇個案頁
             if (string.IsNullOrEmpty(caseId))
             {
-                return NotFound();
+                return RedirectToAction("SelectCase");
+            }
+
+            // 檢查個案是否存在
+            var caseExists = await _context.Cases
+                .AnyAsync(c => c.CaseId == caseId && c.Deleted != true);
+            
+            if (!caseExists)
+            {
+                TempData["ErrorMessage"] = "個案不存在";
+                return View(new CaseWizard_S1_CD_ViewModel { CaseId = string.Empty });
             }
 
             var viewModel = await _step1Service.GetStep1DataAsync(caseId);

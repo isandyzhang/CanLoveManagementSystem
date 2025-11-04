@@ -6,14 +6,27 @@
     <title>@ViewData["Title"] - CanLove 個案管理系統</title>
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
     <script>
+        // Tailwind CSS 官方推荐的深色模式初始化脚本
         (function() {
             try {
-                var saved = localStorage.getItem('theme');
-                var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var isDark = saved ? saved === 'dark' : systemDark;
-                var root = document.documentElement;
-                if (isDark) { root.classList.add('dark'); } else { root.classList.remove('dark'); }
-            } catch (e) { /* noop */ }
+                const root = document.documentElement;
+                const savedTheme = localStorage.getItem('theme');
+                const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                // 优先使用保存的主题，否则使用系统偏好
+                const isDark = savedTheme 
+                    ? savedTheme === 'dark' 
+                    : systemPrefersDark;
+                
+                if (isDark) {
+                    root.classList.add('dark');
+                } else {
+                    root.classList.remove('dark');
+                }
+            } catch (e) {
+                // 如果出现错误（如 localStorage 不可用），默认使用浅色模式
+                console.warn('主题初始化失败:', e);
+            }
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,22 +66,23 @@
     </script>
     </head>
 <body>
-    <div class="min-h-screen grid bg-white" style="grid-template-columns: 320px 1fr;">
-        <aside class="border-r border-border bg-white">
+    <div class="min-h-screen grid bg-white dark:bg-slate-950" style="grid-template-columns: 320px 1fr;">
+        <aside class="border-r border-border bg-white dark:bg-slate-900 dark:border-slate-800">
             @await Html.PartialAsync("_Sidebar")
         </aside>
-        <div class="flex flex-col min-h-screen bg-slate-50">
+        <div class="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
             @await Html.PartialAsync("_Topbar")
+            @await Html.PartialAsync("_Breadcrumb")
             <main role="main" class="flex-1 p-6">
             @if (TempData["SuccessMessage"] != null)
             {
-                <div class="mb-3 rounded-md border border-border bg-white shadow-sm" role="alert">
+                <div class="mb-3 rounded-md border border-border dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm" role="alert">
                     <div class="flex items-center justify-between px-4 py-3">
                         <div class="flex items-center gap-2 text-primary">
                             <i class="bi bi-check-circle"></i>
-                            <span>@TempData["SuccessMessage"]</span>
+                            <span class="text-slate-900 dark:text-slate-100">@TempData["SuccessMessage"]</span>
                         </div>
-                        <button type="button" aria-label="Close" class="p-2 rounded-md hover:bg-muted" onclick="this.closest('div[role=\\'alert\\']').remove()">
+                        <button type="button" aria-label="Close" class="p-2 rounded-md hover:bg-muted dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100" onclick="this.closest('div[role=\\'alert\\']').remove()">
                             <i class="bi bi-x"></i>
                         </button>
                     </div>
@@ -77,22 +91,33 @@
             
             @if (TempData["ErrorMessage"] != null)
             {
-                <div class="mb-3 rounded-md border border-border bg-white shadow-sm" role="alert">
+                <div class="mb-3 rounded-md border border-border dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm" role="alert">
                     <div class="flex items-center justify-between px-4 py-3">
-                        <div class="flex items-center gap-2 text-red-600">
+                        <div class="flex items-center gap-2 text-red-600 dark:text-red-400">
                             <i class="bi bi-exclamation-triangle"></i>
-                            <span>@TempData["ErrorMessage"]</span>
+                            <span class="text-slate-900 dark:text-slate-100">@TempData["ErrorMessage"]</span>
                         </div>
-                        <button type="button" aria-label="Close" class="p-2 rounded-md hover:bg-muted" onclick="this.closest('div[role=\\'alert\\']').remove()">
+                        <button type="button" aria-label="Close" class="p-2 rounded-md hover:bg-muted dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100" onclick="this.closest('div[role=\\'alert\\']').remove()">
                             <i class="bi bi-x"></i>
                         </button>
                     </div>
                 </div>
             }
             
-            @RenderBody()
+            @try
+            {
+                @RenderBody()
+            }
+            catch (Exception ex)
+            {
+                <div style="background: red; color: white; padding: 20px; margin: 20px;">
+                    <h2>視圖渲染錯誤</h2>
+                    <p>錯誤訊息: @ex.Message</p>
+                    <pre style="background: #333; color: white; padding: 10px; overflow: auto;">@ex.StackTrace</pre>
+                </div>
+            }
             </main>
-            <footer class="border-t text-muted p-4 text-sm">
+            <footer class="border-t border-border dark:border-slate-800 text-muted dark:text-slate-400 p-4 text-sm">
                 <div class="max-w-7xl mx-auto flex items-center justify-between">
                     <div>&copy; 2025 - CanLove 個案管理系統</div>
                     <div class="text-end"><small>版本 1.0.0</small></div>

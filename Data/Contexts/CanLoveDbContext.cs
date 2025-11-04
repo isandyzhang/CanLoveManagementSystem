@@ -26,6 +26,8 @@ public partial class CanLoveDbContext : DbContext
 
     public virtual DbSet<CaseDetail> CaseDetails { get; set; }
 
+    public virtual DbSet<CaseOpening> CaseOpenings { get; set; }
+
     public virtual DbSet<CaseDetailHistory> CaseDetailHistories { get; set; }
 
     public virtual DbSet<CaseEqemotionalEvaluation> CaseEqemotionalEvaluations { get; set; }
@@ -68,6 +70,10 @@ public partial class CanLoveDbContext : DbContext
 
     public virtual DbSet<UserActivityLog> UserActivityLogs { get; set; }
 
+    public virtual DbSet<Staff> Staff { get; set; }
+
+    public virtual DbSet<BlobStorage> BlobStorage { get; set; }
+
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 {
     if (!optionsBuilder.IsConfigured)
@@ -87,7 +93,7 @@ public partial class CanLoveDbContext : DbContext
 
             entity.HasIndex(e => e.AssessmentDate, "IX_Cases_assessment_date");
 
-            entity.HasIndex(e => e.DraftStatus, "IX_Cases_draft_status");
+            entity.HasIndex(e => e.Status, "IX_Cases_status");
 
             entity.HasIndex(e => e.SubmittedBy, "IX_Cases_submitted_by");
 
@@ -113,9 +119,10 @@ public partial class CanLoveDbContext : DbContext
                 .HasMaxLength(30)
                 .HasColumnName("deleted_by");
             entity.Property(e => e.DistrictId).HasColumnName("district_id");
-            entity.Property(e => e.DraftStatus)
-                .HasDefaultValue(false)
-                .HasColumnName("draft_status");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("Draft")
+                .HasColumnName("status");
             entity.Property(e => e.Email)
                 .HasMaxLength(50)
                 .HasColumnName("email");
@@ -138,9 +145,9 @@ public partial class CanLoveDbContext : DbContext
             entity.Property(e => e.Phone)
                 .HasMaxLength(15)
                 .HasColumnName("phone");
-            entity.Property(e => e.Photo)
-                .HasMaxLength(100)
-                .HasColumnName("photo");
+            // Photo 欄位已棄用，改為使用 PhotoBlobId
+            entity.Ignore(e => e.Photo);
+            entity.Property(e => e.PhotoBlobId).HasColumnName("photo_blob_id");
             entity.Property(e => e.ReviewedAt).HasColumnName("reviewed_at");
             entity.Property(e => e.ReviewedBy)
                 .HasMaxLength(30)
@@ -166,6 +173,42 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey(d => d.SchoolId)
                 .HasConstraintName("FK__Cases__school_id__7F2BE32F");
 
+            entity.HasOne(d => d.PhotoBlob).WithMany()
+                .HasForeignKey(d => d.PhotoBlobId)
+                .HasConstraintName("FK_Cases_PhotoBlob");
+
+        });
+
+        modelBuilder.Entity<CaseOpening>(entity =>
+        {
+            entity.HasKey(e => e.OpeningId);
+
+            entity.ToTable("CaseOpening", tb => tb.HasTrigger("TR_CaseOpening_UpdateTime"));
+
+            entity.HasIndex(e => e.CaseId, "UQ_CaseOpening_CaseId").IsUnique();
+            entity.HasIndex(e => e.Status, "IX_CaseOpening_Status");
+
+            entity.Property(e => e.OpeningId).HasColumnName("opening_id");
+            entity.Property(e => e.CaseId).HasMaxLength(10).HasColumnName("caseID");
+            entity.Property(e => e.OpenDate).HasColumnName("open_date");
+            entity.Property(e => e.OpenReason).HasMaxLength(200).HasColumnName("open_reason");
+            entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue("Draft").HasColumnName("status");
+            entity.Property(e => e.SubmittedBy).HasMaxLength(30).HasColumnName("submitted_by");
+            entity.Property(e => e.SubmittedAt).HasColumnName("submitted_at");
+            entity.Property(e => e.ReviewedBy).HasMaxLength(30).HasColumnName("reviewed_by");
+            entity.Property(e => e.ReviewedAt).HasColumnName("reviewed_at");
+            entity.Property(e => e.ReviewComment).HasMaxLength(500).HasColumnName("review_comment");
+            entity.Property(e => e.AssignedStaffId).HasColumnName("assigned_staff_id");
+            entity.Property(e => e.IsLocked).HasDefaultValue(false).HasColumnName("is_locked");
+            entity.Property(e => e.LockedBy).HasMaxLength(30).HasColumnName("locked_by");
+            entity.Property(e => e.LockedAt).HasColumnName("locked_at");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())").HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(getdate())").HasColumnName("updated_at");
+
+            entity.HasOne(d => d.Case).WithOne()
+                .HasForeignKey<CaseOpening>(d => d.CaseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CaseOpening_Case");
         });
 
         modelBuilder.Entity<CaseConsultationRecord>(entity =>
@@ -279,6 +322,11 @@ public partial class CanLoveDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseDetai__caseI__06CD04F7");
 
+            entity.HasOne(d => d.CaseOpening).WithOne(o => o.CaseDetail)
+                .HasForeignKey<CaseDetail>(d => d.OpeningId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CaseDetail_CaseOpening");
+
             entity.HasOne(d => d.ContactRelationValue).WithMany(p => p.CaseDetailContactRelationValues)
                 .HasForeignKey(d => d.ContactRelationValueId)
                 .HasConstraintName("FK__CaseDetai__conta__07C12930");
@@ -364,10 +412,12 @@ public partial class CanLoveDbContext : DbContext
             entity.ToTable("CaseEQemotionalEvaluation", tb => tb.HasTrigger("TR_CaseEQemotionalEvaluation_UpdateTime"));
 
             entity.HasIndex(e => e.CaseId, "IX_CaseEQemotionalEvaluation_caseID");
+            entity.HasIndex(e => e.OpeningId, "IX_CaseEQemotionalEvaluation_opening_id");
 
             entity.Property(e => e.CaseId)
                 .HasMaxLength(10)
                 .HasColumnName("caseID");
+            entity.Property(e => e.OpeningId).HasColumnName("opening_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
@@ -393,6 +443,11 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<CaseEqemotionalEvaluation>(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseEQemo__caseI__3E1D39E1");
+
+            entity.HasOne(d => d.CaseOpening).WithOne(p => p.CaseEqemotionalEvaluation)
+                .HasForeignKey<CaseEqemotionalEvaluation>(d => d.OpeningId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CaseEQemotionalEvaluation_CaseOpening");
         });
 
         modelBuilder.Entity<CaseFamilyMember>(entity =>
@@ -527,6 +582,7 @@ public partial class CanLoveDbContext : DbContext
             entity.Property(e => e.CaseId)
                 .HasMaxLength(10)
                 .HasColumnName("caseID");
+            entity.Property(e => e.OpeningId).HasColumnName("opening_id");
             entity.Property(e => e.CivilWelfareResources)
                 .HasMaxLength(50)
                 .HasColumnName("civil_welfare_resources");
@@ -566,6 +622,11 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<CaseFqeconomicStatus>(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseFQeco__caseI__208CD6FA");
+
+            entity.HasOne(d => d.CaseOpening).WithOne(p => p.CaseFqeconomicStatus)
+                .HasForeignKey<CaseFqeconomicStatus>(d => d.OpeningId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CaseFQeconomicStatus_CaseOpening");
         });
 
         modelBuilder.Entity<CaseHistory>(entity =>
@@ -616,6 +677,7 @@ public partial class CanLoveDbContext : DbContext
             entity.ToTable("CaseHQhealthStatus", tb => tb.HasTrigger("TR_CaseHQhealthStatus_UpdateTime"));
 
             entity.HasIndex(e => e.CaseId, "IX_CaseHQhealthStatus_caseID");
+            entity.HasIndex(e => e.OpeningId, "IX_CaseHQhealthStatus_opening_id");
 
             entity.Property(e => e.CaregiverId).HasColumnName("caregiver_id");
             entity.Property(e => e.CaregiverName)
@@ -625,6 +687,7 @@ public partial class CanLoveDbContext : DbContext
             entity.Property(e => e.CaseId)
                 .HasMaxLength(10)
                 .HasColumnName("caseID");
+            entity.Property(e => e.OpeningId).HasColumnName("opening_id");
             entity.Property(e => e.ChildCareStatusNote)
                 .HasMaxLength(50)
                 .HasColumnName("child_care_status_note");
@@ -667,6 +730,11 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseHQhea__caseI__2B0A656D");
+
+            entity.HasOne(d => d.CaseOpening).WithMany(p => p.CaseHqhealthStatuses)
+                .HasForeignKey(d => d.OpeningId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CaseHQhealthStatus_CaseOpening");
         });
 
         modelBuilder.Entity<CaseIqacademicPerformance>(entity =>
@@ -676,10 +744,12 @@ public partial class CanLoveDbContext : DbContext
             entity.ToTable("CaseIQacademicPerformance", tb => tb.HasTrigger("TR_CaseIQacademicPerformance_UpdateTime"));
 
             entity.HasIndex(e => e.CaseId, "IX_CaseIQacademicPerformance_caseID");
+            entity.HasIndex(e => e.OpeningId, "IX_CaseIQacademicPerformance_opening_id");
 
             entity.Property(e => e.CaseId)
                 .HasMaxLength(10)
                 .HasColumnName("caseID");
+            entity.Property(e => e.OpeningId).HasColumnName("opening_id");
             entity.Property(e => e.AcademicPerformanceSummary)
                 .HasMaxLength(500)
                 .HasColumnName("academic_performance_summary");
@@ -701,6 +771,11 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<CaseIqacademicPerformance>(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseIQaca__caseI__31B762FC");
+
+            entity.HasOne(d => d.CaseOpening).WithOne(p => p.CaseIqacademicPerformance)
+                .HasForeignKey<CaseIqacademicPerformance>(d => d.OpeningId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CaseIQacademicPerformance_CaseOpening");
         });
 
         modelBuilder.Entity<CaseSocialWorkerContent>(entity =>
@@ -761,6 +836,11 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<CaseSocialWorkerContent>(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseSocia__caseI__19DFD96B");
+
+            entity.HasOne(d => d.CaseOpening).WithOne(p => p.CaseSocialWorkerContent)
+                .HasForeignKey<CaseSocialWorkerContent>(d => d.OpeningId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CaseSocialWorkerContent_CaseOpening");
 
             entity.HasOne(d => d.ResidenceTypeValue).WithMany(p => p.CaseSocialWorkerContents)
                 .HasForeignKey(d => d.ResidenceTypeValueId)
@@ -904,10 +984,12 @@ public partial class CanLoveDbContext : DbContext
             entity.ToTable("FinalAssessmentSummary", tb => tb.HasTrigger("TR_FinalAssessmentSummary_UpdateTime"));
 
             entity.HasIndex(e => e.CaseId, "IX_FinalAssessmentSummary_caseID");
+            entity.HasIndex(e => e.OpeningId, "IX_FinalAssessmentSummary_opening_id");
 
             entity.Property(e => e.CaseId)
                 .HasMaxLength(10)
                 .HasColumnName("caseID");
+            entity.Property(e => e.OpeningId).HasColumnName("opening_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
@@ -938,6 +1020,11 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<FinalAssessmentSummary>(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__FinalAsse__caseI__43D61337");
+
+            entity.HasOne(d => d.CaseOpening).WithOne(p => p.FinalAssessmentSummary)
+                .HasForeignKey<FinalAssessmentSummary>(d => d.OpeningId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FinalAssessmentSummary_CaseOpening");
         });
 
         modelBuilder.Entity<Nationality>(entity =>

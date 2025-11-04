@@ -5,9 +5,9 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="w-full">
             <!-- 頁面標題 -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -22,19 +22,19 @@
             }
             
             <!-- 導航分頁和進度條 -->
-            @await Html.PartialAsync("_WizardNavigation")
+            @await Html.PartialAsync("~/Views/CaseWizardOpenCase/_WizardNavigation.cshtml")
 
             <!-- 表單 -->
             <form asp-action="Step7" method="post" class="needs-validation" novalidate>
                 <div class="row justify-content-center">
                     <div class="col-lg-10">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-light">
-                                <h5 class="card-title mb-0">
+                        <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border-0">
+                            <div class="px-6 py-6 border-b border-border">
+                                <h3 class="text-xl font-semibold leading-tight mb-0 text-slate-900">
                                     <i class="fas fa-clipboard-list me-2"></i>最後評估表
-                                </h5>
+                                </h3>
                             </div>
-                            <div class="card-body">
+                            <div class="px-6 py-6">
                                 <!-- 隱藏欄位 -->
                                 <input asp-for="CaseId" type="hidden" />
 
@@ -53,19 +53,19 @@
                                 <!-- FQ 簡述評估 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-chart-line me-2"></i>FQ 簡述評估 (經濟狀況評估)
                                         </h6>
                                     </div>
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label asp-for="FqSummary" class="form-label">FQ 簡述評估 <small class="text-muted d-block">fq_summary（可空，TEXT）</small></label>
-                                            <textarea asp-for="FqSummary" class="form-control" rows="4" placeholder="請總結經濟狀況評估的要點，包括：&#10;• 家庭經濟概況&#10;• 工作情形與收入狀況&#10;• 民間福利資源使用情況&#10;• 收支平衡狀況&#10;• 經濟壓力與挑戰&#10;• 建議與改善方向"></textarea>
+                                            <label asp-for="FqSummary" class="block text-lg font-medium mb-2 text-slate-900">FQ 簡述評估 <small class="block text-slate-500">fq_summary（可空，TEXT）</small></label>
+                                            <textarea asp-for="FqSummary" class="input" rows="4" placeholder="請總結經濟狀況評估的要點，包括：&#10;• 家庭經濟概況&#10;• 工作情形與收入狀況&#10;• 民間福利資源使用情況&#10;• 收支平衡狀況&#10;• 經濟壓力與挑戰&#10;• 建議與改善方向"></textarea>
                                             <div class="form-text">
                                                 <i class="fas fa-lightbulb me-1"></i>
                                                 請總結經濟狀況評估的要點，包括家庭經濟概況、工作情形、福利資源使用、收支狀況等。
                                             </div>
-                                            <span asp-validation-for="FqSummary" class="text-danger"></span>
+                                            <span asp-validation-for="FqSummary" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -73,19 +73,19 @@
                                 <!-- HQ 簡述評估 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-heartbeat me-2"></i>HQ 簡述評估 (健康狀況評估)
                                         </h6>
                                     </div>
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label asp-for="HqSummary" class="form-label">HQ 簡述評估 <small class="text-muted d-block">hq_summary（可空，TEXT）</small></label>
-                                            <textarea asp-for="HqSummary" class="form-control" rows="4" placeholder="請總結健康狀況評估的要點，包括：&#10;• 照顧者健康狀況&#10;• 兒少健康狀態&#10;• 情緒表現與穩定性&#10;• 受照顧品質&#10;• 健康風險評估&#10;• 醫療需求與建議"></textarea>
+                                            <label asp-for="HqSummary" class="block text-lg font-medium mb-2 text-slate-900">HQ 簡述評估 <small class="block text-slate-500">hq_summary（可空，TEXT）</small></label>
+                                            <textarea asp-for="HqSummary" class="input" rows="4" placeholder="請總結健康狀況評估的要點，包括：&#10;• 照顧者健康狀況&#10;• 兒少健康狀態&#10;• 情緒表現與穩定性&#10;• 受照顧品質&#10;• 健康風險評估&#10;• 醫療需求與建議"></textarea>
                                             <div class="form-text">
                                                 <i class="fas fa-lightbulb me-1"></i>
                                                 請總結健康狀況評估的要點，包括照顧者與兒少的健康狀況、情緒表現、受照顧品質等。
                                             </div>
-                                            <span asp-validation-for="HqSummary" class="text-danger"></span>
+                                            <span asp-validation-for="HqSummary" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -93,19 +93,19 @@
                                 <!-- IQ 簡述評估 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-graduation-cap me-2"></i>IQ 簡述評估 (學業表現評估)
                                         </h6>
                                     </div>
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label asp-for="IqSummary" class="form-label">IQ 簡述評估 <small class="text-muted d-block">iq_summary（可空，TEXT）</small></label>
-                                            <textarea asp-for="IqSummary" class="form-control" rows="4" placeholder="請總結學業表現評估的要點，包括：&#10;• 學習動機與態度&#10;• 學業成績表現&#10;• 學習能力評估&#10;• 特殊學習需求&#10;• 社交學習情況&#10;• 家庭學習支持&#10;• 教育建議與資源"></textarea>
+                                            <label asp-for="IqSummary" class="block text-lg font-medium mb-2 text-slate-900">IQ 簡述評估 <small class="block text-slate-500">iq_summary（可空，TEXT）</small></label>
+                                            <textarea asp-for="IqSummary" class="input" rows="4" placeholder="請總結學業表現評估的要點，包括：&#10;• 學習動機與態度&#10;• 學業成績表現&#10;• 學習能力評估&#10;• 特殊學習需求&#10;• 社交學習情況&#10;• 家庭學習支持&#10;• 教育建議與資源"></textarea>
                                             <div class="form-text">
                                                 <i class="fas fa-lightbulb me-1"></i>
                                                 請總結學業表現評估的要點，包括學習動機、成績表現、學習能力、特殊需求等。
                                             </div>
-                                            <span asp-validation-for="IqSummary" class="text-danger"></span>
+                                            <span asp-validation-for="IqSummary" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -113,33 +113,33 @@
                                 <!-- EQ 簡述評估 -->
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <h6 class="text-primary border-b border-border pb-2 mb-3">
                                             <i class="fas fa-smile me-2"></i>EQ 簡述評估 (情緒評估)
                                         </h6>
                                     </div>
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label asp-for="EqSummary" class="form-label">EQ 簡述評估 <small class="text-muted d-block">eq_summary（可空，TEXT）</small></label>
-                                            <textarea asp-for="EqSummary" class="form-control" rows="4" placeholder="請總結情緒評估的要點，包括：&#10;• 情緒穩定性評估&#10;• 情緒調節能力&#10;• 挫折處理能力&#10;• 情緒表達與理解&#10;• 社會情緒發展&#10;• 情緒支持需求&#10;• 情緒管理建議"></textarea>
+                                            <label asp-for="EqSummary" class="block text-lg font-medium mb-2 text-slate-900">EQ 簡述評估 <small class="block text-slate-500">eq_summary（可空，TEXT）</small></label>
+                                            <textarea asp-for="EqSummary" class="input" rows="4" placeholder="請總結情緒評估的要點，包括：&#10;• 情緒穩定性評估&#10;• 情緒調節能力&#10;• 挫折處理能力&#10;• 情緒表達與理解&#10;• 社會情緒發展&#10;• 情緒支持需求&#10;• 情緒管理建議"></textarea>
                                             <div class="form-text">
                                                 <i class="fas fa-lightbulb me-1"></i>
                                                 請總結情緒評估的要點，包括情緒穩定性、調節能力、挫折處理、情緒表達等。
                                             </div>
-                                            <span asp-validation-for="EqSummary" class="text-danger"></span>
+                                            <span asp-validation-for="EqSummary" class="text-red-600 text-sm"></span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- 按鈕區域 -->
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                                    <a asp-action="Step6" asp-route-caseId="@Model.CaseId" class="btn btn-outline-secondary me-md-2">
+                                <div class="mt-6 flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-3">
+                                    <a asp-action="Step6" asp-route-caseId="@Model.CaseId" class="btn btn--secondary w-full md:w-auto">
                                         <i class="fas fa-arrow-left me-1"></i>返回上一步
                                     </a>
-                                    <div>
-                                        <button type="submit" class="btn btn-success me-md-2">
+                                    <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                                        <button type="submit" class="btn w-full md:w-auto">
                                             <i class="fas fa-check me-1"></i>完成開案流程
                                         </button>
-                                        <a asp-controller="Case" asp-action="Index" class="btn btn-outline-danger">
+                                        <a asp-controller="Case" asp-action="Index" class="btn btn--secondary w-full md:w-auto">
                                             <i class="fas fa-times me-1"></i>取消
                                         </a>
                                     </div>

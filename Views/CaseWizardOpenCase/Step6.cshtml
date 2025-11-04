@@ -5,9 +5,9 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="w-full">
             <!-- 頁面標題 -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -22,19 +22,19 @@
             }
             
             <!-- 導航分頁和進度條 -->
-            @await Html.PartialAsync("_WizardNavigation")
+            @await Html.PartialAsync("~/Views/CaseWizardOpenCase/_WizardNavigation.cshtml")
 
             <!-- 表單 -->
             <form asp-action="Step6" method="post" class="needs-validation" novalidate>
                 <div class="row justify-content-center">
                     <div class="col-lg-10">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-light">
-                                <h5 class="card-title mb-0">
+                        <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border-0">
+                            <div class="px-6 py-6 border-b border-border">
+                                <h3 class="text-xl font-semibold leading-tight mb-0 text-slate-900">
                                     <i class="fas fa-smile me-2"></i>情緒評估問卷
-                                </h5>
+                                </h3>
                             </div>
-                            <div class="card-body">
+                            <div class="px-6 py-6">
                                 <!-- 隱藏欄位 -->
                                 <input asp-for="CaseId" type="hidden" />
 
@@ -61,13 +61,13 @@
                                                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ1)</p>
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        <select asp-for="EqQ1" class="form-select" required>
+                                                        <select asp-for="EqQ1" class="input" required>
                                                             <option value="">請選擇評分</option>
                                                             <option value="1">1分 - 完全不符合</option>
                                                             <option value="2">2分 - 部分符合</option>
                                                             <option value="3">3分 - 完全符合</option>
                                                         </select>
-                                                        <span asp-validation-for="EqQ1" class="text-danger"></span>
+                                                        <span asp-validation-for="EqQ1" class="text-red-600 text-sm"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -86,13 +86,13 @@
                                                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ2)</p>
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        <select asp-for="EqQ2" class="form-select" required>
+                                                        <select asp-for="EqQ2" class="input" required>
                                                             <option value="">請選擇評分</option>
                                                             <option value="1">1分 - 完全不符合</option>
                                                             <option value="2">2分 - 部分符合</option>
                                                             <option value="3">3分 - 完全符合</option>
                                                         </select>
-                                                        <span asp-validation-for="EqQ2" class="text-danger"></span>
+                                                        <span asp-validation-for="EqQ2" class="text-red-600 text-sm"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -111,13 +111,13 @@
                                                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ3)</p>
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        <select asp-for="EqQ3" class="form-select" required>
+                                                        <select asp-for="EqQ3" class="input" required>
                                                             <option value="">請選擇評分</option>
                                                             <option value="1">1分 - 完全不符合</option>
                                                             <option value="2">2分 - 部分符合</option>
                                                             <option value="3">3分 - 完全符合</option>
                                                         </select>
-                                                        <span asp-validation-for="EqQ3" class="text-danger"></span>
+                                                        <span asp-validation-for="EqQ3" class="text-red-600 text-sm"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -136,13 +136,13 @@
                                                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ4)</p>
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        <select asp-for="EqQ4" class="form-select" required>
+                                                        <select asp-for="EqQ4" class="input" required>
                                                             <option value="">請選擇評分</option>
                                                             <option value="1">1分 - 完全不符合</option>
                                                             <option value="2">2分 - 部分符合</option>
                                                             <option value="3">3分 - 完全符合</option>
                                                         </select>
-                                                        <span asp-validation-for="EqQ4" class="text-danger"></span>
+                                                        <span asp-validation-for="EqQ4" class="text-red-600 text-sm"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -161,13 +161,13 @@
                                                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ5)</p>
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        <select asp-for="EqQ5" class="form-select" required>
+                                                        <select asp-for="EqQ5" class="input" required>
                                                             <option value="">請選擇評分</option>
                                                             <option value="1">1分 - 完全不符合</option>
                                                             <option value="2">2分 - 部分符合</option>
                                                             <option value="3">3分 - 完全符合</option>
                                                         </select>
-                                                        <span asp-validation-for="EqQ5" class="text-danger"></span>
+                                                        <span asp-validation-for="EqQ5" class="text-red-600 text-sm"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -186,13 +186,13 @@
                                                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ6)</p>
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        <select asp-for="EqQ6" class="form-select" required>
+                                                        <select asp-for="EqQ6" class="input" required>
                                                             <option value="">請選擇評分</option>
                                                             <option value="1">1分 - 完全不符合</option>
                                                             <option value="2">2分 - 部分符合</option>
                                                             <option value="3">3分 - 完全符合</option>
                                                         </select>
-                                                        <span asp-validation-for="EqQ6" class="text-danger"></span>
+                                                        <span asp-validation-for="EqQ6" class="text-red-600 text-sm"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -211,13 +211,13 @@
                                                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ7)</p>
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        <select asp-for="EqQ7" class="form-select" required>
+                                                        <select asp-for="EqQ7" class="input" required>
                                                             <option value="">請選擇評分</option>
                                                             <option value="1">1分 - 完全不符合</option>
                                                             <option value="2">2分 - 部分符合</option>
                                                             <option value="3">3分 - 完全符合</option>
                                                         </select>
-                                                        <span asp-validation-for="EqQ7" class="text-danger"></span>
+                                                        <span asp-validation-for="EqQ7" class="text-red-600 text-sm"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -239,15 +239,15 @@
                                 </div>
 
                                 <!-- 按鈕區域 -->
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                                    <a asp-action="Step5" asp-route-caseId="@Model.CaseId" class="btn btn-outline-secondary me-md-2">
+                                <div class="mt-6 flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-3">
+                                    <a asp-action="Step5" asp-route-caseId="@Model.CaseId" class="btn btn--secondary w-full md:w-auto">
                                         <i class="fas fa-arrow-left me-1"></i>返回上一步
                                     </a>
-                                    <div>
-                                        <button type="submit" class="btn btn-primary me-md-2">
+                                    <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                                        <button type="submit" class="btn w-full md:w-auto">
                                             <i class="fas fa-save me-1"></i>儲存並繼續
                                         </button>
-                                        <a asp-controller="Case" asp-action="Index" class="btn btn-outline-danger">
+                                        <a asp-controller="Case" asp-action="Index" class="btn btn--secondary w-full md:w-auto">
                                             <i class="fas fa-times me-1"></i>取消
                                         </a>
                                     </div>

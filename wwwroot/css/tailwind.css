@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* 配置 dark mode 使用 .dark 類選擇器而不是媒體查詢 */
+@variant dark (.dark &);
+
 /* Design tokens: light/dark variables */
 @layer base {
   :root {

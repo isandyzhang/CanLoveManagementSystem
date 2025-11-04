@@ -1,0 +1,35 @@
+@model List<CanLove_Backend.Models.Mvc.ViewModels.Staff.StaffListItemViewModel>
+@{
+    ViewData["Title"] = "員工管理";
+}
+
+<div class="p-4">
+    <h2 class="text-xl font-semibold mb-4">員工管理</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">部門</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">職稱</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">上次登入</th>
+                    <th class="px-4 py-2"></th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @foreach (var s in Model)
+                {
+                    <tr>
+                        <td class="px-4 py-2">@s.DisplayName</td>
+                        <td class="px-4 py-2">@s.DepartmentName</td>
+                        <td class="px-4 py-2">@s.JobTitleName</td>
+                        <td class="px-4 py-2">@(s.LastLoginAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                        <td class="px-4 py-2 text-right">
+                            <a class="text-blue-600 hover:underline" href="@Url.Action("Edit", "Staff", new { id = s.StaffId })">編輯</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

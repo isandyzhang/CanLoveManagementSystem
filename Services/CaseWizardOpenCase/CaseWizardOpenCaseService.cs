@@ -71,7 +71,7 @@ public class CaseWizardOpenCaseService
                 DistrictId = model.Case.DistrictId,
                 Phone = model.Case.Phone,
                 Email = model.Case.Email,
-                DraftStatus = true, // 預設為草稿
+                Status = "Draft", // 預設為草稿
                 Deleted = false,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow

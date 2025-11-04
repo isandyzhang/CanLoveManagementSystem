@@ -7,20 +7,71 @@ using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Microsoft.AspNetCore.DataProtection;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 先嘗試載入 Key Vault（需先在環境提供 KeyVault:VaultUri，App Service 建議用受控身分）
+// 載入 Key Vault（生產環境使用，開發環境可選擇性使用）
+// Azure App Service 建議使用 Managed Identity（DefaultAzureCredential）
+// 本機開發：可將 KeyVault:VaultUri 設為空或使用 ClientSecret 認證
 var keyVaultUri = builder.Configuration["KeyVault:VaultUri"];
 if (!string.IsNullOrWhiteSpace(keyVaultUri))
 {
-    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+    try
+    {
+        // 使用現有的擴展方法，支援 ClientSecret 或 DefaultAzureCredential
+        builder.Configuration.AddAzureKeyVaultWithIdentity(builder.Environment);
+    }
+    catch (Exception ex)
+    {
+        // 開發環境：連接失敗時記錄警告但繼續運行（配置已在 appsettings 中）
+        // 生產環境：連接失敗時拋出異常（應檢查 Managed Identity 設定）
+        if (builder.Environment.IsDevelopment())
+        {
+            Console.WriteLine($"[Warning] Key Vault 連接失敗（開發環境可忽略）: {ex.Message}");
+            // 開發環境不拋出異常，繼續使用 appsettings 中的配置
+        }
+        else
+        {
+            // 生產環境連接失敗是嚴重問題，重新拋出異常
+            throw new InvalidOperationException(
+                $"無法連接 Azure Key Vault: {ex.Message}。請檢查 Managed Identity 設定。", ex);
+        }
+    }
 }
+
+// 配置 Data Protection（持久化密钥，避免重启后 Correlation failed）
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys")))
+    .SetApplicationName("CanLove_Backend");
 
 // 啟用 Microsoft Identity Web（OpenIdConnect）
 builder.Services
     .AddAuthentication(Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+
+// 設定認證事件，用於登入時同步員工資料
+// 使用Configure來設定事件，因為需要在服務註冊完成後才能取得IStaffService
+builder.Services.Configure<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions>(
+    Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme,
+    options =>
+    {
+        var serviceScopeFactory = builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>();
+        options.Events = new CanLove_Backend.Extensions.AuthenticationEvents(serviceScopeFactory);
+    });
+
+// 開發環境：配置 Cookie 策略，避免 Correlation failed
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.Configure<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>(
+        Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
+        options =>
+        {
+            options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest;
+        });
+}
 
 // 授權：預設要求已驗證使用者；需要匿名的頁面請加 [AllowAnonymous]
 builder.Services.AddAuthorization(options =>
@@ -45,6 +96,8 @@ builder.Services.AddDbContext<CanLoveDbContext>(options =>
 builder.Services.AddScoped<CanLove_Backend.Services.Shared.OptionService>();
 builder.Services.AddScoped<CanLove_Backend.Services.Shared.SchoolService>();
 builder.Services.AddScoped<CanLove_Backend.Services.Shared.AddressService>();
+builder.Services.AddScoped<CanLove_Backend.Services.Shared.IStaffService, CanLove_Backend.Services.Shared.StaffService>();
+builder.Services.AddScoped<CanLove_Backend.Services.Shared.IBlobService, CanLove_Backend.Services.Shared.BlobService>();
 
 // === Case 相關服務 ===
 builder.Services.AddScoped<CanLove_Backend.Services.Case.CaseService>();
@@ -91,6 +144,9 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    
+    // 啟用開發工具（包含 Hot Reload）
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
