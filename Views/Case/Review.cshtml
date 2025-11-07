@@ -1,8 +1,7 @@
-@model IEnumerable<CanLove_Backend.Data.Models.Core.Case>
+@model IEnumerable<CanLove_Backend.Data.Models.Review.CaseReviewItem>
 @{
     ViewData["Title"] = "個案審核";
     var modelCount = Model?.Count() ?? 0;
-    var isReviewPage = true;
     // 自訂麵包屑：個案管理 > 個案審核
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
@@ -11,14 +10,28 @@
     };
 }
 
-<div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-semibold text-slate-900 flex items-center gap-2">
-        <i class="bi bi-search"></i>@ViewData["Title"]
-    </h2>
-    <div></div>
-</div>
+@{ ViewBag.CurrentPage = "Review"; }
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+@Html.Partial("~/Views/Case/Partials/_CaseTabs.cshtml")
 
-<div class="mb-2 text-sm text-slate-600">共找到 @modelCount 筆個案</div>
+<div class="mb-2 text-sm text-slate-600">共找到 @modelCount 筆待審項目</div>
+
+@{
+    var currentTab = (ViewBag.CurrentTab as string) ?? "CaseBasic";
+    var typeCounts = ViewBag.TypeCounts as System.Collections.Generic.IDictionary<string, int> ?? new Dictionary<string, int>();
+    int CountOf(string key) => typeCounts.ContainsKey(key) ? typeCounts[key] : 0;
+}
+
+@* 分頁切換區由 _CaseTabs.cshtml 取代 *@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="mb-3 p-3 rounded-md border border-green-200 bg-green-50 text-green-800">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="mb-3 p-3 rounded-md border border-red-200 bg-red-50 text-red-800">@TempData["ErrorMessage"]</div>
+}
 
 @if (Model != null && Model.Any())
 {
@@ -29,11 +42,10 @@
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-800">
                             <th class="text-slate-700 dark:text-slate-300">個案編號</th>
-                            <th class="text-slate-700 dark:text-slate-300">姓名</th>
-                            <th class="text-slate-700 dark:text-slate-300">性別</th>
-                            <th class="text-slate-700 dark:text-slate-300">出生日期</th>
-                            <th class="text-slate-700 dark:text-slate-300">建立者</th>
-                            <th class="text-slate-700 dark:text-slate-300">建立時間</th>
+                            <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
+                            <th class="text-slate-700 dark:text-slate-300">提交者</th>
+                            <th class="text-slate-700 dark:text-slate-300">提交時間</th>
+                            <th class="text-slate-700 dark:text-slate-300">表別</th>
                             <th class="text-slate-700 dark:text-slate-300">狀態</th>
                         </tr>
                     </thead>
@@ -42,38 +54,33 @@
                         {
                             <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
                                 <td class="text-slate-900 dark:text-slate-100">
-                                    <a class="text-primary hover:underline" href="@Url.Action("ReviewForm","Case", new { id = item.CaseId })">
+                                    <a class="text-primary hover:underline" href="@Url.Action("ReviewItem","Case", new { id = item.ReviewId })">
                                         <code class="text-slate-900 dark:text-slate-100">@item.CaseId</code>
                                     </a>
                                 </td>
+                                <td class="text-slate-900 dark:text-slate-100">@item.Title</td>
+                                <td>
+                                    @{ 
+                                        var map = ViewBag.SubmitterNameMap as System.Collections.Generic.IDictionary<string, string>;
+                                        var raw = item.SubmittedBy ?? "系統";
+                                        var name = (map != null && item.SubmittedBy != null && map.ContainsKey(item.SubmittedBy)) ? (map[item.SubmittedBy] ?? raw) : raw;
+                                    }
+                                    <span class="text-slate-900 dark:text-slate-100">@name</span>
+                                </td>
+                                <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.SubmittedAt"></datetime></td>
                                 <td class="text-slate-900 dark:text-slate-100">
-                                    <a class="text-primary hover:underline" href="@Url.Action("ReviewForm","Case", new { id = item.CaseId })">@item.Name</a>
+                                    @{ 
+                                        var typeLabel = item.Type switch
+                                        {
+                                            "CaseBasic" => "個案基本資料",
+                                            "CaseOpening" => "開案紀錄表",
+                                            "CareVisitRecord" => "關懷訪視記錄表",
+                                            "Consultation" => "會談服務紀錄",
+                                            _ => item.Type
+                                        }; 
+                                    }
+                                    <span class="badge-pill bg-muted" style="font-size:14px;">@typeLabel</span>
                                 </td>
-                                <td>
-                                    @{ var g = (item.Gender ?? string.Empty).Trim().ToUpper(); }
-                                    @if (g == "M" || g == "男")
-                                    {
-                                        <span class="badge-pill" style="background-color:#DBEAFE;color:#1E3A8A;font-size:14px;">男</span>
-                                    }
-                                    else if (g == "F" || g == "女")
-                                    {
-                                        <span class="badge-pill" style="background-color:#FCE7F3;color:#9D174D;font-size:14px;">女</span>
-                                    }
-                                    else if (g == "O" || g == "其他")
-                                    {
-                                        <span class="badge-pill bg-muted" style="font-size:14px;">其他</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge-pill bg-muted" style="font-size:14px;">未設定</span>
-                                    }
-                                </td>
-                                <td class="text-slate-900 dark:text-slate-100">@item.BirthDate.ToTaiwanDateString()</td>
-                                <td>
-                                    @{ var displayName = item.SubmittedBy ?? "系統"; if (displayName.Contains("@")) { displayName = displayName.Split('@')[0]; } }
-                                    <small class="text-slate-900 dark:text-slate-100">@displayName</small>
-                                </td>
-                                <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.CreatedAt"></datetime></td>
                                 <td class="text-slate-900 dark:text-slate-100">
                                     <span class="badge-pill" style="background-color:#FDBA74;color:#7C2D12;font-size:14px;">待審閱</span>
                                 </td>
@@ -97,6 +104,8 @@ else
         </div>
     </div>
 }
+    </div>
+</div>
 
 @* 移除彈窗與相關腳本，改為直接點擊連到 ReviewForm 分頁 *@
 

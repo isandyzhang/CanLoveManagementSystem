@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "查詢個案 - 關懷訪視";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Index", "Case") ?? string.Empty),
+        ("查詢個案", Url.Action("SearchForOpenCase", "Case") ?? string.Empty),
+        ("關懷訪視", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        @{ ViewBag.CurrentPage = "Search"; ViewBag.CurrentTab = "CareVisitRecord"; }
+        <partial name="~/Views/Case/Partials/_CaseTabs.cshtml" />
+        <div class="card bg-white dark:bg-white shadow-card-lg border rounded-xl border-[#F9A8D4]">
+            <div class="px-6 py-6">
+                <div class="text-slate-600">此分頁尚未實作，未來將提供「關懷訪視記錄」的查詢功能。</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

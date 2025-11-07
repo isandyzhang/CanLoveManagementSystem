@@ -19,7 +19,7 @@ public class StaffService : IStaffService
 
     public async Task<Staff?> GetStaffByAzureObjectIdAsync(string azureObjectId)
     {
-        return await _context.Staff
+        return await _context.Staffs
             .FirstOrDefaultAsync(s => s.AzureObjectId == azureObjectId && !s.Deleted);
     }
 
@@ -45,7 +45,7 @@ public class StaffService : IStaffService
         // 嘗試取得頭像URL（從Claims或Graph API）
         TryGetPhotoUrlAsync(staff, principal);
 
-        _context.Staff.Add(staff);
+        _context.Staffs.Add(staff);
         await _context.SaveChangesAsync();
 
         return staff;
@@ -75,7 +75,7 @@ public class StaffService : IStaffService
 
     public async Task LogStaffLoginAsync(int staffId, string? ipAddress, string? userAgent)
     {
-        var staff = await _context.Staff.FindAsync(staffId);
+        var staff = await _context.Staffs.FindAsync(staffId);
         if (staff != null)
         {
             staff.LastLoginAt = DateTime.UtcNow;
@@ -85,7 +85,7 @@ public class StaffService : IStaffService
 
     public async Task<List<Staff>> GetAllForListAsync()
     {
-        return await _context.Staff
+        return await _context.Staffs
             .Where(s => !s.Deleted)
             .OrderBy(s => s.DisplayName)
             .Select(s => new Staff
@@ -101,7 +101,7 @@ public class StaffService : IStaffService
 
     public async Task UpdateDepartmentAndJobTitleAsync(int staffId, string? department, string? jobTitle)
     {
-        var staff = await _context.Staff.FirstOrDefaultAsync(s => s.StaffId == staffId && !s.Deleted);
+        var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.StaffId == staffId && !s.Deleted);
         if (staff == null)
         {
             throw new InvalidOperationException($"找不到員工：{staffId}");

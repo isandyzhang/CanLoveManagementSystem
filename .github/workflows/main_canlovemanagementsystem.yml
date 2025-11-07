@@ -27,7 +27,7 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish ./CanLove_Backend.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -47,6 +47,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: .
+
+      - name: List downloaded artifact
+        run: |
+          echo "PWD:" && pwd
+          echo "Dir listing of workspace:" && dir
+          echo "Dir listing of ./.net-app:" && dir .\.net-app
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -60,6 +67,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'CanloveManagementSystem'
-          slot-name: 'Production'
-          package: .
+          package: ${{ github.workspace }}/.net-app
           

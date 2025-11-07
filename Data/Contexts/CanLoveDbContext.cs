@@ -70,7 +70,7 @@ public partial class CanLoveDbContext : DbContext
 
     public virtual DbSet<UserActivityLog> UserActivityLogs { get; set; }
 
-    public virtual DbSet<Staff> Staff { get; set; }
+    public virtual DbSet<Staff> Staffs { get; set; }
 
     public virtual DbSet<BlobStorage> BlobStorage { get; set; }
 
@@ -121,7 +121,7 @@ public partial class CanLoveDbContext : DbContext
             entity.Property(e => e.DistrictId).HasColumnName("district_id");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
-                .HasDefaultValue("Draft")
+                .HasDefaultValue("PendingReview")
                 .HasColumnName("status");
             entity.Property(e => e.Email)
                 .HasMaxLength(50)
@@ -209,6 +209,31 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<CaseOpening>(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CaseOpening_Case");
+        });
+
+        // CaseReviewItem
+        modelBuilder.Entity<CanLove_Backend.Data.Models.Review.CaseReviewItem>(entity =>
+        {
+            entity.HasKey(e => e.ReviewId);
+            entity.ToTable("CaseReviewItem");
+
+            entity.HasIndex(e => new { e.Type, e.Status }, "IX_CaseReviewItem_Type_Status");
+            entity.HasIndex(e => e.Status, "IX_CaseReviewItem_Status");
+            entity.HasIndex(e => e.CaseId, "IX_CaseReviewItem_CaseId");
+
+            entity.Property(e => e.ReviewId).HasColumnName("review_id");
+            entity.Property(e => e.CaseId).HasMaxLength(10).HasColumnName("case_id");
+            entity.Property(e => e.Type).HasMaxLength(30).HasColumnName("type");
+            entity.Property(e => e.TargetId).HasMaxLength(50).HasColumnName("target_id");
+            entity.Property(e => e.Title).HasMaxLength(200).HasColumnName("title");
+            entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue("PendingReview").HasColumnName("status");
+            entity.Property(e => e.SubmittedBy).HasMaxLength(50).HasColumnName("submitted_by");
+            entity.Property(e => e.SubmittedAt).HasColumnName("submitted_at");
+            entity.Property(e => e.ReviewedBy).HasMaxLength(50).HasColumnName("reviewed_by");
+            entity.Property(e => e.ReviewedAt).HasColumnName("reviewed_at");
+            entity.Property(e => e.ReviewComment).HasMaxLength(500).HasColumnName("review_comment");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("(getdate())");
         });
 
         modelBuilder.Entity<CaseConsultationRecord>(entity =>

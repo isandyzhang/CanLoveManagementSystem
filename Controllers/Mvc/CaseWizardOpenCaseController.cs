@@ -61,6 +61,8 @@ namespace CanLove_Backend.Controllers.Mvc
             }
 
             var viewModel = await _step1Service.GetStep1DataAsync(caseId);
+            viewModel.Mode = Models.Mvc.ViewModels.CaseFormMode.Create;
+            viewModel.CurrentStep = 1;
             return View(viewModel);
         }
 
@@ -121,7 +123,9 @@ namespace CanLove_Backend.Controllers.Mvc
                 FamilySocialSupportNote = socialWorkerContent?.FamilySocialSupportNote,
                 SpecialCircumstancesDescription = socialWorkerContent?.SpecialCircumstancesDescription,
                 // 載入選項資料
-                ResidenceTypeOptions = await _optionService.GetResidenceTypeOptionsAsync()
+                ResidenceTypeOptions = await _optionService.GetResidenceTypeOptionsAsync(),
+                Mode = Models.Mvc.ViewModels.CaseFormMode.Create,
+                CurrentStep = 2
             };
 
             return View(viewModel);
@@ -197,7 +201,9 @@ namespace CanLove_Backend.Controllers.Mvc
                 MonthlyIncome = economicStatus?.MonthlyIncome,
                 MonthlyExpense = economicStatus?.MonthlyExpense,
                 MonthlyExpenseNote = economicStatus?.MonthlyExpenseNote,
-                Description = economicStatus?.Description
+                Description = economicStatus?.Description,
+                Mode = Models.Mvc.ViewModels.CaseFormMode.Create,
+                CurrentStep = 3
             };
 
             return View(viewModel);
@@ -272,7 +278,9 @@ namespace CanLove_Backend.Controllers.Mvc
                 ChildCareStatusRating = healthStatus?.ChildCareStatusRating,
                 ChildCareStatusNote = healthStatus?.ChildCareStatusNote,
                 // 載入選項資料
-                CaregiverRoleOptions = await _optionService.GetCaregiverRoleOptionsAsync()
+                CaregiverRoleOptions = await _optionService.GetCaregiverRoleOptionsAsync(),
+                Mode = Models.Mvc.ViewModels.CaseFormMode.Create,
+                CurrentStep = 4
             };
 
             return View(viewModel);
@@ -341,7 +349,9 @@ namespace CanLove_Backend.Controllers.Mvc
             var viewModel = new CaseWizard_S5_CIQAP_ViewModel
             {
                 CaseId = caseId,
-                AcademicPerformanceSummary = academicPerformance?.AcademicPerformanceSummary
+                AcademicPerformanceSummary = academicPerformance?.AcademicPerformanceSummary,
+                Mode = Models.Mvc.ViewModels.CaseFormMode.Create,
+                CurrentStep = 5
             };
 
             return View(viewModel);
@@ -403,7 +413,9 @@ namespace CanLove_Backend.Controllers.Mvc
                 EqQ4 = emotionalEvaluation?.EqQ4,
                 EqQ5 = emotionalEvaluation?.EqQ5,
                 EqQ6 = emotionalEvaluation?.EqQ6,
-                EqQ7 = emotionalEvaluation?.EqQ7
+                EqQ7 = emotionalEvaluation?.EqQ7,
+                Mode = Models.Mvc.ViewModels.CaseFormMode.Create,
+                CurrentStep = 6
             };
 
             return View(viewModel);
@@ -468,7 +480,9 @@ namespace CanLove_Backend.Controllers.Mvc
                 FqSummary = finalAssessment?.FqSummary,
                 HqSummary = finalAssessment?.HqSummary,
                 IqSummary = finalAssessment?.IqSummary,
-                EqSummary = finalAssessment?.EqSummary
+                EqSummary = finalAssessment?.EqSummary,
+                Mode = Models.Mvc.ViewModels.CaseFormMode.Create,
+                CurrentStep = 7
             };
 
             return View(viewModel);
@@ -502,6 +516,46 @@ namespace CanLove_Backend.Controllers.Mvc
                 finalAssessment.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
+
+                // 送審（Create 模式 Step7：SubmitAction = "Submit"）
+                if (string.Equals(model.SubmitAction, "Submit", StringComparison.OrdinalIgnoreCase))
+                {
+                    var opening = await _context.CaseOpenings.FirstOrDefaultAsync(o => o.CaseId == model.CaseId);
+                    if (opening == null)
+                    {
+                        opening = new CaseOpening
+                        {
+                            CaseId = model.CaseId,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _context.CaseOpenings.Add(opening);
+                    }
+
+                    opening.Status = "PendingReview";
+                    opening.SubmittedBy = User.Identity?.Name ?? string.Empty;
+                    opening.SubmittedAt = DateTime.UtcNow;
+                    opening.UpdatedAt = DateTime.UtcNow;
+
+                    // 建立審核項目（Type = CaseOpening）
+                    var caseItem = await _context.Cases.FirstOrDefaultAsync(c => c.CaseId == model.CaseId);
+                    _context.Set<CanLove_Backend.Data.Models.Review.CaseReviewItem>().Add(new CanLove_Backend.Data.Models.Review.CaseReviewItem
+                    {
+                        CaseId = model.CaseId,
+                        Type = "CaseOpening",
+                        TargetId = model.CaseId,
+                        Title = caseItem?.Name,
+                        Status = "PendingReview",
+                        SubmittedBy = opening.SubmittedBy,
+                        SubmittedAt = opening.SubmittedAt,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "開案資料已提交審閱";
+                    return RedirectToAction("Review", "Case");
+                }
 
                 TempData["SuccessMessage"] = "個案開案流程完成！";
                 return RedirectToAction("Complete", new { caseId = model.CaseId });

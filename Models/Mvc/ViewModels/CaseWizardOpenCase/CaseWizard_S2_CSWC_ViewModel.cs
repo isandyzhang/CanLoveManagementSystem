@@ -1,14 +1,21 @@
 using System.ComponentModel.DataAnnotations;
+using CanLove_Backend.Models.Mvc.ViewModels;
 
 namespace CanLove_Backend.Models.Mvc.ViewModels.CaseWizardOpenCase
 {
     /// <summary>
     /// 步驟2: 社會工作服務內容視圖模型 (CaseSocialWorkerContent 表格)
     /// </summary>
-    public class CaseWizard_S2_CSWC_ViewModel
+    public class CaseWizard_S2_CSWC_ViewModel : ICaseWizardViewModel
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;
+
+        public CaseFormMode Mode { get; set; } = CaseFormMode.Create;
+
+        public int CurrentStep { get; set; } = 2;
+
+        public string? SubmitAction { get; set; }
 
         [Display(Name = "家系圖圖片")]
         [StringLength(250, ErrorMessage = "家系圖圖片路徑不能超過250個字元")]

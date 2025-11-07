@@ -19,37 +19,38 @@
 
  
 
-<!-- 分頁導航 -->
-<div class="w-full mb-4 overflow-x-auto">
-    <div class="flex gap-2 bg-slate-50 rounded-lg p-2 min-w-max">
+<!-- 分頁導航（橫向排列） -->
+<div class="w-full mb-4">
+    <div class="flex flex-wrap gap-2 items-stretch">
         @foreach (var step in steps)
         {
             var isActive = currentStep == step.StepNumber;
+            var isCompleted = currentStep > step.StepNumber;
             <a href="@Url.Action($"Step{step.StepNumber}", "CaseWizardOpenCase", new { caseId = caseId })"
-               class="px-3 py-2 rounded-md text-center min-w-[88px] transition-colors @(isActive ? "bg-primary text-white font-semibold" : "text-slate-600 hover:bg-slate-100")">
-                <span class="block text-xs opacity-90">步驟 @step.StepNumber</span>
-                <span class="block text-sm truncate">@step.Title</span>
-                <span class="hidden sm:block text-[11px] opacity-70 truncate">@step.Description</span>
+               class="flex-1 min-w-[120px] px-4 py-3 rounded-lg text-center transition-colors border @(isActive ? "bg-[#FFF1E6] border-[#FDBA74] text-slate-900 font-semibold shadow-card-lg" : isCompleted ? "bg-slate-50 border-slate-300 text-slate-600 hover:border-slate-400" : "bg-white border-slate-200 text-slate-500 hover:border-slate-300")">
+                <div class="flex items-center justify-center gap-2 mb-1">
+                    @if (isCompleted)
+                    {
+                        <i class="bi bi-check-circle text-green-600 text-sm"></i>
+                    }
+                    else if (isActive)
+                    {
+                        <i class="bi bi-circle-fill text-[#FDBA74] text-xs"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-circle text-slate-400 text-xs"></i>
+                    }
+                    <span class="text-xs font-medium">步驟 @step.StepNumber</span>
+                </div>
+                <span class="block text-sm font-medium truncate">@step.Title</span>
             </a>
         }
     </div>
-    
-    <!-- 進度條 -->
-    <div class="h-2 rounded-full bg-slate-200 mt-3">
-        <div class="h-2 rounded-full bg-primary" style="width: @progressPercentage%"></div>
-    </div>
-</div>
 
-<!-- 步驟資訊 -->
-<div class="mb-4 border border-border rounded-md bg-white px-4 py-3">
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-        <div class="text-slate-800">
-            <strong class="mr-2"><i class="bi bi-info-circle me-1"></i>目前進度：</strong>
-            步驟 @currentStep / @totalSteps (@string.Format("{0:F1}", progressPercentage)%)
-        </div>
-        <div class="truncate">
-            <small class="text-slate-500">個案編號：<code class="break-all">@caseId</code></small>
-        </div>
+    <!-- 進度條（橘色） -->
+    <div class="h-2 rounded-full bg-slate-200 mt-3">
+        <div class="h-2 rounded-full" style="background-color:#FDBA74;width: @progressPercentage%"></div>
     </div>
 </div>
 

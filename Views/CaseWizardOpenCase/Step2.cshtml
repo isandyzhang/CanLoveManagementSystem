@@ -1,20 +1,22 @@
 @model CanLove_Backend.Models.Mvc.ViewModels.CaseWizardOpenCase.CaseWizard_S2_CSWC_ViewModel
 
 @{
-    ViewData["Title"] = "步驟2: 社會工作服務內容";
+    ViewData["Title"] = "開案記錄表";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Index", "Case") ?? string.Empty),
+        ("新增個案", Url.Action("Create", "Case") ?? string.Empty),
+        ("開案記錄表", string.Empty)
+    };
 }
 
 <div class="w-full px-4 sm:px-6 lg:px-8">
     <div class="max-w-[1400px] mx-auto">
         <div class="w-full">
-            <!-- 頁面標題 -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1">@ViewData["Title"]</h2>
-                    <p class="text-muted mb-0">填寫社會工作服務內容評估資料</p>
-                </div>
-            </div>
+            @{ ViewBag.CurrentPage = "Create"; ViewBag.CurrentTab = "CaseOpening"; }
+            <partial name="~/Views/Case/Partials/_CaseTabs.cshtml" />
+
 
             @{
                 ViewBag.CurrentStep = 2;
@@ -26,15 +28,14 @@
 
             <!-- 表單 -->
             <form asp-action="Step2" method="post" class="needs-validation" novalidate enctype="multipart/form-data">
-                <div class="row justify-content-center">
-                    <div class="col-lg-10">
-                        <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border-0">
-                            <div class="px-6 py-6 border-b border-border">
-                                <h3 class="text-xl font-semibold leading-tight mb-0 text-slate-900">
-                                    <i class="fas fa-users me-2"></i>社會工作服務內容評估
-                                </h3>
-                            </div>
-                            <div class="px-6 py-6">
+                <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border rounded-xl border-[#FDBA74]">
+                    <div class="px-6 py-4 mb-5 flex items-center justify-between bg-[#FFF1E6] rounded-t-xl">
+                        <span class="inline-flex items-center gap-3 text-2xl font-bold text-slate-800">
+                            <i class="bi bi-card-text"></i>
+                            社會工作服務內容評估
+                        </span>
+                    </div>
+                    <div class="px-6 py-6">
                                 <!-- 隱藏欄位 -->
                                 <input asp-for="CaseId" type="hidden" />
 
@@ -45,8 +46,8 @@
                                             <i class="fas fa-sitemap me-2"></i>家系圖與居住地
                                         </h6>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
                                             <label class="block text-lg font-medium mb-2 text-slate-900">家系圖圖片 <small class="block text-slate-500">family_tree_img（可空，存 blobId）</small></label>
                                             <input type="hidden" asp-for="FamilyTreeImg" id="familyTreeBlobId" />
                                             <div id="familyTreeDrop" class="w-full border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 p-4 text-center cursor-pointer">
@@ -62,9 +63,7 @@
                                             <div class="text-slate-500 text-xs mt-1" id="familyTreeStatus"></div>
                                             <span asp-validation-for="FamilyTreeImg" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="ResidenceTypeValueId" class="block text-lg font-medium mb-2 text-slate-900">居住地型態 <small class="block text-slate-500">residence_type_value_id（可空，外鍵 OptionSetValues.value_id）</small></label>
                                             <select asp-for="ResidenceTypeValueId" class="input">
                                                 <option value="">請選擇居住地型態</option>
@@ -88,8 +87,8 @@
                                             <i class="fas fa-home me-2"></i>居家環境評估
                                         </h6>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
                                             <label asp-for="HouseCleanlinessRating" class="block text-lg font-medium mb-2 text-slate-900">居家整潔分數 <small class="block text-slate-500">house_cleanliness_rating（可空，TINYINT 1-4）</small></label>
                                             <select asp-for="HouseCleanlinessRating" class="input">
                                                 <option value="">請選擇分數</option>
@@ -100,16 +99,12 @@
                                             </select>
                                             <span asp-validation-for="HouseCleanlinessRating" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="HouseCleanlinessNote" class="block text-lg font-medium mb-2 text-slate-900">居家整潔說明 <small class="block text-slate-500">house_cleanliness_note（可空，NVARCHAR(50)）</small></label>
                                             <input asp-for="HouseCleanlinessNote" class="input" placeholder="請輸入居家整潔說明" />
                                             <span asp-validation-for="HouseCleanlinessNote" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="HouseSafetyRating" class="block text-lg font-medium mb-2 text-slate-900">居家安全分數 <small class="block text-slate-500">house_safety_rating（可空，TINYINT 1-4）</small></label>
                                             <select asp-for="HouseSafetyRating" class="input">
                                                 <option value="">請選擇分數</option>
@@ -120,9 +115,7 @@
                                             </select>
                                             <span asp-validation-for="HouseSafetyRating" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="HouseSafetyNote" class="block text-lg font-medium mb-2 text-slate-900">居家安全說明 <small class="block text-slate-500">house_safety_note（可空，NVARCHAR(50)）</small></label>
                                             <input asp-for="HouseSafetyNote" class="input" placeholder="請輸入居家安全說明" />
                                             <span asp-validation-for="HouseSafetyNote" class="text-red-600 text-sm"></span>
@@ -137,8 +130,8 @@
                                             <i class="fas fa-heart me-2"></i>互動關係評估
                                         </h6>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
                                             <label asp-for="CaregiverChildInteractionRating" class="block text-lg font-medium mb-2 text-slate-900">照顧者與兒少互動情形分數 <small class="block text-slate-500">caregiver_child_interaction_rating（可空，TINYINT 1-4）</small></label>
                                             <select asp-for="CaregiverChildInteractionRating" class="input">
                                                 <option value="">請選擇分數</option>
@@ -149,16 +142,12 @@
                                             </select>
                                             <span asp-validation-for="CaregiverChildInteractionRating" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="CaregiverChildInteractionNote" class="block text-lg font-medium mb-2 text-slate-900">照顧者與兒少互動情形說明 <small class="block text-slate-500">caregiver_child_interaction_note（可空，NVARCHAR(50)）</small></label>
                                             <input asp-for="CaregiverChildInteractionNote" class="input" placeholder="請輸入互動情形說明" />
                                             <span asp-validation-for="CaregiverChildInteractionNote" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="CaregiverFamilyInteractionRating" class="block text-lg font-medium mb-2 text-slate-900">照顧者與整體同住家人互動情形分數 <small class="block text-slate-500">caregiver_family_interaction_rating（可空，TINYINT 1-4）</small></label>
                                             <select asp-for="CaregiverFamilyInteractionRating" class="input">
                                                 <option value="">請選擇分數</option>
@@ -169,9 +158,7 @@
                                             </select>
                                             <span asp-validation-for="CaregiverFamilyInteractionRating" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="CaregiverFamilyInteractionNote" class="block text-lg font-medium mb-2 text-slate-900">照顧者與整體同住家人互動情形說明 <small class="block text-slate-500">caregiver_family_interaction_note（可空，NVARCHAR(50)）</small></label>
                                             <input asp-for="CaregiverFamilyInteractionNote" class="input" placeholder="請輸入互動情形說明" />
                                             <span asp-validation-for="CaregiverFamilyInteractionNote" class="text-red-600 text-sm"></span>
@@ -186,8 +173,8 @@
                                             <i class="fas fa-handshake me-2"></i>資源與支持評估
                                         </h6>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
                                             <label asp-for="FamilyResourceAbilityRating" class="block text-lg font-medium mb-2 text-slate-900">家庭資源連結能力分數 <small class="block text-slate-500">family_resource_ability_rating（可空，TINYINT 1-4）</small></label>
                                             <select asp-for="FamilyResourceAbilityRating" class="input">
                                                 <option value="">請選擇分數</option>
@@ -198,16 +185,12 @@
                                             </select>
                                             <span asp-validation-for="FamilyResourceAbilityRating" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="FamilyResourceAbilityNote" class="block text-lg font-medium mb-2 text-slate-900">家庭資源連結能力說明 <small class="block text-slate-500">family_resource_ability_note（可空，NVARCHAR(50)）</small></label>
                                             <input asp-for="FamilyResourceAbilityNote" class="input" placeholder="請輸入資源連結能力說明" />
                                             <span asp-validation-for="FamilyResourceAbilityNote" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="FamilySocialSupportRating" class="block text-lg font-medium mb-2 text-slate-900">社會家庭支持獲得分數 <small class="block text-slate-500">family_social_support_rating（可空，TINYINT 1-4）</small></label>
                                             <select asp-for="FamilySocialSupportRating" class="input">
                                                 <option value="">請選擇分數</option>
@@ -218,9 +201,7 @@
                                             </select>
                                             <span asp-validation-for="FamilySocialSupportRating" class="text-red-600 text-sm"></span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div>
                                             <label asp-for="FamilySocialSupportNote" class="block text-lg font-medium mb-2 text-slate-900">社會家庭支持獲得說明 <small class="block text-slate-500">family_social_support_note（可空，NVARCHAR(50)）</small></label>
                                             <input asp-for="FamilySocialSupportNote" class="input" placeholder="請輸入社會支持說明" />
                                             <span asp-validation-for="FamilySocialSupportNote" class="text-red-600 text-sm"></span>
@@ -244,22 +225,7 @@
                                     </div>
                                 </div>
 
-                                <!-- 按鈕區域 -->
-                                <div class="mt-6 flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-3">
-                                    <a asp-action="Step1" asp-route-caseId="@Model.CaseId" class="btn btn--secondary w-full md:w-auto">
-                                        <i class="fas fa-arrow-left me-1"></i>返回上一步
-                                    </a>
-                                    <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                                        <button type="submit" class="btn w-full md:w-auto">
-                                            <i class="fas fa-save me-1"></i>儲存並繼續
-                                        </button>
-                                        <a asp-controller="Case" asp-action="Index" class="btn btn--secondary w-full md:w-auto">
-                                            <i class="fas fa-times me-1"></i>取消
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                <partial name="~/Views/CaseWizardOpenCase/Partials/_CaseWizardFormActions.cshtml" model="Model" />
                     </div>
                 </div>
             </form>

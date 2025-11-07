@@ -2,6 +2,8 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
     bool isCaseSection = string.Equals(currentController, "Case", StringComparison.OrdinalIgnoreCase) || string.Equals(currentController, "CaseWizardOpenCase", StringComparison.OrdinalIgnoreCase);
+    bool isSupplySection = string.Equals(currentController, "Supply", StringComparison.OrdinalIgnoreCase);
+    bool isAttendanceSection = string.Equals(currentController, "Attendance", StringComparison.OrdinalIgnoreCase);
     
     // 輔助函數：獲取 Sidebar 項目名稱（優先使用 ViewData，否則使用預設值）
     string GetSidebarItemName(string key, string defaultValue)
@@ -35,6 +37,15 @@
         </a>
     </div>
     <div class="mt-2 rounded-md bg-white dark:bg-slate-700">
+        <a class="sidebar-link w-full flex items-center justify-between" href="@Url.Action("Index", "Home")">
+            <span class="sidebar-link__label text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <i class="bi bi-house text-slate-600 dark:text-slate-400"></i>
+                <span>首頁</span>
+            </span>
+            <span class="badge-pill">尚未開發</span>
+        </a>
+    </div>
+    <div class="mt-2 rounded-md bg-white dark:bg-slate-700">
         <details class="group">
         <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover @(isCaseSection ? "sidebar-parent--active" : string.Empty)">
                 <span class="flex items-center gap-2">
@@ -50,35 +61,10 @@
                     bool isStep1 = string.Equals(currentAction, "Step1", StringComparison.OrdinalIgnoreCase) && string.Equals(currentController, "CaseWizardOpenCase", StringComparison.OrdinalIgnoreCase);
                     bool shouldOpenSubmenu = isCaseSection && (string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) || isStep1 || string.Equals(currentAction, "CareVisitRecord", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "ConsultationRecord", StringComparison.OrdinalIgnoreCase));
                 }
-                <details class="group" @(shouldOpenSubmenu ? Html.Raw("open") : Html.Raw(""))>
-                    <summary class="sidebar-link @(isCaseSection && (string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) || isStep1 || string.Equals(currentAction, "CareVisitRecord", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "ConsultationRecord", StringComparison.OrdinalIgnoreCase)) ? "sidebar-link--active" : string.Empty) cursor-pointer list-none">
-                        <div class="flex items-center justify-between w-full">
-                            <span class="sidebar-link__label text-slate-900 dark:text-slate-100 flex-1" onclick="event.stopPropagation();">@createCaseName</span>
-                            <i class="bi bi-chevron-down transition-transform duration-200 group-open:rotate-180 text-slate-600 dark:text-slate-400"></i>
-                        </div>
-                    </summary>
-                    <div class="mt-2 ml-4 flex flex-col gap-2 sidebar-subnav">
-                        <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) && string.Equals(currentController, "Case", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Create","Case")">
-                            <span class="sidebar-link__label text-slate-900 dark:text-slate-100">個案基本資料</span>
+                <a class="sidebar-link @(isCaseSection && (string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) || isStep1 || string.Equals(currentAction, "CareVisitRecord", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "ConsultationRecord", StringComparison.OrdinalIgnoreCase)) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Create","Case")">
+                    <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@createCaseName</span>
                         </a>
-                        <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Step1", StringComparison.OrdinalIgnoreCase) && string.Equals(currentController, "CaseWizardOpenCase", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Step1","CaseWizardOpenCase")">
-                            <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@openCaseRecordName</span>
-                        </a>
-                        <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "CareVisitRecord", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("CareVisitRecord","Case")">
-                            <div class="flex items-center justify-between w-full">
-                                <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@careVisitRecordName</span>
-                                <span class="badge-pill">尚未開發</span>
-                            </div>
-                        </a>
-                        <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "ConsultationRecord", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("ConsultationRecord","Case")">
-                            <div class="flex items-center justify-between w-full">
-                                <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@consultationRecordName</span>
-                                <span class="badge-pill">尚未開發</span>
-                            </div>
-                        </a>
-                    </div>
-                </details>
-                <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Index","Case")">
+                <a class="sidebar-link @((isCaseSection && (string.Equals(currentAction, "SearchBasic", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "SearchOpening", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "SearchCareVisit", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "SearchConsultation", StringComparison.OrdinalIgnoreCase))) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("SearchBasic","Case")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@queryCaseName</span>
                 </a>
                 <a class="sidebar-link @(isCaseSection && string.Equals(currentAction, "Review", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Review","Case")">
@@ -90,7 +76,7 @@
     
     <div class="mt-2 rounded-md bg-white dark:bg-slate-700">
         <details class="group">
-            <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover">
+            <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover @(isSupplySection ? "sidebar-parent--active" : string.Empty)">
                 <span class="flex items-center gap-2">
                     <i class="bi bi-box-seam text-slate-600 dark:text-slate-400"></i>
                     <span class="text-slate-900 dark:text-slate-100">@supplyManagementName</span>
@@ -101,10 +87,10 @@
                 </div>
             </summary>
             <nav class="px-2 pb-2 mt-3 flex flex-col gap-4 sidebar-subnav">
-                <a class="sidebar-link" href="@Url.Action("Inventory", "Supply")">
+                <a class="sidebar-link @(isSupplySection && string.Equals(currentAction, "Inventory", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Inventory", "Supply")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@supplyInventoryName</span>
                 </a>
-                <a class="sidebar-link" href="@Url.Action("StockIn", "Supply")">
+                <a class="sidebar-link @(isSupplySection && string.Equals(currentAction, "StockIn", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("StockIn", "Supply")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@supplyStockInName</span>
                 </a>
             </nav>
@@ -122,7 +108,7 @@
 
     <div class="mt-2 rounded-md bg-white dark:bg-slate-700">
         <details class="group">
-            <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover">
+            <summary class="sidebar-menu-toggle w-full text-left px-3 py-2.5 flex items-center justify-between rounded-md cursor-pointer list-none sidebar-menu-toggle-hover @(isAttendanceSection ? "sidebar-parent--active" : string.Empty)">
                 <span class="flex items-center gap-2">
                     <i class="bi bi-calendar-check text-slate-600 dark:text-slate-400"></i>
                     <span class="text-slate-900 dark:text-slate-100">@attendanceManagementName</span>
@@ -133,10 +119,10 @@
                 </div>
             </summary>
             <nav class="px-2 pb-2 mt-3 flex flex-col gap-4 sidebar-subnav">
-                <a class="sidebar-link" href="@Url.Action("Record", "Attendance")">
+                <a class="sidebar-link @(isAttendanceSection && string.Equals(currentAction, "Record", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Record", "Attendance")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@attendanceRecordName</span>
                 </a>
-                <a class="sidebar-link" href="@Url.Action("LeaveRequest", "Attendance")">
+                <a class="sidebar-link @(isAttendanceSection && string.Equals(currentAction, "LeaveRequest", StringComparison.OrdinalIgnoreCase) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("LeaveRequest", "Attendance")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@leaveRequestName</span>
                 </a>
             </nav>

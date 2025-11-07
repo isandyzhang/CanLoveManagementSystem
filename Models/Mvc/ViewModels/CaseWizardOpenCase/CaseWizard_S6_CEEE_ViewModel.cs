@@ -1,14 +1,21 @@
 using System.ComponentModel.DataAnnotations;
+using CanLove_Backend.Models.Mvc.ViewModels;
 
 namespace CanLove_Backend.Models.Mvc.ViewModels.CaseWizardOpenCase
 {
     /// <summary>
     /// 步驟6: 情緒評估視圖模型 (CaseEQemotionalEvaluation 表格)
     /// </summary>
-    public class CaseWizard_S6_CEEE_ViewModel
+    public class CaseWizard_S6_CEEE_ViewModel : ICaseWizardViewModel
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;
+
+        public CaseFormMode Mode { get; set; } = CaseFormMode.Create;
+
+        public int CurrentStep { get; set; } = 6;
+
+        public string? SubmitAction { get; set; }
 
         [Display(Name = "孩子的情緒大部分是穩定的，遇到不順心的事情或陌生環境時，孩子能隨著年紀增加逐漸適應的能力")]
         [Range(1, 3, ErrorMessage = "EQ問題1評分必須在1-3之間")]

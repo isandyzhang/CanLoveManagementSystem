@@ -1,14 +1,21 @@
 using System.ComponentModel.DataAnnotations;
+using CanLove_Backend.Models.Mvc.ViewModels;
 
 namespace CanLove_Backend.Models.Mvc.ViewModels.CaseWizardOpenCase
 {
     /// <summary>
     /// 步驟3: 經濟狀況評估視圖模型 (CaseFQeconomicStatus 表格)
     /// </summary>
-    public class CaseWizard_S3_CFQES_ViewModel
+    public class CaseWizard_S3_CFQES_ViewModel : ICaseWizardViewModel
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;
+
+        public CaseFormMode Mode { get; set; } = CaseFormMode.Create;
+
+        public int CurrentStep { get; set; } = 3;
+
+        public string? SubmitAction { get; set; }
 
         [Display(Name = "家庭經濟概況描述")]
         [StringLength(50, ErrorMessage = "家庭經濟概況描述不能超過50個字元")]

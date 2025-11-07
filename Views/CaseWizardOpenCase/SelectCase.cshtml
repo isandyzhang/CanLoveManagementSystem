@@ -1,52 +1,53 @@
 @{
-    ViewData["Title"] = "選擇個案 - 開案紀錄";
+    ViewData["Title"] = "開案紀錄表";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Index", "Case") ?? string.Empty),
+        ("新增個案", Url.Action("Create", "Case") ?? string.Empty),
+        ("開案紀錄表", string.Empty)
+    };
 }
 
 <div class="w-full px-4 sm:px-6 lg:px-8">
-    <div class="max-w-[1000px] mx-auto">
+    <div class="max-w-[1400px] mx-auto">
         <div class="w-full">
-            <div class="card bg-white rounded-xl shadow-card-lg border border-border mt-3">
-                <div class="px-6 py-4 border-bottom">
+            @{ ViewBag.CurrentPage = "Create"; ViewBag.CurrentTab = "CaseOpening"; }
+            <partial name="~/Views/Case/Partials/_CaseTabs.cshtml" />
+            <div class="card bg-white dark:bg-white shadow-card-lg border rounded-xl border-[#FDBA74] mt-3">
+                <div class="px-6 py-4 rounded-t-xl bg-[#FFF1E6]">
                     <h5 class="mb-0 text-slate-900">
-                        <i class="bi bi-search me-2"></i>選擇個案
+                        <i class="bi bi-card-text me-2"></i>選擇個案
                     </h5>
                 </div>
-                <div class="px-6 py-4">
-                    <div class="mb-3">
-                        <label for="caseSearchInput" class="block text-sm text-slate-700 mb-1">搜尋個案</label>
+                <div class="px-6 py-6">
+                    <div class="mb-4">
+                        <label for="caseSearchInput" class="block text-sm text-slate-700 mb-1">搜尋個案（編號/姓名/電話）</label>
                         <div class="flex">
                             <span class="inline-flex items-center px-3 border border-r-0 border-border rounded-l-md bg-slate-50 text-slate-500"><i class="fas fa-search"></i></span>
-                            <input type="text" id="caseSearchInput" class="input flex-1 rounded-l-none" placeholder="請輸入個案編號、姓名或電話號碼..." autocomplete="off" />
+                            <input type="text" id="caseSearchInput" class="input flex-1 rounded-l-none" placeholder="請輸入關鍵字..." autocomplete="off" />
                             <span id="caseSearchLoading" class="hidden items-center px-3 border border-l-0 border-border rounded-r-md"><span class="spinner-border spinner-border-sm" role="status"></span></span>
                         </div>
                     </div>
 
                     <div id="caseSearchResults" class="d-none">
-                        <div class="card bg-white rounded-xl border border-border shadow-sm">
-                            <div class="p-3 pb-0">
-                                <h6 class="text-slate-900 mb-2">搜尋結果</h6>
-                            </div>
-                            <div class="p-3 pt-0 overflow-auto">
-                                <table class="data-table text-left w-full text-slate-900">
-                                    <thead>
-                                        <tr class="bg-slate-50">
-                                            <th class="text-slate-700">姓名</th>
-                                            <th class="text-slate-700">出生日期</th>
-                                            <th class="text-slate-700">操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="caseResultsList">
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div class="overflow-auto">
+                            <table class="data-table text-left w-full text-slate-900">
+                                <thead>
+                                    <tr class="bg-slate-50">
+                                        <th class="text-slate-700">個案編號</th>
+                                        <th class="text-slate-700">姓名</th>
+                                        <th class="text-slate-700">出生日期</th>
+                                        <th class="text-slate-700">城市</th>
+                                        <th class="text-slate-700">地區</th>
+                                        <th class="text-slate-700">學校</th>
+                                        <th class="text-slate-700">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="caseResultsList">
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end mt-4">
-                        <button id="btnCreateOpening" class="btn" disabled>
-                            <i class="fas fa-file-medical me-1"></i>新增開案紀錄
-                        </button>
                     </div>
                 </div>
             </div>
@@ -61,9 +62,6 @@
     const searchResults = document.getElementById('caseSearchResults');
     const resultsList = document.getElementById('caseResultsList');
     const searchLoading = document.getElementById('caseSearchLoading');
-    const btnCreate = document.getElementById('btnCreateOpening');
-    let selectedCaseId = '';
-    let selectedRowEl = null;
     let searchTimeout;
 
     searchInput.addEventListener('input', function(){
@@ -71,15 +69,14 @@
         clearTimeout(searchTimeout);
         if(query === ''){
             hideResults();
-            setSelected('');
             return;
         }
-        searchLoading.classList.remove('d-none');
+        searchLoading.classList.remove('hidden');
         searchTimeout = setTimeout(async () => {
             try {
                 const res = await fetch(`/Case/SearchCases?query=${encodeURIComponent(query)}`);
                 const data = await res.json();
-                searchLoading.classList.add('d-none');
+                searchLoading.classList.add('hidden');
                 if(data.success && data.cases && data.cases.length){
                     render(data.cases);
                 } else {
@@ -87,7 +84,7 @@
                 }
             } catch(e){
                 console.error(e);
-                searchLoading.classList.add('d-none');
+                searchLoading.classList.add('hidden');
                 hideResults();
             }
         }, 400);
@@ -96,49 +93,26 @@
     function render(cases){
         searchResults.classList.remove('d-none');
         resultsList.innerHTML = cases.map(c => `
-            <tr class="border-b border-border" data-id="${escapeHtml(c.caseId)}">
-                <td class="text-slate-900"><span class="fw-semibold">${escapeHtml(c.name || '')}</span></td>
-                <td class="text-slate-900">${c.birthDate ? escapeHtml(c.birthDate) : ''}</td>
+            <tr class="border-b border-border hover:bg-slate-50 cursor-pointer" data-id="${escapeHtml(c.caseId)}">
+                <td class="text-slate-900"><code>${escapeHtml(c.caseId || '')}</code></td>
+                <td class="text-slate-900">${escapeHtml(c.name || '')}</td>
+                <td class="text-slate-900">${escapeHtml(c.birthDate || '')}</td>
+                <td class="text-slate-900">${escapeHtml(c.city || '')}</td>
+                <td class="text-slate-900">${escapeHtml(c.district || '')}</td>
+                <td class="text-slate-900">${escapeHtml(c.school || '')}</td>
                 <td>
-                    <button type="button" class="badge-pill bg-primary text-white" data-id="${escapeHtml(c.caseId)}">選擇</button>
+                    <a href="/CaseWizardOpenCase/Step1?caseId=${encodeURIComponent(c.caseId)}" class="badge-pill bg-primary text-white">
+                        <i class="bi bi-pencil me-1"></i>寫開案記錄
+                    </a>
                 </td>
             </tr>
         `).join('');
-
-        // 點擊整列即可選取
-        Array.from(resultsList.querySelectorAll('tr')).forEach(tr => {
-            tr.addEventListener('click', function(e){
-                // 若點到按鈕也會觸發，但行為相同
-                const id = this.getAttribute('data-id');
-                setSelected(id);
-            });
-        });
-
-        // 按鈕選取（避免事件衝突仍保留）
-        Array.from(resultsList.querySelectorAll('button')).forEach(btn => {
-            btn.addEventListener('click', function(ev){
-                ev.stopPropagation();
-                const id = this.getAttribute('data-id');
-                setSelected(id);
-            });
-        });
     }
 
     function hideResults(){
         searchResults.classList.add('d-none');
         resultsList.innerHTML = '';
     }
-
-    function setSelected(caseId){
-        selectedCaseId = caseId;
-        btnCreate.disabled = !selectedCaseId;
-        updateHighlight();
-    }
-
-    btnCreate.addEventListener('click', function(){
-        if(!selectedCaseId) return;
-        window.location.href = `/CaseWizardOpenCase/Step1?caseId=${encodeURIComponent(selectedCaseId)}`;
-    });
 
     function escapeHtml(text){
         if(!text) return '';
@@ -148,23 +122,8 @@
     }
 
     searchInput.focus();
-
-    function updateHighlight(){
-        // 解除先前高亮
-        if(selectedRowEl){
-            selectedRowEl.classList.remove('row-selected');
-        }
-        selectedRowEl = resultsList.querySelector(`tr[data-id="${CSS.escape(selectedCaseId)}"]`);
-        if(selectedRowEl){
-            selectedRowEl.classList.add('row-selected');
-        }
-    }
 })();
 </script>
-<style>
-    /* 選取列高亮 */
-    .row-selected { background-color: #EFF6FF; }
-</style>
 }
 
 

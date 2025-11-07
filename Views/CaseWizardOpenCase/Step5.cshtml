@@ -1,20 +1,22 @@
 @model CanLove_Backend.Models.Mvc.ViewModels.CaseWizardOpenCase.CaseWizard_S5_CIQAP_ViewModel
 
 @{
-    ViewData["Title"] = "步驟5: 學業表現評估";
+    ViewData["Title"] = "開案記錄表";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Index", "Case") ?? string.Empty),
+        ("新增個案", Url.Action("Create", "Case") ?? string.Empty),
+        ("開案記錄表", string.Empty)
+    };
 }
 
 <div class="w-full px-4 sm:px-6 lg:px-8">
     <div class="max-w-[1400px] mx-auto">
         <div class="w-full">
-            <!-- 頁面標題 -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1">@ViewData["Title"]</h2>
-                    <p class="text-muted mb-0">填寫兒少學業表現評估資料</p>
-                </div>
-            </div>
+            @{ ViewBag.CurrentPage = "Create"; ViewBag.CurrentTab = "CaseOpening"; }
+            <partial name="~/Views/Case/Partials/_CaseTabs.cshtml" />
+
 
             @{
                 ViewBag.CurrentStep = 5;
@@ -26,15 +28,14 @@
 
             <!-- 表單 -->
             <form asp-action="Step5" method="post" class="needs-validation" novalidate>
-                <div class="row justify-content-center">
-                    <div class="col-lg-10">
-                        <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border-0">
-                            <div class="px-6 py-6 border-b border-border">
-                                <h3 class="text-xl font-semibold leading-tight mb-0 text-slate-900">
-                                    <i class="fas fa-graduation-cap me-2"></i>學業表現評估
-                                </h3>
-                            </div>
-                            <div class="px-6 py-6">
+                <div class="card bg-white dark:bg-white rounded-xl shadow-card-lg border rounded-xl border-[#FDBA74]">
+                    <div class="px-6 py-4 mb-5 flex items-center justify-between bg-[#FFF1E6] rounded-t-xl">
+                        <span class="inline-flex items-center gap-3 text-2xl font-bold text-slate-800">
+                            <i class="bi bi-card-text"></i>
+                            學業表現評估
+                        </span>
+                    </div>
+                    <div class="px-6 py-6">
                                 <!-- 隱藏欄位 -->
                                 <input asp-for="CaseId" type="hidden" />
 
@@ -47,7 +48,7 @@
                                     </div>
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label asp-for="AcademicPerformanceSummary" class="block text-lg font-medium mb-2 text-slate-900">學業表現描述 <small class="block text-slate-500">academic_performance_summary（可空，NVARCHAR(100)）</small></label>
+                                            <label asp-for="AcademicPerformanceSummary" class="block text-lg font-medium mb-2 text-slate-900">學業表現描述 <small class="block text-slate-500">academic_performance_summary（可空，NVARCHAR(500)）</small></label>
                                             <textarea asp-for="AcademicPerformanceSummary" class="input" rows="6" placeholder="請詳細描述兒少的學業表現狀況，包括：&#10;• 學習態度與動機&#10;• 各科成績表現&#10;• 學習困難與挑戰&#10;• 特殊學習需求&#10;• 與同學和老師的互動情況&#10;• 課外活動參與度&#10;• 其他相關觀察"></textarea>
                                             <div class="form-text">
                                                 <i class="fas fa-info-circle me-1"></i>
@@ -78,22 +79,7 @@
                                     </div>
                                 </div>
 
-                                <!-- 按鈕區域 -->
-                                <div class="mt-6 flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-3">
-                                    <a asp-action="Step4" asp-route-caseId="@Model.CaseId" class="btn btn--secondary w-full md:w-auto">
-                                        <i class="fas fa-arrow-left me-1"></i>返回上一步
-                                    </a>
-                                    <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                                        <button type="submit" class="btn w-full md:w-auto">
-                                            <i class="fas fa-save me-1"></i>儲存並繼續
-                                        </button>
-                                        <a asp-controller="Case" asp-action="Index" class="btn btn--secondary w-full md:w-auto">
-                                            <i class="fas fa-times me-1"></i>取消
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                <partial name="~/Views/CaseWizardOpenCase/Partials/_CaseWizardFormActions.cshtml" model="Model" />
                     </div>
                 </div>
             </form>

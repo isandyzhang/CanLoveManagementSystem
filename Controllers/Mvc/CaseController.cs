@@ -264,8 +264,9 @@ public class CaseController : Controller
         
         try
         {
-            var viewModel = new CaseCreateViewModel
+            var viewModel = new CaseFormViewModel
             {
+                Mode = CaseFormMode.Create,
                 Case = new CanLove_Backend.Data.Models.Core.Case
                 {
                     CaseId = string.Empty,
@@ -300,8 +301,9 @@ public class CaseController : Controller
         catch (Exception ex)
         {
             ViewBag.ErrorMessage = $"載入頁面時發生錯誤：{ex.Message}";
-            return View(new CaseCreateViewModel
+            return View(new CaseFormViewModel
             {
+                Mode = CaseFormMode.Create,
                 Case = new CanLove_Backend.Data.Models.Core.Case(),
                 Cities = new List<City>(),
                 Districts = new List<District>(),
@@ -317,7 +319,7 @@ public class CaseController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     // [Authorize(Policy = "RequireAssistant")] // 暫時註解掉進行測試
-    public async Task<IActionResult> Create(CaseCreateViewModel model)
+    public async Task<IActionResult> Create(CaseFormViewModel model)
     {
         if (ModelState.IsValid)
         {
@@ -346,7 +348,7 @@ public class CaseController : Controller
                             int? uploadedBy = null;
                             if (User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(User.Identity.Name))
                             {
-                                var staff = await _context.Staff
+                                var staff = await _context.Staffs
                                     .FirstOrDefaultAsync(s => s.Email == User.Identity.Name && !s.Deleted);
                                 uploadedBy = staff?.StaffId;
                             }
@@ -384,7 +386,7 @@ public class CaseController : Controller
                 return View(model);
             }
 
-            // 設定個案為待審閱狀態（點擊「存檔送審」表示要送審）
+            // 設定個案為待審閱狀態（點擊「提交審核」表示要送審）
             model.Case.Status = "PendingReview";
             model.Case.SubmittedBy = User.Identity?.Name ?? "";
             model.Case.SubmittedAt = DateTime.UtcNow;
@@ -398,8 +400,9 @@ public class CaseController : Controller
                 TempData["SuccessMessage"] = "個案建立成功";
 
                 // 留在建立頁，並重設表單預設值與下拉資料
-                var resetViewModel = new CaseCreateViewModel
+                var resetViewModel = new CaseFormViewModel
                 {
+                    Mode = CaseFormMode.Create,
                     Case = new CanLove_Backend.Data.Models.Core.Case
                     {
                         CaseId = string.Empty,
@@ -831,49 +834,99 @@ public class CaseController : Controller
     }
 
     /// <summary>
+    /// 查詢 - 基本資料
+    /// </summary>
+    [HttpGet]
+    public IActionResult SearchBasic()
+    {
+        ViewData["Title"] = "查詢個案 - 基本資料";
+        ViewBag.CurrentPage = "Search";
+        ViewBag.CurrentTab = "CaseBasic";
+        return View();
+    }
+
+    /// <summary>
+    /// 查詢 - 開案紀錄
+    /// </summary>
+    [HttpGet]
+    public IActionResult SearchOpening()
+    {
+        ViewData["Title"] = "查詢個案 - 開案紀錄";
+        ViewBag.CurrentPage = "Search";
+        ViewBag.CurrentTab = "CaseOpening";
+        return View();
+    }
+
+    /// <summary>
+    /// 查詢 - 關懷訪視（占位）
+    /// </summary>
+    [HttpGet]
+    public IActionResult SearchCareVisit()
+    {
+        ViewData["Title"] = "查詢個案 - 關懷訪視";
+        ViewBag.CurrentPage = "Search";
+        ViewBag.CurrentTab = "CareVisitRecord";
+        return View();
+    }
+
+    /// <summary>
+    /// 查詢 - 會談服務（占位）
+    /// </summary>
+    [HttpGet]
+    public IActionResult SearchConsultation()
+    {
+        ViewData["Title"] = "查詢個案 - 會談服務";
+        ViewBag.CurrentPage = "Search";
+        ViewBag.CurrentTab = "Consultation";
+        return View();
+    }
+
+    /// <summary>
     /// 個案審核頁面
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Review()
+    public async Task<IActionResult> Review(string? tab)
     {
         ViewData["Title"] = "個案審核";
-        var userRoles = User.FindAll("roles").Select(c => c.Value).ToList();
-        
-        IQueryable<Case> query = _context.Cases
-            .Include(c => c.City)
-            .Include(c => c.District)
-            .Include(c => c.School)
-            .Where(c => c.Deleted != true);
-
-        // 只顯示待審閱的個案
-        query = query.Where(c => c.Status == "PendingReview");
-
-        var cases = await query
-            .OrderByDescending(c => c.SubmittedAt)
-            .Select(c => new CanLove_Backend.Data.Models.Core.Case
-            {
-                CaseId = c.CaseId,
-                Name = c.Name,
-                Gender = c.Gender,
-                Status = c.Status,
-                BirthDate = c.BirthDate,
-                City = c.City,
-                District = c.District,
-                School = c.School,
-                SubmittedBy = c.SubmittedBy,
-                SubmittedAt = c.SubmittedAt,
-                ReviewedBy = c.ReviewedBy,
-                ReviewedAt = c.ReviewedAt,
-                IsLocked = c.IsLocked,
-                LockedBy = c.LockedBy,
-                LockedAt = c.LockedAt,
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt
-            })
+        var reviewItems = await _context.Set<CanLove_Backend.Data.Models.Review.CaseReviewItem>()
+            .Where(r => r.Status == "PendingReview")
+            .OrderByDescending(r => r.SubmittedAt)
             .AsNoTracking()
             .ToListAsync();
 
-        return View("Review", cases); // 使用專用 Review 視圖顯示待審閱個案
+        // 統計各類型數量供分頁顯示
+        var typeCounts = reviewItems
+            .GroupBy(r => r.Type)
+            .ToDictionary(g => g.Key, g => g.Count());
+        ViewBag.TypeCounts = typeCounts;
+
+        // 預設分頁（tab）：顯示個案基本資料
+        var currentTab = string.IsNullOrWhiteSpace(tab) ? "CaseBasic" : tab;
+        ViewBag.CurrentTab = currentTab;
+
+        // 依分頁過濾顯示清單
+        if (!string.IsNullOrWhiteSpace(currentTab))
+        {
+            reviewItems = reviewItems
+                .Where(r => string.Equals(r.Type, currentTab, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        // 取得提交者顯示名稱（以 Staff.DisplayName 對照 SubmittedBy Email）
+        var emails = reviewItems
+            .Where(r => !string.IsNullOrWhiteSpace(r.SubmittedBy))
+            .Select(r => r.SubmittedBy!)
+            .Distinct()
+            .ToList();
+
+        var staffMap = await _context.Staffs
+            .Where(s => emails.Contains(s.Email))
+            .Select(s => new { s.Email, s.DisplayName })
+            .ToDictionaryAsync(x => x.Email, x => x.DisplayName);
+
+        ViewBag.SubmitterNameMap = staffMap; // 在視圖中使用
+
+        return View("Review", reviewItems);
     }
 
     /// <summary>
@@ -907,6 +960,112 @@ public class CaseController : Controller
 
         if (item == null) return View("NotFound");
         return View("ReviewForm", item);
+    }
+
+    /// <summary>
+    /// 個案審核詳情（統一入口）。依 Type 顯示對應內容，並提供通過/拒絕按鈕。
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ReviewItem(int id)
+    {
+        var reviewItem = await _context.Set<CanLove_Backend.Data.Models.Review.CaseReviewItem>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.ReviewId == id);
+        if (reviewItem == null)
+        {
+            return View("NotFound");
+        }
+
+        ViewData["Title"] = "個案審核";
+        ViewBag.ReviewId = id;
+        ViewBag.ReviewType = reviewItem.Type;
+        ViewBag.CaseId = reviewItem.CaseId;
+        ViewBag.CaseName = string.Empty;
+
+        if (string.Equals(reviewItem.Type, "CaseBasic", StringComparison.OrdinalIgnoreCase))
+        {
+            var item = await _context.Cases
+                .Where(c => c.CaseId == reviewItem.CaseId)
+                .Select(c => new CanLove_Backend.Data.Models.Core.Case
+                {
+                    CaseId = c.CaseId,
+                    Name = c.Name,
+                    Gender = c.Gender,
+                    BirthDate = c.BirthDate,
+                    Phone = c.Phone,
+                    Email = c.Email,
+                    Address = c.Address,
+                    PhotoBlobId = c.PhotoBlobId
+                })
+                .AsNoTracking()
+                .SingleOrDefaultAsync();
+
+            if (item == null) return View("NotFound");
+            
+            ViewBag.CaseName = item.Name;
+            
+            // 載入選項資料（與 Create 頁面一致）
+            ViewBag.Cities = await _context.Cities.OrderBy(c => c.CityId).ToListAsync();
+            ViewBag.Schools = await _schoolService.GetAllSchoolsAsync();
+            ViewBag.GenderOptions = await _optionService.GetGenderOptionsAsync();
+            
+            // 載入地區資料（按城市分組）
+            var allDistricts = await _context.Districts
+                .Include(d => d.City)
+                .OrderBy(d => d.CityId)
+                .ThenBy(d => d.DistrictName)
+                .ToListAsync();
+
+            var districtsByCity = allDistricts
+                .GroupBy(d => d.CityId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(d => new { 
+                        districtId = d.DistrictId, 
+                        districtName = d.DistrictName 
+                    }).ToList()
+                );
+
+            ViewBag.DistrictsByCity = districtsByCity;
+            
+            return View("ReviewItem", item);
+        }
+
+        if (string.Equals(reviewItem.Type, "CaseOpening", StringComparison.OrdinalIgnoreCase))
+        {
+            // 目前開案表單內容在 Wizard 頁，這裡提供摘要與前往編輯的入口
+            // 載入個案姓名做為麵包屑尾巴顯示
+            var nameOnly = await _context.Cases
+                .Where(c => c.CaseId == reviewItem.CaseId)
+                .Select(c => c.Name)
+                .AsNoTracking()
+                .SingleOrDefaultAsync();
+            ViewBag.CaseName = nameOnly ?? string.Empty;
+            return View("ReviewItem", new object());
+        }
+
+        TempData["ErrorMessage"] = $"尚未支援的審核類型：{reviewItem.Type}";
+        return RedirectToAction(nameof(Review));
+    }
+
+    /// <summary>
+    /// 審核決策（以 CaseReviewItem 為主）
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReviewItemDecision(int reviewId, bool approved, string? reviewComment = null)
+    {
+        var reviewService = HttpContext.RequestServices.GetService(typeof(CanLove_Backend.Services.Shared.ReviewService)) as CanLove_Backend.Services.Shared.ReviewService;
+        if (reviewService == null)
+        {
+            TempData["ErrorMessage"] = "審核服務未就緒";
+            return RedirectToAction(nameof(Review));
+        }
+
+        var reviewer = User.Identity?.Name ?? string.Empty;
+        var ok = await reviewService.DecideAsync(reviewId, approved, reviewer, reviewComment);
+        TempData[ok ? "SuccessMessage" : "ErrorMessage"] = ok ? (approved ? "審核通過" : "已退回") : "審核失敗";
+        return RedirectToAction(nameof(Review));
     }
 
     /// <summary>

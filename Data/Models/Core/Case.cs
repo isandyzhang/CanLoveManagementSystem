@@ -42,7 +42,7 @@ public partial class Case
 
     [MaxLength(20)]
     [Column("status")]
-    public string Status { get; set; } = "Draft";
+    public string Status { get; set; } = "PendingReview";
 
     public string? SubmittedBy { get; set; }
 

@@ -53,12 +53,13 @@ builder.Services
 
 // 設定認證事件，用於登入時同步員工資料
 // 使用Configure來設定事件，因為需要在服務註冊完成後才能取得IStaffService
+// 使用 EventsType 避免在組態期間建立額外 ServiceProvider
+builder.Services.AddScoped<CanLove_Backend.Extensions.AuthenticationEvents>();
 builder.Services.Configure<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions>(
     Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme,
     options =>
     {
-        var serviceScopeFactory = builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>();
-        options.Events = new CanLove_Backend.Extensions.AuthenticationEvents(serviceScopeFactory);
+        options.EventsType = typeof(CanLove_Backend.Extensions.AuthenticationEvents);
     });
 
 // 開發環境：配置 Cookie 策略，避免 Correlation failed
@@ -95,9 +96,11 @@ builder.Services.AddDbContext<CanLoveDbContext>(options =>
 // === 共用服務 ===
 builder.Services.AddScoped<CanLove_Backend.Services.Shared.OptionService>();
 builder.Services.AddScoped<CanLove_Backend.Services.Shared.SchoolService>();
-builder.Services.AddScoped<CanLove_Backend.Services.Shared.AddressService>();
 builder.Services.AddScoped<CanLove_Backend.Services.Shared.IStaffService, CanLove_Backend.Services.Shared.StaffService>();
 builder.Services.AddScoped<CanLove_Backend.Services.Shared.IBlobService, CanLove_Backend.Services.Shared.BlobService>();
+builder.Services.AddScoped<CanLove_Backend.Services.Shared.CaseBasicReviewHandler>();
+builder.Services.AddScoped<CanLove_Backend.Services.Shared.CaseOpeningReviewHandler>();
+builder.Services.AddScoped<CanLove_Backend.Services.Shared.ReviewService>();
 
 // === Case 相關服務 ===
 builder.Services.AddScoped<CanLove_Backend.Services.Case.CaseService>();

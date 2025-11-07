@@ -1,14 +1,21 @@
 using System.ComponentModel.DataAnnotations;
+using CanLove_Backend.Models.Mvc.ViewModels;
 
 namespace CanLove_Backend.Models.Mvc.ViewModels.CaseWizardOpenCase
 {
     /// <summary>
     /// 步驟1: 個案詳細資料視圖模型 (CaseDetail 表格)
     /// </summary>
-    public class CaseWizard_S1_CD_ViewModel
+    public class CaseWizard_S1_CD_ViewModel : ICaseWizardViewModel
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;
+
+        public CaseFormMode Mode { get; set; } = CaseFormMode.Create;
+
+        public int CurrentStep { get; set; } = 1;
+
+        public string? SubmitAction { get; set; }
 
         [Display(Name = "聯絡人姓名")]
         [StringLength(20, ErrorMessage = "聯絡人姓名不能超過20個字元")]

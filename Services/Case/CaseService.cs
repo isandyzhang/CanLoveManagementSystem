@@ -4,6 +4,7 @@ using CanLove_Backend.Models.Api.Responses;
 using Microsoft.EntityFrameworkCore;
 using CaseEntity = CanLove_Backend.Data.Models.Core.Case;
 using AutoMapper;
+using CanLove_Backend.Data.Models.Review;
 
 namespace CanLove_Backend.Services.Case;
 
@@ -51,25 +52,7 @@ public class CaseService
         return await GetCasesCoreAsync(page, pageSize);
     }
 
-    /// <summary>
-    /// 取得個案列表（API 用） - 使用 AutoMapper 改善
-    /// </summary>
-    public async Task<ApiResponse<List<CaseResponse>>> GetCasesForApiAsync(int page = 1, int pageSize = 10)
-    {
-        try
-        {
-            var (cases, totalCount) = await GetCasesCoreAsync(page, pageSize);
-            
-            // 🎯 原本需要手動對應每個屬性，現在只需要 1 行！
-            var caseResponses = _mapper.Map<List<CaseResponse>>(cases);
-
-            return ApiResponse<List<CaseResponse>>.SuccessResponse(caseResponses, "取得個案列表成功");
-        }
-        catch (Exception ex)
-        {
-            return ApiResponse<List<CaseResponse>>.ErrorResponse($"取得個案列表失敗：{ex.Message}");
-        }
-    }
+    
 
     /// <summary>
     /// 建立個案 - 使用 AutoMapper 改善
@@ -103,10 +86,27 @@ public class CaseService
 
             caseData.CreatedAt = DateTime.UtcNow;
             caseData.UpdatedAt = DateTime.UtcNow;
-            caseData.Status = caseData.Status ?? "Draft"; // 如果已有狀態就保留，否則設為 Draft
+            // 若外部（控制器）已設定狀態則沿用；否則一律設為 PendingReview（不再使用 Draft）
+            caseData.Status = string.IsNullOrWhiteSpace(caseData.Status) ? "PendingReview" : caseData.Status;
             caseData.Deleted = false;
 
             _context.Cases.Add(caseData);
+            await _context.SaveChangesAsync();
+
+            // 建立對應的審核項目（CaseBasic）
+            var reviewItem = new CaseReviewItem
+            {
+                CaseId = caseData.CaseId,
+                Type = "CaseBasic",
+                TargetId = caseData.CaseId,
+                Title = caseData.Name,
+                Status = "PendingReview",
+                SubmittedBy = caseData.SubmittedBy,
+                SubmittedAt = caseData.SubmittedAt ?? DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.Set<CaseReviewItem>().Add(reviewItem);
             await _context.SaveChangesAsync();
 
             // 為避免個別環境的 AutoMapper/導覽屬性延遲載入造成型別轉換異常，

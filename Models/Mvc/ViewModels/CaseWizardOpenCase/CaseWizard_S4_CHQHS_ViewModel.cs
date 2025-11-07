@@ -1,14 +1,21 @@
 using System.ComponentModel.DataAnnotations;
+using CanLove_Backend.Models.Mvc.ViewModels;
 
 namespace CanLove_Backend.Models.Mvc.ViewModels.CaseWizardOpenCase
 {
     /// <summary>
     /// 步驟4: 健康狀況評估視圖模型 (CaseHQhealthStatus 表格)
     /// </summary>
-    public class CaseWizard_S4_CHQHS_ViewModel
+    public class CaseWizard_S4_CHQHS_ViewModel : ICaseWizardViewModel
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;
+
+        public CaseFormMode Mode { get; set; } = CaseFormMode.Create;
+
+        public int CurrentStep { get; set; } = 4;
+
+        public string? SubmitAction { get; set; }
 
         [Display(Name = "照顧者編號")]
         public int CaregiverId { get; set; }
