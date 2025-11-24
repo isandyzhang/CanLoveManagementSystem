@@ -45,6 +45,17 @@
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 16px;
+
+    /* Microsoft 品牌色 */
+    --microsoft-blue: #0078D4;
+    --microsoft-blue-hover: #106EBE;
+    --microsoft-blue-active: #005A9E;
+
+    /* Orange for Case Opening Record Form */
+    --orange-50: #FFF1E6;
+    --orange-100: #FFF8F1;
+    --orange-400: #FDBA74;
+    --orange-500: #FB923C;
   }
 
   .dark {
@@ -94,10 +105,20 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
 
+  --color-orange-50: var(--orange-50);
+  --color-orange-100: var(--orange-100);
+  --color-orange-400: var(--orange-400);
+  --color-orange-500: var(--orange-500);
+
   /* radius tokens */
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
+
+  /* Microsoft 品牌色 tokens */
+  --color-microsoft-blue: var(--microsoft-blue);
+  --color-microsoft-blue-hover: var(--microsoft-blue-hover);
+  --color-microsoft-blue-active: var(--microsoft-blue-active);
 }
 
 /* Base styles */

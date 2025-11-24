@@ -5,7 +5,7 @@
     <div class="w-full h-20 px-6 flex items-center justify-end">
         <!-- 右側：明亮切換、通知和用戶資料 -->
         <div class="flex items-center gap-4">
-            <!-- 明亮切換按鈕 -->
+            <!-- 日夜模式切換按鈕 -->
             <button 
                 id="theme-toggle" 
                 class="relative w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 transition-colors" 
@@ -90,20 +90,22 @@
         }
 
         // 切換主題
-        themeToggle.addEventListener('click', function() {
-            const isDark = root.classList.contains('dark');
-            const newTheme = isDark ? 'light' : 'dark';
-            
-            // 更新 localStorage
-            try {
-                localStorage.setItem('theme', newTheme);
-            } catch (e) {
-                console.warn('無法保存主題設定:', e);
-            }
-            
-            // 更新 UI
-            updateTheme(!isDark);
-        });
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function() {
+                const isDark = root.classList.contains('dark');
+                const newTheme = isDark ? 'light' : 'dark';
+                
+                // 更新 localStorage
+                try {
+                    localStorage.setItem('theme', newTheme);
+                } catch (e) {
+                    console.warn('無法保存主題設定:', e);
+                }
+                
+                // 更新 UI
+                updateTheme(!isDark);
+            });
+        }
 
         // 頁面載入時初始化圖標
         initThemeIcon();

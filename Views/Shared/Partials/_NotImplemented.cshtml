@@ -1,0 +1,18 @@
+@{
+    // 支援自訂參數，預設值為「此功能尚未實作」
+    var title = ViewData["NotImplementedTitle"] as string ?? "此功能尚未實作";
+    var description = ViewData["NotImplementedDescription"] as string ?? "此功能目前正在開發中，敬請期待。";
+    var icon = ViewData["NotImplementedIcon"] as string ?? "bi-box";
+    var iconSize = ViewData["NotImplementedIconSize"] as string ?? "3rem";
+}
+
+<div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-border dark:border-slate-800">
+    <div class="p-6">
+        <div class="text-center py-10 text-slate-500 dark:text-slate-400">
+            <i class="bi @icon text-slate-400 dark:text-slate-500 text-5xl"></i>
+            <h4 class="mt-3 text-slate-900 dark:text-slate-100">@title</h4>
+            <p class="text-slate-600 dark:text-slate-400">@description</p>
+        </div>
+    </div>
+</div>
+

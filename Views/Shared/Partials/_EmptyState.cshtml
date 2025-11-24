@@ -1,0 +1,29 @@
+@{
+    // 支援自訂參數，預設值為空狀態
+    var title = ViewData["EmptyStateTitle"] as string ?? "尚無個案資料";
+    var description = ViewData["EmptyStateDescription"] as string ?? "目前沒有符合條件的個案記錄";
+    var icon = ViewData["EmptyStateIcon"] as string ?? "bi-inbox";
+    var showCard = ViewData["EmptyStateShowCard"] as bool? ?? true;
+}
+
+@if (showCard)
+{
+    <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-border dark:border-slate-800">
+        <div class="p-6">
+            <div class="text-center py-10 text-slate-500 dark:text-slate-400">
+                <i class="bi @icon text-slate-400 dark:text-slate-500 text-5xl"></i>
+                <h4 class="mt-3 text-slate-900 dark:text-slate-100">@title</h4>
+                <p class="text-slate-600 dark:text-slate-400">@description</p>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-10 text-slate-500 dark:text-slate-400">
+        <i class="bi @icon text-slate-400 dark:text-slate-500 text-5xl"></i>
+        <h4 class="mt-3 text-slate-900 dark:text-slate-100">@title</h4>
+        <p class="text-slate-600 dark:text-slate-400">@description</p>
+    </div>
+}
+

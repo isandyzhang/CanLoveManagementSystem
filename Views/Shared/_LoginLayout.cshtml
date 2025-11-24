@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CanLove 協會管理系統</title>
+    <title>@ViewData["Title"] - 肯愛社會服務協會管理系統</title>
     
     <!-- 主題 CSS -->
-    <link href="~/css/theme.css" rel="stylesheet" />
-    <link href="~/css/login.css" rel="stylesheet" />
+    <link href="~/css/theme.css" rel="stylesheet" asp-append-version="true" />
     
-    <!-- Font Awesome 圖示 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     
     <!-- 預載入字體 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- 安全標頭 -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -25,60 +25,34 @@
     <!-- 網站圖示 -->
     <link rel="icon" type="image/x-icon" href="~/favicon.ico">
     
+    <script>
+        // 主題初始化腳本
+        (function() {
+            try {
+                const root = document.documentElement;
+                const savedTheme = localStorage.getItem('theme');
+                const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                // 優先使用保存的主題，否則使用系統偏好
+                const isDark = savedTheme 
+                    ? savedTheme === 'dark' 
+                    : systemPrefersDark;
+                
+                if (isDark) {
+                    root.classList.add('dark');
+                } else {
+                    root.classList.remove('dark');
+                }
+            } catch (e) {
+                console.warn('主題初始化失敗:', e);
+        }
+        })();
+    </script>
+    
     @await RenderSectionAsync("Head", required: false)
 </head>
-<body class="login-body">
+<body class="bg-slate-50 dark:bg-slate-950">
     @RenderBody()
-    
-    <!-- JavaScript 功能 -->
-    <script>
-        // 登入按鈕點擊處理
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginBtn = document.querySelector('.btn-login');
-            const loadingDiv = document.querySelector('.login-loading');
-            
-            if (loginBtn && loadingDiv) {
-                loginBtn.addEventListener('click', function(e) {
-                    // 顯示載入動畫
-                    loadingDiv.classList.add('show');
-                    
-                    // 隱藏按鈕
-                    loginBtn.style.display = 'none';
-                });
-            }
-        });
-        
-        // 錯誤訊息處理
-        function showError(message) {
-            const errorDiv = document.querySelector('.login-error');
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.classList.add('show');
-            }
-        }
-        
-        // 成功訊息處理
-        function showSuccess(message) {
-            const successDiv = document.querySelector('.login-success');
-            if (successDiv) {
-                successDiv.textContent = message;
-                successDiv.classList.add('show');
-            }
-        }
-        
-        // 檢查 URL 參數中的錯誤訊息
-        const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');
-        const success = urlParams.get('success');
-        
-        if (error) {
-            showError(decodeURIComponent(error));
-        }
-        
-        if (success) {
-            showSuccess(decodeURIComponent(success));
-        }
-    </script>
     
     @await RenderSectionAsync("Scripts", required: false)
 </body>

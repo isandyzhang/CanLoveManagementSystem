@@ -1,0 +1,288 @@
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+
+@{
+    ViewData["Title"] = "編輯個案基本資料";
+    // 自訂麵包屑：首頁 > 個案管理 > 編輯個案 > 個案基本資料
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("編輯個案", Url.Action("Edit", "CaseBasic", new { id = Model.Case.CaseId }) ?? string.Empty),
+        ("個案基本資料", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="card bg-white dark:bg-slate-900 shadow-card-lg border rounded-xl border-[#9CCC65] dark:border-slate-700">
+            <div class="px-6 py-6">
+                <form asp-controller="CaseBasic" asp-action="Edit" method="post" enctype="multipart/form-data" class="prevent-double-submit">
+                    <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
+                    <input type="hidden" asp-for="Case.CaseId" />
+                    <partial name="~/Views/Case/Basic/Partials/_CaseFormFields.cshtml" model="Model" />
+                    <div class="mt-6 flex justify-end gap-3">
+                        <a asp-controller="CaseBasic" asp-action="Query" class="btn btn--secondary">
+                            <i class="bi bi-arrow-left me-1"></i>返回
+                        </a>
+                        <button type="submit" class="btn">
+                            <i class="bi bi-check-circle me-1"></i>儲存
+                        </button>
+                    </div>
+                </form>
+                </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 從後端載入的地區資料（按城市分組）
+        const districtsByCity = @Html.Raw(Json.Serialize(ViewBag.DistrictsByCity));
+        console.log('DistrictsByCity:', districtsByCity);
+
+        // 城市選擇變更時 - 直接使用預載入的地區資料
+        const citySelect = document.getElementById('citySelect');
+        const districtSelect = document.getElementById('districtSelect');
+        
+        // 載入地區選項的函數
+        function loadDistrictsForCity(cityId) {
+            if (!citySelect || !districtSelect) return;
+            
+            const cityIdKey = cityId ? parseInt(cityId) : null;
+            console.log('載入地區，CityId:', cityId, 'CityIdKey:', cityIdKey);
+            
+            // 先清空現有選項（保留預設選項）
+            districtSelect.innerHTML = '<option value="">請選擇地區</option>';
+            
+            if (cityIdKey && districtsByCity[cityIdKey]) {
+                const currentDistrictId = districtSelect.value;
+                districtsByCity[cityIdKey].forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.districtId;
+                    option.textContent = district.districtName;
+                    // 檢查是否為當前選中的地區
+                    if (currentDistrictId && currentDistrictId == district.districtId) {
+                        option.selected = true;
+                    }
+                    districtSelect.appendChild(option);
+                });
+                districtSelect.disabled = false;
+                console.log('已載入', districtsByCity[cityIdKey].length, '個地區選項');
+            } else {
+                districtSelect.disabled = !cityIdKey;
+                if (cityIdKey) {
+                    console.warn('找不到城市 ID', cityIdKey, '對應的地區資料');
+                }
+            }
+        }
+        
+        if (citySelect && districtSelect) {
+            // 頁面載入時，如果城市已選擇，自動載入對應的地區選項
+            const selectedCityId = citySelect.value;
+            if (selectedCityId) {
+                // 使用 setTimeout 確保 DOM 已完全載入
+                setTimeout(() => {
+                    loadDistrictsForCity(selectedCityId);
+                }, 100);
+            }
+            
+            // 城市選擇變更事件
+            citySelect.addEventListener('change', function() {
+                loadDistrictsForCity(this.value);
+            });
+        }
+    </script>
+    <script>
+        // 新增學校功能
+        (function() {
+            const addSchoolBtn = document.getElementById('addSchoolBtn');
+            const addSchoolForm = document.getElementById('addSchoolForm');
+            const schoolSelect = document.getElementById('schoolSelect');
+            const newSchoolName = document.getElementById('newSchoolName');
+            const newSchoolType = document.getElementById('newSchoolType');
+            const submitNewSchool = document.getElementById('submitNewSchool');
+            const cancelAddSchool = document.getElementById('cancelAddSchool');
+
+            if (!addSchoolBtn || !addSchoolForm || !schoolSelect) return;
+
+            // 顯示新增學校表單
+            addSchoolBtn.addEventListener('click', function() {
+                addSchoolForm.style.display = 'block';
+                newSchoolName.focus();
+            });
+
+            // 取消新增學校
+            cancelAddSchool.addEventListener('click', function() {
+                addSchoolForm.style.display = 'none';
+                newSchoolName.value = '';
+                newSchoolType.value = '';
+            });
+
+            // 送出新增學校
+            submitNewSchool.addEventListener('click', async function() {
+                const name = newSchoolName.value.trim();
+                const type = newSchoolType.value.trim();
+
+                if (!name) {
+                    alert('請輸入學校名稱');
+                    newSchoolName.focus();
+                    return;
+                }
+
+                if (!type) {
+                    alert('請選擇學校類型');
+                    newSchoolType.focus();
+                    return;
+                }
+
+                // 禁用按鈕防止重複提交
+                submitNewSchool.disabled = true;
+                submitNewSchool.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 新增中...';
+
+                try {
+                    const resp = await fetch('/api/school', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ schoolName: name, schoolType: type })
+                    });
+                    const result = await resp.json();
+
+                    if (!resp.ok || result.success === false) {
+                        alert(result.message || '新增學校失敗');
+                        return;
+                    }
+
+                    // 新增到下拉選單並選取
+                    const option = document.createElement('option');
+                    option.value = result.schoolId;
+                    option.textContent = result.schoolName;
+                    schoolSelect.add(option);
+                    schoolSelect.value = String(result.schoolId);
+
+                    // 隱藏表單並清空
+                    addSchoolForm.style.display = 'none';
+                    newSchoolName.value = '';
+                    newSchoolType.value = '';
+
+                    alert('學校新增成功！');
+                } catch (err) {
+                    console.error('新增學校發生錯誤:', err);
+                    alert('新增學校發生錯誤');
+                } finally {
+                    // 恢復按鈕
+                    submitNewSchool.disabled = false;
+                    submitNewSchool.innerHTML = '<i class="fas fa-check"></i> 新增';
+                }
+            });
+
+            // 按 Enter 鍵送出
+            newSchoolName.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitNewSchool.click();
+                }
+            });
+
+            newSchoolType.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitNewSchool.click();
+                }
+            });
+        })();
+
+        // 照片預覽功能
+        (function() {
+            const photoFileInput = document.getElementById('photoFileInput');
+            const addPhotoBtn = document.getElementById('addPhotoBtn');
+            const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+            const photoPlaceholder = document.getElementById('photoPlaceholder');
+            const previewImage = document.getElementById('previewImage');
+
+            if (!photoFileInput || !addPhotoBtn || !photoPreviewContainer || !photoPlaceholder || !previewImage) return;
+
+            // 載入已存在的照片（如果有 PhotoBlobId）
+            const photoUrl = @Html.Raw(Json.Serialize(ViewBag.PhotoUrl));
+            const photoLoadingContainer = document.getElementById('photoLoadingContainer');
+            if (photoUrl) {
+                // 顯示載入動畫
+                if (photoLoadingContainer) {
+                    photoPlaceholder.classList.add('hidden');
+                    photoPreviewContainer.classList.add('hidden');
+                    photoLoadingContainer.classList.remove('hidden');
+                }
+                
+                previewImage.onload = function() {
+                    // 隱藏載入動畫和 placeholder，顯示圖片
+                    if (photoLoadingContainer) {
+                        photoLoadingContainer.classList.add('hidden');
+                    }
+                    photoPlaceholder.classList.add('hidden');
+                    photoPreviewContainer.classList.remove('hidden');
+                    if (addPhotoBtn) {
+                        addPhotoBtn.innerHTML = '<i class="bi bi-pencil me-1"></i>更換照片';
+                    }
+                };
+                previewImage.onerror = function() {
+                    console.error('圖片載入失敗:', photoUrl);
+                    // 隱藏載入動畫和圖片，顯示 placeholder
+                    if (photoLoadingContainer) {
+                        photoLoadingContainer.classList.add('hidden');
+                    }
+                    photoPlaceholder.classList.remove('hidden');
+                    photoPreviewContainer.classList.add('hidden');
+                };
+                previewImage.src = photoUrl;
+            }
+
+            // 點擊「新增照片」按鈕時觸發檔案選擇
+            addPhotoBtn.addEventListener('click', function() {
+                photoFileInput.click();
+            });
+
+            // 檔案選擇變更時
+            photoFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // 驗證檔案類型
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('僅支援 JPG、PNG、GIF 格式的圖片');
+                        photoFileInput.value = '';
+                        photoPlaceholder.classList.remove('hidden');
+                        photoPreviewContainer.classList.add('hidden');
+                        return;
+                    }
+
+                    // 驗證檔案大小（5MB）
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('檔案大小不能超過 5MB');
+                        photoFileInput.value = '';
+                        photoPlaceholder.classList.remove('hidden');
+                        photoPreviewContainer.classList.add('hidden');
+                        return;
+                    }
+
+                    // 顯示預覽
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        photoPlaceholder.classList.add('hidden');
+                        photoPreviewContainer.classList.remove('hidden');
+                        // 更新按鈕文字
+                        addPhotoBtn.innerHTML = '<i class="bi bi-pencil me-1"></i>更換照片';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    photoPlaceholder.classList.remove('hidden');
+                    photoPreviewContainer.classList.add('hidden');
+                    addPhotoBtn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>新增照片';
+                }
+            });
+
+            // 點擊照片預覽區域也可以觸發檔案選擇
+            photoPreviewContainer.addEventListener('click', function() {
+                photoFileInput.click();
+            });
+        })();
+    </script>
+}
+
+

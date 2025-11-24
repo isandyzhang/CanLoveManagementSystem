@@ -1,0 +1,22 @@
+@model Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary
+
+@if (Model != null && !Model.IsValid)
+{
+    <div class="mb-3 rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 shadow-sm" role="alert">
+        <div class="px-4 py-3">
+            <div class="flex items-start gap-2 text-red-800 dark:text-red-200">
+                <i class="bi bi-exclamation-triangle text-lg text-red-600 dark:text-red-400 mt-0.5"></i>
+                <div class="flex-1">
+                    <div class="font-semibold mb-2">請修正以下錯誤：</div>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        @foreach (var error in Model.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@Html.Raw(error.ErrorMessage)</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

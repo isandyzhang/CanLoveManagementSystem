@@ -1,0 +1,38 @@
+@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseWizardCompleteViewModel
+
+@{
+    ViewData["Title"] = "開案流程完成";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("開案流程", string.Empty),
+        ("完成", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-orange-400 dark:border-slate-700">
+            <div class="px-6 py-6 text-center">
+                <div class="mb-6">
+                    <i class="bi bi-check-circle-fill text-green-500 text-6xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">開案流程已完成</h2>
+                <p class="text-lg text-slate-600 dark:text-slate-400 mb-6">
+                    個案 <strong>@Model.CaseName</strong> (編號: @Model.CaseId) 的開案資料已成功建立
+                </p>
+                <div class="flex justify-center gap-4">
+                    <a asp-controller="CaseBasic" asp-action="Query" class="btn">
+                        <i class="bi bi-house me-1"></i>返回個案列表
+                    </a>
+                    <a asp-controller="CaseOpening" asp-action="Create" asp-route-caseId="@Model.CaseId" asp-route-step="CaseDetail" class="btn btn--secondary">
+                        <i class="bi bi-pencil me-1"></i>編輯開案資料
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

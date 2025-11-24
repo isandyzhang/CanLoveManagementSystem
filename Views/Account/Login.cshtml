@@ -3,93 +3,267 @@
     Layout = "_LoginLayout";
 }
 
-<div class="login-container">
-    <div class="login-card">
-        <!-- 登入卡片標題 -->
-        <div class="login-header">
-            <h1>CanLove 協會管理系統</h1>
-            <p>請登入以存取協會管理功能</p>
+@{
+    // 動畫 URL 常數
+    const string LOTTIE_ANIMATION_URL = "https://lottie.host/embed/a5fe6f41-3433-49db-bf52-ad3129ee60d1/vEVzePamKJ.lottie";
+}
+
+<div class="min-h-screen flex items-center justify-center px-4 py-8 relative" 
+     style="background-image: url('@Url.Content("~/loginbackground.png")'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+    
+    <!-- 綠色透明漸層覆蓋層 -->
+    <div class="absolute inset-0 bg-gradient-to-br from-[#90B44B]/40 via-[#9CCC65]/30 to-[#90B44B]/40 z-0"></div>
+    
+    <!-- 頁面載入動畫 -->
+    <div id="pageLoadingDiv" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50">
+        <div class="flex flex-col items-center justify-center">
+            <iframe 
+                id="pageLoadingAnimation"
+                src="@LOTTIE_ANIMATION_URL"
+                class="w-[300px] h-[300px] border-0"
+                frameborder="0"
+                allowfullscreen>
+            </iframe>
+        </div>
         </div>
         
-        <!-- 登入內容 -->
-        <div class="login-content">
+    <!-- 登入卡片 -->
+    <div class="relative z-10 mx-auto hidden w-[60%] max-w-[600px]" id="loginCardContainer">
+        <div class="card bg-white shadow-card-lg border rounded-xl border-[#B7D57E] flex flex-col h-[70vh] max-h-[800px] overflow-hidden">
+            <!-- 圖片區域 -->
+            <div class="flex-[0_0_70%] relative overflow-hidden rounded-t-xl flex items-center justify-center bg-white">
+                <img src="@Url.Content("~/case-management.jpg")" alt="個案管理" class="w-[90%] h-[90%] object-contain object-center block relative z-[1]" />
+                <!-- 綠色透明漸層覆蓋層 - 由下往上 70% 到 15% -->
+                <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(144, 180, 75, 0.7), rgba(156, 204, 101, 0.5), rgba(144, 180, 75, 0.15)); z-index: 2;"></div>
+                <!-- Logo -->
+                <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-[3]">
+                    <img src="@Url.Content("~/logo-white.png")" alt="肯愛社會服務協會" class="h-[60px] w-auto" />
+                </div>
+            </div>
+
+            <!-- 登入表單 -->
+            <div class="flex-[0_0_30%] px-1 py-4 flex flex-col overflow-hidden bg-white">
+                <!-- 標題 -->
+                <div class="text-center mb-3">
+                    <h1 class="font-bold text-[#4A5F2A] text-[1.75rem]">肯愛協會後台系統</h1>
+                </div>
+
             <!-- 錯誤訊息 -->
-            <div class="login-error" id="errorMessage"></div>
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="mb-2 rounded-md border border-red-300 bg-red-50 text-red-600 p-2 text-sm" role="alert">
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <span>@Html.Raw(TempData["ErrorMessage"])</span>
+                        </div>
+                    </div>
+                }
             
             <!-- 成功訊息 -->
-            <div class="login-success" id="successMessage"></div>
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="mb-2 rounded-md border border-green-300 bg-green-50 text-green-600 p-2 text-sm" role="alert">
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-check-circle"></i>
+                            <span>@Html.Raw(TempData["SuccessMessage"])</span>
+                        </div>
+                    </div>
+                }
             
             <!-- 登入按鈕 -->
-            <a href="/Account/SignIn?returnUrl=@ViewBag.ReturnUrl" class="btn-login" id="loginButton">
-                <i class="fab fa-microsoft"></i>
-                使用 Microsoft 帳戶登入
+                <div class="mb-2 flex justify-center">
+                    <a href="/Account/SignIn?returnUrl=@ViewBag.ReturnUrl" 
+                       class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-medium text-white transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90B44B] bg-[#90B44B] w-[70%] hover:bg-[#7EA043] active:bg-[#67833A]"
+                       id="loginButton"
+                       aria-label="使用 Microsoft 365 帳號登入">
+                        <i class="bi bi-microsoft text-xl"></i>
+                        <span>使用 Microsoft 365 帳號登入</span>
             </a>
+                </div>
             
             <!-- 載入動畫 -->
-            <div class="login-loading" id="loadingDiv">
-                <div class="spinner"></div>
-                <p>正在重導向到 Microsoft 登入...</p>
+                <div id="loadingDiv" class="hidden text-center">
+                    <div class="flex flex-col items-center justify-center mb-4">
+                        <iframe 
+                            id="loadingAnimation"
+                            src="@LOTTIE_ANIMATION_URL"
+                            class="w-[240px] h-[240px] border-0"
+                            frameborder="0"
+                            allowfullscreen>
+                        </iframe>
+                        <p class="text-sm text-slate-600 mt-2">正在重導向到 Microsoft 登入...</p>
+                    </div>
             </div>
             
-            <!-- 返回頁面提示 -->
-            @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl))
-            {
-                <div class="return-notice">
-                    <i class="fas fa-info-circle"></i>
-                    登入後將返回：<code>@ViewBag.ReturnUrl</code>
+                <!-- 說明文字 -->
+                <div class="text-center mt-1">
+                    <p class="text-xs text-slate-500">
+                        <i class="bi bi-info-circle me-1"></i>
+                        僅限 canlove.org.tw 網域帳號
+                    </p>
                 </div>
-            }
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div id="footerContainer" class="relative z-10 mx-auto mt-8 mb-8 text-center hidden w-[60%] max-w-[600px]">
+            <p class="text-sm text-slate-500/50">
+                &copy; @DateTime.Now.Year 肯愛社會服務協會管理系統. All rights reserved.
+            </p>
         </div>
     </div>
 </div>
 
-<!-- 頁面特定 JavaScript -->
 @section Scripts {
     <script>
-        // 頁面載入完成後的處理
-        document.addEventListener('DOMContentLoaded', function() {
-            // 檢查是否有 TempData 訊息
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <text>
-                showError('@Html.Raw(TempData["ErrorMessage"])');
-                </text>
+        (function() {
+            'use strict';
+
+
+            // 常數定義
+            const PAGE_LOADING_DELAY = 1000; // 頁面載入動畫顯示時間（毫秒）
+            const MESSAGE_AUTO_HIDE_DELAY = 5000; // 訊息自動隱藏時間（毫秒）
+            const FADE_TRANSITION = 'opacity 0.5s'; // 淡入淡出過渡時間
+
+            // DOM 元素
+            const pageLoadingDiv = document.getElementById('pageLoadingDiv');
+            const loginCardContainer = document.getElementById('loginCardContainer');
+            const footerContainer = document.getElementById('footerContainer');
+            const loginButton = document.getElementById('loginButton');
+            const loadingDiv = document.getElementById('loadingDiv');
+
+            /**
+             * 初始化頁面載入動畫
+             */
+            function initPageLoading() {
+                if (!pageLoadingDiv || !loginCardContainer) return;
+
+                setTimeout(() => {
+                    // 淡出載入動畫
+                    pageLoadingDiv.style.transition = FADE_TRANSITION;
+                    pageLoadingDiv.style.opacity = '0';
+
+                    // 顯示登入卡片（淡入效果）
+                    loginCardContainer.style.display = 'block';
+                    loginCardContainer.style.opacity = '0';
+                    loginCardContainer.style.transition = FADE_TRANSITION;
+                    
+                    // 顯示 Footer（淡入效果）
+                    if (footerContainer) {
+                        footerContainer.style.display = 'block';
+                        footerContainer.style.opacity = '0';
+                        footerContainer.style.transition = FADE_TRANSITION;
+                    }
+                    
+                    setTimeout(() => {
+                        loginCardContainer.style.opacity = '1';
+                        if (footerContainer) {
+                            footerContainer.style.opacity = '1';
+                        }
+                    }, 50);
+
+                    // 移除載入動畫元素
+                    setTimeout(() => {
+                        pageLoadingDiv.remove();
+                    }, 500);
+                }, PAGE_LOADING_DELAY);
             }
-            
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <text>
-                showSuccess('@Html.Raw(TempData["SuccessMessage"])');
-                </text>
+
+            /**
+             * 處理登入按鈕點擊
+             */
+            function handleLoginClick() {
+                if (!loginButton) return;
+
+                loginButton.addEventListener('click', function(e) {
+                    // 創建全頁面載入動畫
+                    const fullPageLoading = document.createElement('div');
+                    fullPageLoading.id = 'fullPageLoadingDiv';
+                    fullPageLoading.className = 'absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50';
+                    fullPageLoading.style.transition = 'opacity 0.3s';
+                    
+                    const animationContainer = document.createElement('div');
+                    animationContainer.className = 'flex flex-col items-center justify-center';
+                    
+                    const iframe = document.createElement('iframe');
+                    iframe.src = 'https://lottie.host/embed/a5fe6f41-3433-49db-bf52-ad3129ee60d1/vEVzePamKJ.lottie';
+                    iframe.style.width = '300px';
+                    iframe.style.height = '300px';
+                    iframe.style.border = 'none';
+                    iframe.setAttribute('frameborder', '0');
+                    iframe.setAttribute('allowfullscreen', '');
+                    
+                    const loadingText = document.createElement('p');
+                    loadingText.className = 'text-sm text-slate-600 mt-4';
+                    loadingText.textContent = '正在重導向到 Microsoft 登入...';
+                    
+                    animationContainer.appendChild(iframe);
+                    animationContainer.appendChild(loadingText);
+                    fullPageLoading.appendChild(animationContainer);
+                    
+                    // 插入到頁面最外層容器
+                    const mainContainer = document.querySelector('.min-h-screen');
+                    if (mainContainer) {
+                        mainContainer.appendChild(fullPageLoading);
+                        
+                        // 淡入效果
+                        setTimeout(() => {
+                            fullPageLoading.style.opacity = '1';
+                        }, 10);
+                    }
+
+                    // 禁用按鈕，避免重複點擊
+                    loginButton.style.pointerEvents = 'none';
+                    loginButton.style.opacity = '0.6';
+                });
             }
-            
-            // 自動隱藏訊息
-            setTimeout(function() {
-                const errorMsg = document.getElementById('errorMessage');
-                const successMsg = document.getElementById('successMessage');
-                
-                if (errorMsg) errorMsg.classList.remove('show');
-                if (successMsg) successMsg.classList.remove('show');
-            }, 5000);
-        });
-        
-        // 鍵盤快捷鍵支援
+
+            /**
+             * 自動隱藏訊息
+             */
+            function autoHideMessages() {
+                setTimeout(() => {
+                    const errorMsg = document.querySelector('[role="alert"]');
+                    if (errorMsg && (errorMsg.classList.contains('bg-red-50') || errorMsg.classList.contains('bg-green-50'))) {
+                        errorMsg.style.transition = FADE_TRANSITION;
+                        errorMsg.style.opacity = '0';
+                        setTimeout(() => errorMsg.remove(), 500);
+                    }
+                }, MESSAGE_AUTO_HIDE_DELAY);
+            }
+
+            /**
+             * 處理鍵盤快捷鍵
+             */
+            function handleKeyboardShortcuts() {
         document.addEventListener('keydown', function(e) {
             // Enter 鍵觸發登入
             if (e.key === 'Enter') {
-                const loginBtn = document.getElementById('loginButton');
-                if (loginBtn) {
-                    loginBtn.click();
+                        const btn = document.getElementById('loginButton');
+                        if (btn && btn.style.pointerEvents !== 'none') {
+                            btn.click();
                 }
             }
             
             // Escape 鍵清除錯誤訊息
             if (e.key === 'Escape') {
-                const errorMsg = document.getElementById('errorMessage');
+                        const errorMsg = document.querySelector('[role="alert"]');
                 if (errorMsg) {
-                    errorMsg.classList.remove('show');
+                            errorMsg.style.transition = FADE_TRANSITION;
+                            errorMsg.style.opacity = '0';
+                            setTimeout(() => errorMsg.remove(), 500);
                 }
             }
         });
+            }
+
+            // 頁面載入完成後初始化
+            document.addEventListener('DOMContentLoaded', function() {
+                initPageLoading();
+                handleLoginClick();
+                autoHideMessages();
+                handleKeyboardShortcuts();
+            });
+        })();
     </script>
 }

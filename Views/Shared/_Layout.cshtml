@@ -66,7 +66,7 @@
     </script>
     </head>
 <body>
-    <div class="min-h-screen grid bg-white dark:bg-slate-950" style="grid-template-columns: 320px 1fr;">
+    <div class="min-h-screen grid grid-cols-[320px_1fr] bg-white dark:bg-slate-950">
         <aside class="border-r border-border bg-white dark:bg-slate-900 dark:border-slate-800">
             @await Html.PartialAsync("_Sidebar")
         </aside>
@@ -74,34 +74,12 @@
             @await Html.PartialAsync("_Topbar")
             @await Html.PartialAsync("_Breadcrumb")
             <main role="main" class="flex-1 p-6">
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="mb-3 rounded-md border border-border dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm" role="alert">
-                    <div class="flex items-center justify-between px-4 py-3">
-                        <div class="flex items-center gap-2 text-primary">
-                            <i class="bi bi-check-circle"></i>
-                            <span class="text-slate-900 dark:text-slate-100">@TempData["SuccessMessage"]</span>
-                        </div>
-                        <button type="button" aria-label="Close" class="p-2 rounded-md hover:bg-muted dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100" onclick="this.closest('div[role=\\'alert\\']').remove()">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </div>
-                </div>
-            }
-            
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="mb-3 rounded-md border border-border dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm" role="alert">
-                    <div class="flex items-center justify-between px-4 py-3">
-                        <div class="flex items-center gap-2 text-red-600 dark:text-red-400">
-                            <i class="bi bi-exclamation-triangle"></i>
-                            <span class="text-slate-900 dark:text-slate-100">@TempData["ErrorMessage"]</span>
-                        </div>
-                        <button type="button" aria-label="Close" class="p-2 rounded-md hover:bg-muted dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100" onclick="this.closest('div[role=\\'alert\\']').remove()">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </div>
-                </div>
+            @{
+                // 顯示 TempData 訊息（成功、錯誤、警告、資訊）
+                if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null || TempData["WarningMessage"] != null || TempData["InfoMessage"] != null)
+                {
+                    <partial name="~/Views/Shared/Partials/_AlertMessage.cshtml" />
+                }
             }
             
             @try
@@ -110,10 +88,10 @@
             }
             catch (Exception ex)
             {
-                <div style="background: red; color: white; padding: 20px; margin: 20px;">
+                <div class="bg-red-600 text-white p-5 m-5">
                     <h2>視圖渲染錯誤</h2>
                     <p>錯誤訊息: @ex.Message</p>
-                    <pre style="background: #333; color: white; padding: 10px; overflow: auto;">@ex.StackTrace</pre>
+                    <pre class="bg-slate-900 text-white p-2.5 overflow-auto">@ex.StackTrace</pre>
                 </div>
             }
             </main>
@@ -129,6 +107,8 @@
     <!-- Flatpickr 日期選擇器 -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+    <!-- 防止重複提交 -->
+    <script src="~/js/form-submit-handler.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

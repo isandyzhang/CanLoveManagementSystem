@@ -1,0 +1,42 @@
+@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseWizard_S5_CIQAP_ViewModel
+
+<!-- 學業表現描述 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h6 class="text-primary border-b border-border pb-2 mb-3">
+            <i class="fas fa-book me-2"></i>學業表現描述
+        </h6>
+    </div>
+    <div class="col-12">
+        <div class="mb-3">
+            <label asp-for="AcademicPerformanceSummary" class="block text-lg font-medium mb-2 text-slate-900">學業表現描述 <small class="block text-slate-500">academic_performance_summary（可空，NVARCHAR(500)）</small></label>
+            <textarea asp-for="AcademicPerformanceSummary" class="input" rows="6" placeholder="請詳細描述兒少的學業表現狀況，包括：&#10;• 學習態度與動機&#10;• 各科成績表現&#10;• 學習困難與挑戰&#10;• 特殊學習需求&#10;• 與同學和老師的互動情況&#10;• 課外活動參與度&#10;• 其他相關觀察" form-mode="@Model.Mode" readonly-when="ReadOnly"></textarea>
+            <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                請詳細描述兒少的學業表現狀況，包括學習態度、成績表現、學習困難、特殊需求等相關資訊。
+            </div>
+            <span asp-validation-for="AcademicPerformanceSummary" class="text-red-600 text-sm"></span>
+        </div>
+    </div>
+</div>
+
+<!-- 評估指引 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6 class="alert-heading">
+                <i class="fas fa-lightbulb me-2"></i>評估指引
+            </h6>
+            <p class="mb-2">在填寫學業表現評估時，請考慮以下面向：</p>
+            <ul class="mb-0">
+                <li><strong>學習動機：</strong>兒少對學習的興趣和主動性</li>
+                <li><strong>學習能力：</strong>理解、記憶、應用知識的能力</li>
+                <li><strong>學習態度：</strong>上課專注度、作業完成度、學習紀律</li>
+                <li><strong>社交學習：</strong>與同學合作、參與討論、尋求幫助的能力</li>
+                <li><strong>特殊需求：</strong>是否需要特殊教育支持或學習輔助</li>
+                <li><strong>家庭支持：</strong>家庭對學業的支持程度和參與度</li>
+            </ul>
+        </div>
+    </div>
+</div>
+

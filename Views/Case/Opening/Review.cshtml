@@ -1,0 +1,96 @@
+@model IEnumerable<CanLove_Backend.Domain.Case.Models.Opening.CaseOpening>
+@{
+    ViewData["Title"] = "個案審核 - 開案紀錄表";
+    var modelCount = Model?.Count() ?? 0;
+    
+    // 自訂麵包屑：個案管理 > 個案審核
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("個案審核", Url.Action("Review", "CaseOpening") ?? string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        @{ ViewBag.CurrentPage = "Review"; ViewBag.CurrentTab = "CaseOpening"; }
+        <partial name="~/Views/Shared/Partials/_CaseTabs.cshtml" />
+        
+        <div class="mb-2 text-sm text-slate-600 dark:text-slate-400">共找到 @modelCount 筆待審項目</div>
+
+        @{
+            if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null || TempData["WarningMessage"] != null || TempData["InfoMessage"] != null)
+            {
+                <partial name="~/Views/Shared/Partials/_AlertMessage.cshtml" />
+            }
+        }
+
+        <!-- 資料列表 -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-[#FDBA74] dark:border-slate-800 mb-6">
+                <div class="p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                    <div class="overflow-auto">
+                        <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-800">
+                                    <th class="text-slate-700 dark:text-slate-300">個案編號</th>
+                                    <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
+                                    <th class="text-slate-700 dark:text-slate-300">提交者</th>
+                                    <th class="text-slate-700 dark:text-slate-300">提交時間</th>
+                                    <th class="text-slate-700 dark:text-slate-300">狀態</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" onclick="viewOpeningDetails('@item.CaseId')">
+                                        <td class="text-slate-900 dark:text-slate-100">
+                                            <code class="text-slate-900 dark:text-slate-100">@item.CaseId</code>
+                                        </td>
+                                        <td class="text-slate-900 dark:text-slate-100">@(item.Case?.Name ?? string.Empty)</td>
+                                        <td>
+                                            @{ 
+                                                var map = ViewBag.SubmitterNameMap as System.Collections.Generic.IDictionary<string, string>;
+                                                var raw = item.SubmittedBy ?? "系統";
+                                                var name = (map != null && item.SubmittedBy != null && map.ContainsKey(item.SubmittedBy)) ? (map[item.SubmittedBy] ?? raw) : raw;
+                                            }
+                                            <span class="text-slate-900 dark:text-slate-100">@name</span>
+                                        </td>
+                                        <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.SubmittedAt"></datetime></td>
+                                        <td class="text-slate-900 dark:text-slate-100">
+                                            <span class="badge-pill bg-orange-300 text-orange-900 text-sm">待審閱</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <partial name="~/Views/Shared/Partials/_EmptyState.cshtml" />
+        }
+
+        <!-- 開案詳細資料區（使用 Partials） -->
+        @if (ViewBag.ShowOpeningDetails == true && ViewBag.SelectedOpening != null)
+        {
+            var opening = ViewBag.SelectedOpening as CanLove_Backend.Domain.Case.Models.Opening.CaseOpening;
+            <partial name="~/Views/Case/Opening/Partials/_ReviewCaseOpeningItem.cshtml" model="opening" />
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 查看開案詳細資料
+        function viewOpeningDetails(caseId) {
+            if (caseId) {
+                window.location.href = '@Url.Action("Review", "CaseOpening")?caseId=' + encodeURIComponent(caseId);
+            }
+        }
+    </script>
+}
+

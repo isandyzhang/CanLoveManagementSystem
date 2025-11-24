@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "查詢個案 - 會談服務紀錄表";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("查詢個案", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("會談服務紀錄表", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        @{ ViewBag.CurrentPage = "Search"; ViewBag.CurrentTab = "Consultation"; }
+        <partial name="~/Views/Shared/Partials/_CaseTabs.cshtml" />
+        <partial name="~/Views/Shared/Partials/_NotImplemented.cshtml" />
+    </div>
+</div>
+

@@ -1,0 +1,57 @@
+@{
+    var currentStep = ViewBag.CurrentStep ?? 1;
+    var caseId = ViewBag.CaseId ?? "";
+    
+    var steps = new List<(int StepNumber, string Title, string StepName)>
+    {
+        (1, "個案詳細資料", "CaseDetail"),
+        (2, "社會工作服務內容", "SocialWorkerContent"),
+        (3, "經濟狀況評估 (FQ)", "EconomicStatus"),
+        (4, "家庭身心概況 (HQ)", "HealthStatus"),
+        (5, "學業表現評估 (IQ)", "AcademicPerformance"),
+        (6, "情緒評估 (EQ)", "EmotionalEvaluation"),
+        (7, "最後評估表", "FinalAssessment")
+    };
+    
+    var totalSteps = steps.Count;
+    var progressPercentage = ((double)currentStep / totalSteps) * 100;
+}
+
+ 
+
+<!-- 分頁導航（橫向排列） -->
+<div class="w-full mb-4">
+    <div class="flex flex-wrap gap-2 items-stretch">
+        @foreach (var step in steps)
+        {
+            var isActive = currentStep == step.StepNumber;
+            var isCompleted = currentStep > step.StepNumber;
+            <a href="@Url.Action("Create", "CaseOpening", new { caseId = caseId, step = step.StepName })"
+               class="flex-1 min-w-[120px] px-4 py-3 rounded-lg text-center transition-colors border @(isActive ? "bg-orange-50 border-orange-400 text-slate-900 font-semibold shadow-card-lg" : isCompleted ? "bg-slate-50 border-slate-300 text-slate-600 hover:border-slate-400" : "bg-white border-slate-200 text-slate-500 hover:border-slate-300")">
+                <div class="flex items-center justify-center gap-2 mb-1">
+                    @if (isCompleted)
+                    {
+                        <i class="bi bi-check-circle text-green-600 text-sm"></i>
+                    }
+                    else if (isActive)
+                    {
+                        <i class="bi bi-circle-fill text-orange-400 text-xs"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-circle text-slate-400 text-xs"></i>
+                    }
+                    <span class="text-xs font-medium">步驟 @step.StepNumber</span>
+                </div>
+                <span class="block text-sm font-medium truncate">@step.Title</span>
+            </a>
+        }
+    </div>
+
+    <!-- 進度條（橘色） -->
+    <div class="h-2 rounded-full bg-slate-200 mt-3">
+        <div class="h-2 rounded-full bg-orange-400" style="width: @progressPercentage%"></div>
+    </div>
+</div>
+
+

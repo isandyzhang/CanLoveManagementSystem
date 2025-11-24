@@ -1,0 +1,104 @@
+@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseWizard_S5_CIQAP_ViewModel
+
+@{
+    ViewData["Title"] = "開案紀錄表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("新增個案", Url.Action("Create", "CaseBasic") ?? string.Empty),
+        ("開案紀錄表", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="w-full">
+            @{ ViewBag.CurrentPage = "Create"; ViewBag.CurrentTab = "CaseOpening"; }
+            <partial name="~/Views/Shared/Partials/_CaseTabs.cshtml" />
+
+
+            @{
+                ViewBag.CurrentStep = 5;
+                ViewBag.CaseId = Model.CaseId;
+            }
+            
+            <!-- 導航分頁和進度條 -->
+            @await Html.PartialAsync("~/Views/Case/Opening/_WizardNavigation.cshtml")
+
+            <!-- 表單 -->
+            <form asp-action="Step5" method="post" class="needs-validation prevent-double-submit" novalidate>
+                <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-orange-400 dark:border-slate-700">
+                    <div class="px-6 py-4 mb-5 flex items-center justify-between bg-orange-50 rounded-t-xl">
+                        <span class="inline-flex items-center gap-3 text-2xl font-bold text-slate-800">
+                            <i class="bi bi-card-text"></i>
+                            學業表現評估
+                        </span>
+                    </div>
+                    <div class="px-6 py-6">
+                                <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
+                                <!-- 隱藏欄位 -->
+                                <input asp-for="CaseId" type="hidden" />
+
+                                <partial name="~/Views/Case/Opening/Partials/_Step5FormFields.cshtml" model="Model" />
+
+                                <partial name="~/Views/Case/Opening/Partials/_CaseWizardFormActions.cshtml" model="Model" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 表單驗證
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // 字數計算
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.querySelector('textarea[name="AcademicPerformanceSummary"]');
+            if (textarea) {
+                const maxLength = 100;
+                const counter = document.createElement('div');
+                counter.className = 'form-text text-end';
+                counter.innerHTML = `<span id="charCount">0</span> / ${maxLength} 字元`;
+                textarea.parentNode.appendChild(counter);
+                
+                const charCount = document.getElementById('charCount');
+                
+                textarea.addEventListener('input', function() {
+                    const currentLength = this.value.length;
+                    charCount.textContent = currentLength;
+                    
+                    if (currentLength > maxLength) {
+                        charCount.style.color = 'red';
+                        this.setCustomValidity('學業表現描述不能超過100個字元');
+                    } else {
+                        charCount.style.color = '';
+                        this.setCustomValidity('');
+                    }
+                });
+                
+                // 初始化字數
+                textarea.dispatchEvent(new Event('input'));
+            }
+        });
+    </script>
+}
+
+

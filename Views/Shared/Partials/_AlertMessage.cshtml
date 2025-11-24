@@ -1,0 +1,112 @@
+@{
+    // 參數：Type (Success/Error/Warning/Info), Message, AutoClose (秒數，0 表示不自動關閉)
+    var type = ViewBag.AlertType as string;
+    var message = ViewBag.AlertMessage as string;
+    var autoClose = ViewBag.AlertAutoClose as int? ?? 0;
+    
+    // 如果沒有指定訊息，從 TempData 取得
+    if (string.IsNullOrWhiteSpace(message))
+    {
+        if (TempData["SuccessMessage"] != null)
+        {
+            type = "Success";
+            message = TempData["SuccessMessage"] as string;
+        }
+        else if (TempData["ErrorMessage"] != null)
+        {
+            type = "Error";
+            message = TempData["ErrorMessage"] as string;
+        }
+        else if (TempData["WarningMessage"] != null)
+        {
+            type = "Warning";
+            message = TempData["WarningMessage"] as string;
+        }
+        else if (TempData["InfoMessage"] != null)
+        {
+            type = "Info";
+            message = TempData["InfoMessage"] as string;
+        }
+    }
+    
+    // 如果沒有訊息，不顯示
+    if (string.IsNullOrWhiteSpace(message))
+    {
+        return;
+    }
+    
+    // 如果沒有指定類型，預設為 Info
+    if (string.IsNullOrWhiteSpace(type))
+    {
+        type = "Info";
+    }
+    
+    // 根據類型設定樣式
+    var bgColor = type switch
+    {
+        "Success" => "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800",
+        "Error" => "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800",
+        "Warning" => "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800",
+        _ => "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+    };
+    
+    var textColor = type switch
+    {
+        "Success" => "text-green-800 dark:text-green-200",
+        "Error" => "text-red-800 dark:text-red-200",
+        "Warning" => "text-yellow-800 dark:text-yellow-200",
+        _ => "text-blue-800 dark:text-blue-200"
+    };
+    
+    var iconColor = type switch
+    {
+        "Success" => "text-green-600 dark:text-green-400",
+        "Error" => "text-red-600 dark:text-red-400",
+        "Warning" => "text-yellow-600 dark:text-yellow-400",
+        _ => "text-blue-600 dark:text-blue-400"
+    };
+    
+    var icon = type switch
+    {
+        "Success" => "bi-check-circle",
+        "Error" => "bi-exclamation-triangle",
+        "Warning" => "bi-exclamation-circle",
+        _ => "bi-info-circle"
+    };
+}
+
+<div class="alert-message mb-3 rounded-md border @bgColor shadow-sm" role="alert" data-auto-close="@autoClose">
+    <div class="flex items-center justify-between px-4 py-3">
+        <div class="flex items-center gap-2 @iconColor">
+            <i class="bi @icon text-lg"></i>
+            <span class="@textColor font-medium">@Html.Raw(message)</span>
+        </div>
+        <button type="button" 
+                aria-label="關閉" 
+                class="p-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10 @textColor transition-colors"
+                onclick="this.closest('.alert-message').remove()">
+            <i class="bi bi-x text-lg"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+(function(){
+    const alertElement = document.querySelector('.alert-message[role="alert"]');
+    if (!alertElement) return;
+    
+    const autoCloseSeconds = parseInt(alertElement.getAttribute('data-auto-close')) || 0;
+    
+    // 自動關閉功能
+    if (autoCloseSeconds > 0) {
+        setTimeout(function() {
+            alertElement.style.transition = 'opacity 0.3s ease-out';
+            alertElement.style.opacity = '0';
+            setTimeout(function() {
+                alertElement.remove();
+            }, 300);
+        }, autoCloseSeconds * 1000);
+    }
+})();
+</script>
+

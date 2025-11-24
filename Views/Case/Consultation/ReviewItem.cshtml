@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "個案審核 - 會談服務紀錄表";
+    ViewBag.CaseId = ViewBag.CaseId ?? "";
+    
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("個案審核", Url.Action("Review", "CaseConsultation") ?? string.Empty),
+        ("審核詳情", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        @{ ViewBag.CurrentPage = "Review"; ViewBag.CurrentTab = "Consultation"; }
+        <partial name="~/Views/Shared/Partials/_CaseTabs.cshtml" />
+        
+        <!-- 功能未開發提示 -->
+        <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-blue-400 dark:border-slate-800 mb-6">
+            <div class="p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                <partial name="~/Views/Shared/Partials/_NotImplemented.cshtml" />
+            </div>
+        </div>
+    </div>
+</div>
+

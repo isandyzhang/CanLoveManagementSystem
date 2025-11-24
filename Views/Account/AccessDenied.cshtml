@@ -3,34 +3,36 @@
     Layout = "_LoginLayout";
 }
 
-<div class="login-container">
-    <div class="login-card">
+<div class="min-h-screen flex items-center justify-center px-4 py-8">
+    <div class="card bg-white dark:bg-slate-900 shadow-card-lg border rounded-xl border-red-300 dark:border-red-800 max-w-md w-full">
         <!-- 錯誤標題 -->
-        <div class="login-header" style="background: linear-gradient(135deg, #F44336 0%, #E57373 100%);">
-            <h1><i class="fas fa-exclamation-triangle"></i> 權限不足</h1>
-            <p>您沒有權限存取此功能</p>
+        <div class="px-6 py-6 bg-gradient-to-r from-red-500 to-red-600 dark:from-red-600 dark:to-red-700 rounded-t-xl text-white text-center">
+            <h1 class="text-2xl font-bold mb-2">
+                <i class="bi bi-exclamation-triangle me-2"></i>權限不足
+            </h1>
+            <p class="text-red-100">您沒有權限存取此功能</p>
         </div>
         
         <!-- 錯誤內容 -->
-        <div class="login-content">
+        <div class="px-6 py-8">
             <div class="text-center">
-                <i class="fas fa-lock" style="font-size: 48px; color: var(--error-color); margin-bottom: var(--spacing-lg);"></i>
-                <h3>存取被拒絕</h3>
-                <p class="text-secondary">
+                <i class="bi bi-lock text-red-500 dark:text-red-400 text-5xl mb-6"></i>
+                <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3">存取被拒絕</h3>
+                <p class="text-slate-600 dark:text-slate-400 mb-6">
                     很抱歉，您目前沒有權限存取此功能。<br>
                     如需協助，請聯繫系統管理員。
                 </p>
             </div>
             
             <!-- 操作按鈕 -->
-            <div style="margin-top: var(--spacing-xl);">
-                <a href="/Home/Index" class="btn btn-primary" style="width: 100%; margin-bottom: var(--spacing-md);">
-                    <i class="fas fa-home"></i>
+            <div class="space-y-3">
+                <a href="/Home/Index" class="btn w-full justify-center">
+                    <i class="bi bi-house me-2"></i>
                     返回首頁
                 </a>
                 
-                <a href="/Account/SignOut" class="btn btn-outline" style="width: 100%;">
-                    <i class="fas fa-sign-out-alt"></i>
+                <a href="/Account/SignOut" class="btn btn--secondary w-full justify-center">
+                    <i class="bi bi-box-arrow-right me-2"></i>
                     重新登入
                 </a>
             </div>
@@ -48,11 +50,13 @@
         // 顯示倒數計時
         let countdown = 5;
         const countdownElement = document.createElement('p');
-        countdownElement.className = 'text-secondary';
-        countdownElement.style.marginTop = 'var(--spacing-lg)';
-        countdownElement.innerHTML = `將在 <strong>${countdown}</strong> 秒後自動返回首頁...`;
+        countdownElement.className = 'text-slate-600 dark:text-slate-400 mt-4';
+        countdownElement.innerHTML = `將在 <strong class="text-slate-900 dark:text-slate-100">${countdown}</strong> 秒後自動返回首頁...`;
         
-        document.querySelector('.login-content .text-center').appendChild(countdownElement);
+        const textCenter = document.querySelector('.text-center');
+        if (textCenter) {
+            textCenter.appendChild(countdownElement);
+        }
         
         const timer = setInterval(function() {
             countdown--;

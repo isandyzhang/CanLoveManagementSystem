@@ -29,7 +29,7 @@ namespace CanLove_Backend.Models.Api.Responses
         /// <summary>
         /// 時間戳記
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow.AddHours(8);
 
         /// <summary>
         /// 成功響應

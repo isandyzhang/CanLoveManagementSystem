@@ -1,4 +1,4 @@
-using CanLove_Backend.Data.Models.Options;
+using CanLove_Backend.Domain.Case.Shared.Models;
 
 namespace CanLove_Backend.Models.Mvc.ViewModels.Shared
 {

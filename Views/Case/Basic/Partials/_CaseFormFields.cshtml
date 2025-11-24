@@ -1,0 +1,165 @@
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+
+<!-- 卡片頂部標籤底色（延伸到卡片左右邊緣） -->
+<div class="-mx-6 -mt-6 mb-5 px-6 py-4 rounded-t-xl flex items-center justify-between bg-primary-50">
+    <span class="inline-flex items-center gap-3 text-2xl font-bold text-slate-700">
+        <i class="bi bi-card-text"></i>
+        個案基本資料表
+    </span>
+    <div class="flex items-center gap-3">
+        <label asp-for="Case.AssessmentDate" class="text-base font-semibold text-slate-700 whitespace-nowrap mb-0">評估日期</label>
+        <input asp-for="Case.AssessmentDate" class="input h-9 bg-white/80 w-64" type="date" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+    </div>
+    </div>
+
+<!-- 右上角評估日期已移至標題列 -->
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- 第一列：個案編號、姓名、身分證字號 -->
+    <div>
+        <label asp-for="Case.CaseId" class="block text-lg font-medium mb-2 text-slate-700">個案編號</label>
+        <input asp-for="Case.CaseId" class="input w-full" placeholder="請輸入個案編號" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+        <span asp-validation-for="Case.CaseId" class="text-red-600 text-sm"></span>
+    </div>
+    <div>
+        <label asp-for="Case.Name" class="block text-lg font-medium mb-2 text-slate-700">姓名</label>
+        <input asp-for="Case.Name" class="input w-full" placeholder="請輸入個案姓名" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+        <span asp-validation-for="Case.Name" class="text-red-600 text-sm"></span>
+    </div>
+    <div>
+        <label asp-for="Case.IdNumber" class="block text-lg font-medium mb-2 text-slate-700">身分證字號</label>
+        <input asp-for="Case.IdNumber" class="input w-full" placeholder="請輸入身分證字號" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+        <span asp-validation-for="Case.IdNumber" class="text-red-600 text-sm"></span>
+    </div>
+
+    <!-- 第二列：性別、出生日期、學校 -->
+    <div>
+        <label asp-for="Case.Gender" class="block text-lg font-medium mb-2 text-slate-700">性別</label>
+        <select asp-for="Case.Gender" class="input w-full" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <option value="">請選擇性別</option>
+            @if (Model.GenderOptions != null)
+            {
+                foreach (var option in Model.GenderOptions)
+                {
+                    <option value="@option.ValueCode">@option.ValueName</option>
+                }
+            }
+        </select>
+        <span asp-validation-for="Case.Gender" class="text-red-600 text-sm"></span>
+    </div>
+    <div>
+        <label asp-for="Case.BirthDate" class="block text-lg font-medium mb-2 text-slate-700">出生日期</label>
+        <input asp-for="Case.BirthDate" class="input w-full" type="date" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+        <span asp-validation-for="Case.BirthDate" class="text-red-600 text-sm"></span>
+    </div>
+    <div>
+        <div class="flex items-center mb-2 gap-2">
+            <label asp-for="Case.SchoolId" class="block text-lg font-medium mb-0 text-slate-700">學校</label>
+            <button type="button" id="addSchoolBtn" class="text-primary text-sm inline-flex items-center gap-1">
+                <i class="bi bi-plus"></i> 新增學校
+            </button>
+        </div>
+        <select asp-for="Case.SchoolId" class="input w-full" id="schoolSelect" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <option value="">請選擇學校</option>
+            @if (Model.Schools != null)
+            {
+                foreach (var school in Model.Schools)
+                {
+                    <option value="@school.SchoolId">@school.SchoolName</option>
+                }
+            }
+        </select>
+        <span asp-validation-for="Case.SchoolId" class="text-red-600 text-sm"></span>
+
+        <div id="addSchoolForm" class="mb-3 hidden">
+            <label class="block text-lg font-medium mb-2 text-slate-700">新增學校</label>
+            <div class="flex flex-wrap items-center gap-2">
+                <input type="text" class="input flex-1 min-w-48" id="newSchoolName" placeholder="學校名稱" />
+                <select class="input" id="newSchoolType">
+                    <option value="">選擇類型</option>
+                    <option value="國小">國小</option>
+                    <option value="國中">國中</option>
+                    <option value="高中">高中</option>
+                    <option value="大學">大學</option>
+                    <option value="其他">其他</option>
+                </select>
+                <button type="button" class="btn" id="submitNewSchool">
+                    <i class="bi bi-check me-1"></i> 新增
+                </button>
+                <button type="button" class="btn btn--secondary" id="cancelAddSchool">
+                    <i class="bi bi-x me-1"></i> 取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右側：照片區，佔一欄（跨兩列） -->
+    <div class="md:col-span-1 md:col-start-3 md:row-span-2 md:row-start-1">
+        <div class="flex items-center justify-between mb-2">
+            <label class="block text-lg font-medium mb-0 text-slate-700">個案照片</label>
+            <button type="button" id="addPhotoBtn" class="px-3 py-1.5 bg-primary text-white rounded-md shadow hover:bg-primary/90 transition-colors">
+                <i class="bi bi-plus-circle me-1"></i>新增照片
+            </button>
+        </div>
+        <div class="relative">
+            <div id="photoPreviewContainer" class="w-full h-[280px] border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center overflow-hidden hidden">
+                <img id="previewImage" src="#" alt="照片預覽" class="w-full h-full object-cover rounded-lg" />
+            </div>
+            <div id="photoLoadingContainer" class="w-full h-[280px] border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex flex-col items-center justify-center text-slate-400 hidden">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-3"></div>
+                <span class="text-sm">載入照片中...</span>
+            </div>
+            <div id="photoPlaceholder" class="w-full h-[280px] border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex flex-col items-center justify-center text-slate-400">
+                <i class="bi bi-camera text-3xl mb-2"></i>
+                <span class="text-sm">尚未上傳照片</span>
+            </div>
+            <input asp-for="PhotoFile" type="file" accept="image/jpeg,image/jpg,image/png,image/gif" class="hidden" id="photoFileInput" />
+            <span asp-validation-for="PhotoFile" class="text-red-600 text-sm block mt-1"></span>
+            <div class="text-slate-500 text-xs mt-1">支援格式：JPG、PNG、GIF，最大 5MB</div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
+    <div>
+        <label asp-for="Case.CityId" class="block text-lg font-medium mb-2 text-slate-700">城市</label>
+        <select asp-for="Case.CityId" class="input" id="citySelect" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <option value="">請選擇城市</option>
+            @if (Model.Cities != null)
+            {
+                foreach (var city in Model.Cities)
+                {
+                    <option value="@city.CityId">@city.CityName</option>
+                }
+            }
+        </select>
+        <span asp-validation-for="Case.CityId" class="text-red-600 text-sm"></span>
+    </div>
+    <div>
+        <label asp-for="Case.DistrictId" class="block text-lg font-medium mb-2 text-slate-700">地區</label>
+        <select asp-for="Case.DistrictId" class="input" id="districtSelect" form-mode="@Model.Mode" disabled-when="ReadOnly" data-current-district-id="@(Model.Case.DistrictId?.ToString() ?? "")">
+            <option value="">請先選擇城市</option>
+        </select>
+        <span asp-validation-for="Case.DistrictId" class="text-red-600 text-sm"></span>
+    </div>
+    <div>
+        <label asp-for="Case.Address" class="block text-lg font-medium mb-2 text-slate-700">詳細地址</label>
+        <input asp-for="Case.Address" class="input" placeholder="請輸入詳細地址" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+        <span asp-validation-for="Case.Address" class="text-red-600 text-sm"></span>
+    </div>
+</div>
+
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
+    <div>
+        <label asp-for="Case.Phone" class="block text-lg font-medium mb-2 text-slate-700">連絡電話</label>
+        <input asp-for="Case.Phone" class="input" placeholder="請輸入連絡電話" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+        <span asp-validation-for="Case.Phone" class="text-red-600 text-sm"></span>
+    </div>
+    <div>
+        <label asp-for="Case.Email" class="block text-lg font-medium mb-2 text-slate-700">電子郵箱</label>
+        <input asp-for="Case.Email" class="input" placeholder="請輸入電子郵箱" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+        <span asp-validation-for="Case.Email" class="text-red-600 text-sm"></span>
+    </div>
+</div>
+
