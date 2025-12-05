@@ -24,11 +24,20 @@ namespace CanLove_Backend.Application.Controllers
             }
             
             // 檢查是否有認證錯誤訊息
-            if (!string.IsNullOrEmpty(error) && error == "auth_failed")
+            if (!string.IsNullOrEmpty(error))
             {
-                TempData["ErrorMessage"] = !string.IsNullOrEmpty(message) 
-                    ? message 
-                    : "認證失敗，請重新登入";
+                if (error == "auth_failed")
+                {
+                    TempData["ErrorMessage"] = !string.IsNullOrEmpty(message) 
+                        ? message 
+                        : "認證失敗，請重新登入";
+                }
+                else if (error == "staff_creation_failed")
+                {
+                    TempData["ErrorMessage"] = !string.IsNullOrEmpty(message) 
+                        ? message 
+                        : "無法建立使用者資料，請聯絡系統管理員";
+                }
             }
             
             ViewBag.ReturnUrl = returnUrl;
