@@ -15,12 +15,20 @@ namespace CanLove_Backend.Application.Controllers
         /// 如果用戶已登入，自動重導向到首頁以改善用戶體驗
         /// </summary>
         [HttpGet]
-        public IActionResult Login(string returnUrl = "/")
+        public IActionResult Login(string returnUrl = "/", string? error = null, string? message = null)
         {
             // 如果用戶已登入，直接重導向到首頁
             if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction("Index", "Home");
+            }
+            
+            // 檢查是否有認證錯誤訊息
+            if (!string.IsNullOrEmpty(error) && error == "auth_failed")
+            {
+                TempData["ErrorMessage"] = !string.IsNullOrEmpty(message) 
+                    ? message 
+                    : "認證失敗，請重新登入";
             }
             
             ViewBag.ReturnUrl = returnUrl;

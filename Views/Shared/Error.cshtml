@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "系統錯誤";
+    Layout = "_Layout";
+    
+    var statusCode = Context.Request.Query["statusCode"].ToString();
+    var statusCodeInt = int.TryParse(statusCode, out var code) ? code : 500;
+    var errorMessage = statusCodeInt switch
+    {
+        400 => "請求錯誤",
+        401 => "未授權",
+        403 => "權限不足",
+        404 => "頁面不存在",
+        500 => "伺服器錯誤",
+        _ => "發生錯誤"
+    };
+}
+
+<div class="container text-center mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="error-template">
+                <h1 class="display-1 text-danger">⚠️</h1>
+                <h2 class="mb-4">@errorMessage</h2>
+                <div class="error-details mb-4">
+                    <p class="lead">抱歉，系統發生錯誤！</p>
+                    <p>請將以下資訊記下來，並聯絡開發者：</p>
+                </div>
+                
+                <div class="alert alert-info text-left mb-4">
+                    <h5><strong>請告訴 ANDY：</strong></h5>
+                    <ul class="mb-0">
+                        <li><strong>錯誤時間：</strong> <span id="currentTime"></span></li>
+                        <li><strong>錯誤頁面：</strong> <span id="currentUrl"></span></li>
+                        <li><strong>錯誤代碼：</strong> @statusCodeInt</li>
+                        <li><strong>您剛才做了什麼：</strong> ________________</li>
+                    </ul>
+                </div>
+                
+                <div class="contact-info">
+                    <h4>聯絡方式</h4>
+                    <p class="lead">
+                        <i class="fas fa-comment"></i> 
+                        <strong>LINE：</strong> 請直接 LINE 我
+                    </p>
+                    <p class="text-muted">我會盡快修復這個問題，謝謝您的耐心！</p>
+                </div>
+                
+                <div class="mt-4">
+                    <a href="/Home/Index" class="btn btn-primary btn-lg">
+                        <i class="bi bi-house-door"></i> 返回首頁
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-template {
+        padding: 40px 15px;
+        text-align: center;
+    }
+    .contact-info {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+    }
+    .alert {
+        text-align: left;
+    }
+</style>
+
+<script>
+    // 自動填入當前時間和 URL
+    document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-TW');
+    document.getElementById('currentUrl').textContent = window.location.href;
+</script>
+
