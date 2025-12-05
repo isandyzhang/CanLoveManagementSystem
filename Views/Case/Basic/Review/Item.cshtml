@@ -1,0 +1,47 @@
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+
+@{
+    ViewData["Title"] = "審核個案 - 個案基本資料";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("個案審核", Url.Action("Review", "CaseBasic") ?? string.Empty),
+        ("審核個案", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        @{
+            // 審核模式：避免卡片內再出現額外標題與關閉按鈕，僅保留表單本身的「個案基本資料表」抬頭
+            ViewBag.CardTitle = "";
+            ViewBag.ShowCloseButton = false;
+            ViewBag.CloseButtonUrl = Url.Action("Review", "CaseBasic");
+            ViewBag.ActionButtons = new List<(string Text, string Action, string Controller, string Class, string Icon, bool IsForm, string FormAction)>
+            {
+                ("通過", "ReviewItemDecision", "CaseBasic", "btn bg-green-400 hover:bg-green-500 text-white", "bi bi-check-circle", true, "ReviewItemDecision"),
+                ("不通過", "ReviewItemDecision", "CaseBasic", "btn bg-red-400 hover:bg-red-500 text-white", "bi bi-x-circle", true, "ReviewItemDecision")
+            };
+        }
+        <partial name="~/Views/Case/Basic/Partials/_CaseDetailCard.cshtml" model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/case-form-common.js"></script>
+    <script>
+        // 載入地區資料
+        const districtsByCity = @Html.Raw(Json.Serialize(ViewBag.DistrictsByCity));
+        const currentDistrictId = document.getElementById('districtSelect')?.value || document.getElementById('districtSelect')?.getAttribute('data-current-district-id');
+        if (districtsByCity) {
+            initCityDistrict(districtsByCity, currentDistrictId);
+        }
+
+        // 載入已存在的照片
+        const photoUrl = @Html.Raw(Json.Serialize(ViewBag.PhotoUrl));
+        if (photoUrl) {
+            initPhotoPreview(photoUrl);
+        }
+    </script>
+}
+

@@ -22,8 +22,8 @@ public class CaseMappingProfile : Profile
         //     .ForMember(dest => dest.CreatedAt, 
         //               opt => opt.MapFrom(src => src.CreatedAt ?? DateTimeExtensions.TaiwanTime));
 
-        // 2. CaseDetail 到 CaseWizard_S1_CD_ViewModel 的對應
-        CreateMap<CaseDetail, CaseWizard_S1_CD_ViewModel>()
+        // 2. CaseDetail 到 CaseDetailVM 的對應
+        CreateMap<CaseDetail, CaseDetailVM>()
             // 選項資料不包含在對應中，需要手動載入
             .ForMember(dest => dest.ContactRelationOptions, opt => opt.Ignore())
             .ForMember(dest => dest.MainCaregiverRelationOptions, opt => opt.Ignore())
@@ -34,8 +34,8 @@ public class CaseMappingProfile : Profile
             .ForMember(dest => dest.SourceOptions, opt => opt.Ignore())
             .ForMember(dest => dest.HelpExperienceOptions, opt => opt.Ignore());
 
-        // 3. CaseWizard_S1_CD_ViewModel 到 CaseDetail 的對應（反向）
-        CreateMap<CaseWizard_S1_CD_ViewModel, CaseDetail>()
+        // 3. CaseDetailVM 到 CaseDetail 的對應（反向）
+        CreateMap<CaseDetailVM, CaseDetail>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore()) // 由服務層設定
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()) // 由服務層設定
             .ForMember(dest => dest.Deleted, opt => opt.Ignore()) // 系統欄位
@@ -52,12 +52,12 @@ public class CaseMappingProfile : Profile
             .ForMember(dest => dest.SourceValue, opt => opt.Ignore()) // 導航屬性
             .ForMember(dest => dest.HelpExperienceValue, opt => opt.Ignore()); // 導航屬性
 
-        // 4. CaseSocialWorkerContent 到 CaseWizard_S2_CSWC_ViewModel 的對應
-        CreateMap<CaseSocialWorkerContent, CaseWizard_S2_CSWC_ViewModel>()
+        // 4. CaseSocialWorkerContent 到 SocialWorkerContentVM 的對應
+        CreateMap<CaseSocialWorkerContent, SocialWorkerContentVM>()
             .ForMember(dest => dest.ResidenceTypeOptions, opt => opt.Ignore()); // 選項資料需要手動載入
 
-        // 5. CaseWizard_S2_CSWC_ViewModel 到 CaseSocialWorkerContent 的對應
-        CreateMap<CaseWizard_S2_CSWC_ViewModel, CaseSocialWorkerContent>()
+        // 5. SocialWorkerContentVM 到 CaseSocialWorkerContent 的對應
+        CreateMap<SocialWorkerContentVM, CaseSocialWorkerContent>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Deleted, opt => opt.Ignore())
@@ -66,11 +66,11 @@ public class CaseMappingProfile : Profile
             .ForMember(dest => dest.Case, opt => opt.Ignore())
             .ForMember(dest => dest.ResidenceTypeValue, opt => opt.Ignore());
 
-        // 6. CaseFqeconomicStatus 到 CaseWizard_S3_CFQES_ViewModel 的對應
-        CreateMap<CaseFqeconomicStatus, CaseWizard_S3_CFQES_ViewModel>();
+        // 6. CaseFqeconomicStatus 到 EconomicStatusVM 的對應
+        CreateMap<CaseFqeconomicStatus, EconomicStatusVM>();
 
-        // 7. CaseWizard_S3_CFQES_ViewModel 到 CaseFqeconomicStatus 的對應
-        CreateMap<CaseWizard_S3_CFQES_ViewModel, CaseFqeconomicStatus>()
+        // 7. EconomicStatusVM 到 CaseFqeconomicStatus 的對應
+        CreateMap<EconomicStatusVM, CaseFqeconomicStatus>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Deleted, opt => opt.Ignore())
@@ -78,12 +78,12 @@ public class CaseMappingProfile : Profile
             .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
             .ForMember(dest => dest.Case, opt => opt.Ignore());
 
-        // 8. CaseHqhealthStatus 到 CaseWizard_S4_CHQHS_ViewModel 的對應
-        CreateMap<CaseHqhealthStatus, CaseWizard_S4_CHQHS_ViewModel>()
+        // 8. CaseHqhealthStatus 到 HealthStatusVM 的對應
+        CreateMap<CaseHqhealthStatus, HealthStatusVM>()
             .ForMember(dest => dest.CaregiverRoleOptions, opt => opt.Ignore());
 
-        // 9. CaseWizard_S4_CHQHS_ViewModel 到 CaseHqhealthStatus 的對應
-        CreateMap<CaseWizard_S4_CHQHS_ViewModel, CaseHqhealthStatus>()
+        // 9. HealthStatusVM 到 CaseHqhealthStatus 的對應
+        CreateMap<HealthStatusVM, CaseHqhealthStatus>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Deleted, opt => opt.Ignore())
@@ -92,11 +92,11 @@ public class CaseMappingProfile : Profile
             .ForMember(dest => dest.Case, opt => opt.Ignore())
             .ForMember(dest => dest.CaregiverRoleValue, opt => opt.Ignore());
 
-        // 10. CaseIqacademicPerformance 到 CaseWizard_S5_CIQAP_ViewModel 的對應
-        CreateMap<CaseIqacademicPerformance, CaseWizard_S5_CIQAP_ViewModel>();
+        // 10. CaseIqacademicPerformance 到 AcademicPerformanceVM 的對應
+        CreateMap<CaseIqacademicPerformance, AcademicPerformanceVM>();
 
-        // 11. CaseWizard_S5_CIQAP_ViewModel 到 CaseIqacademicPerformance 的對應
-        CreateMap<CaseWizard_S5_CIQAP_ViewModel, CaseIqacademicPerformance>()
+        // 11. AcademicPerformanceVM 到 CaseIqacademicPerformance 的對應
+        CreateMap<AcademicPerformanceVM, CaseIqacademicPerformance>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Deleted, opt => opt.Ignore())
@@ -104,11 +104,11 @@ public class CaseMappingProfile : Profile
             .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
             .ForMember(dest => dest.Case, opt => opt.Ignore());
 
-        // 12. CaseEqemotionalEvaluation 到 CaseWizard_S6_CEEE_ViewModel 的對應
-        CreateMap<CaseEqemotionalEvaluation, CaseWizard_S6_CEEE_ViewModel>();
+        // 12. CaseEqemotionalEvaluation 到 EmotionalEvaluationVM 的對應
+        CreateMap<CaseEqemotionalEvaluation, EmotionalEvaluationVM>();
 
-        // 13. CaseWizard_S6_CEEE_ViewModel 到 CaseEqemotionalEvaluation 的對應
-        CreateMap<CaseWizard_S6_CEEE_ViewModel, CaseEqemotionalEvaluation>()
+        // 13. EmotionalEvaluationVM 到 CaseEqemotionalEvaluation 的對應
+        CreateMap<EmotionalEvaluationVM, CaseEqemotionalEvaluation>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Deleted, opt => opt.Ignore())
@@ -116,11 +116,11 @@ public class CaseMappingProfile : Profile
             .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
             .ForMember(dest => dest.Case, opt => opt.Ignore());
 
-        // 14. FinalAssessmentSummary 到 CaseWizard_S7_FAS_ViewModel 的對應
-        CreateMap<FinalAssessmentSummary, CaseWizard_S7_FAS_ViewModel>();
+        // 14. FinalAssessmentSummary 到 FinalAssessmentVM 的對應
+        CreateMap<FinalAssessmentSummary, FinalAssessmentVM>();
 
-        // 15. CaseWizard_S7_FAS_ViewModel 到 FinalAssessmentSummary 的對應
-        CreateMap<CaseWizard_S7_FAS_ViewModel, FinalAssessmentSummary>()
+        // 15. FinalAssessmentVM 到 FinalAssessmentSummary 的對應
+        CreateMap<FinalAssessmentVM, FinalAssessmentSummary>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Deleted, opt => opt.Ignore())

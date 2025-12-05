@@ -1,0 +1,159 @@
+@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseWizard_S0_SelectCase_ViewModel
+
+@{
+    ViewData["Title"] = "開案紀錄表 - 選擇個案";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("新增個案", Url.Action("Create", "CaseBasic") ?? string.Empty),
+        ("開案紀錄表", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="w-full">
+            @{ ViewBag.CurrentPage = "Create"; ViewBag.CurrentTab = "CaseOpening"; }
+            <partial name="~/Views/Shared/Partials/_CaseFormTabs.cshtml" />
+
+            @{
+                ViewBag.CurrentStep = 0;
+                ViewBag.CaseId = Model.CaseId;
+                ViewBag.Mode = Model.Mode;
+            }
+            
+            <!-- 導航分頁和進度條 -->
+            @await Html.PartialAsync("~/Views/Case/Opening/_WizardNavigation.cshtml")
+
+            <!-- 表單 -->
+            <form asp-action="Step0" method="post" class="needs-validation prevent-double-submit" novalidate>
+                <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-orange-400 dark:border-slate-700">
+                    <div class="px-6 py-4 mb-5 flex items-center justify-between bg-orange-50 rounded-t-xl">
+                        <span class="inline-flex items-center gap-3 text-2xl font-bold text-slate-800">
+                            <i class="bi bi-person-plus"></i>
+                            選擇個案
+                        </span>
+                    </div>
+                    <div class="px-6 py-6">
+                        <!-- 只在表單提交後（POST 請求返回）才顯示驗證錯誤 -->
+                        @if (Context.Request.Method == "POST" && ViewData.ModelState.ErrorCount > 0)
+                        {
+                            <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
+                        }
+                        
+                        <!-- 提示訊息 -->
+                        <div class="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="bi bi-info-circle text-orange-600 dark:text-orange-400 text-xl mt-0.5"></i>
+                                <div>
+                                    <p class="text-slate-700 dark:text-slate-300 font-medium mb-1">請先選擇個案，才能繼續進行後續步驟</p>
+                                    <p class="text-slate-600 dark:text-slate-400 text-sm">選擇個案後，系統會自動建立草稿記錄，您可以隨時儲存進度並稍後繼續填寫。</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 個案選擇 Autocomplete -->
+                        @{
+                            ViewBag.CaseAutocompleteInputId = "caseAutocompleteInput";
+                            ViewBag.CaseAutocompleteInputName = "caseAutocomplete";
+                            ViewBag.CaseAutocompleteCaseIdFieldId = "CaseId";
+                            ViewBag.CaseAutocompleteOnSelectCallback = "onCaseSelected";
+                        }
+                        <partial name="~/Views/Shared/Partials/_CaseAutocomplete.cshtml" />
+                        
+                        <!-- 隱藏欄位 -->
+                        <input asp-for="CaseId" type="hidden" />
+                        <input asp-for="Mode" type="hidden" />
+                        <input asp-for="CurrentStep" type="hidden" />
+
+                        <!-- 表單操作按鈕 -->
+                        <div class="flex justify-end gap-3 mt-6">
+                            <a href="@Url.Action("Query", "CaseOpening")" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-1"></i>取消
+                            </a>
+                            <button type="submit" id="nextButton" class="btn btn-primary" disabled>
+                                <i class="bi bi-arrow-right me-1"></i>下一步
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 個案選擇後的回調函數
+        function onCaseSelected(caseId, caseName) {
+            const caseIdField = document.getElementById('CaseId');
+            const nextButton = document.getElementById('nextButton');
+            
+            if (caseId && caseIdField) {
+                caseIdField.value = caseId;
+                
+                // 啟用下一步按鈕
+                if (nextButton) {
+                    nextButton.disabled = false;
+                }
+            }
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 表單驗證 - 只在提交時驗證，不立即顯示錯誤
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        const caseIdField = document.getElementById('CaseId');
+                        if (!caseIdField || !caseIdField.value || caseIdField.value.trim() === '') {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            // 顯示錯誤訊息但不使用 alert
+                            const errorSpan = document.getElementById('caseAutocompleteInputError');
+                            if (errorSpan) {
+                                errorSpan.classList.remove('hidden');
+                            }
+                            // 聚焦到輸入框
+                            const autocompleteInput = document.getElementById('caseAutocompleteInput');
+                            if (autocompleteInput) {
+                                autocompleteInput.focus();
+                            }
+                        } else {
+                            form.classList.add('was-validated');
+                        }
+                    }, false);
+                });
+            }, false);
+        })();
+        
+        // 如果有現有的 caseId，設定 autocomplete 輸入框的值
+        @if (!string.IsNullOrEmpty(Model.CaseId))
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                const caseIdField = document.getElementById('CaseId');
+                const autocompleteInput = document.getElementById('caseAutocompleteInput');
+                if (caseIdField && caseIdField.value && autocompleteInput) {
+                    autocompleteInput.value = '@Model.CaseId';
+                    // 觸發選擇事件以啟用按鈕
+                    if (typeof onCaseSelected === 'function') {
+                        onCaseSelected('@Model.CaseId', '@Model.CaseId');
+                    }
+                }
+            });
+            </text>
+        }
+    </script>
+}
+
+

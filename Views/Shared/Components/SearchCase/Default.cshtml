@@ -2,9 +2,9 @@
 
 @{
     // 根據 mode 決定按鈕文字
-    var buttonText = Model.Mode == "ReadOnly" ? "查看" : Model.Mode == "ReviewEdit" ? "審核" : "選擇";
+    var buttonText = Model.Mode == "ReadOnly" ? "查看" : Model.Mode == "Review" ? "審核" : "選擇";
     var buttonClass = Model.Mode == "ReadOnly" ? "bg-blue-400 hover:bg-blue-500" : 
-                      Model.Mode == "ReviewEdit" ? "bg-purple-400 hover:bg-purple-500" : 
+                     Model.Mode == "Review" ? "bg-purple-400 hover:bg-purple-500" : 
                       "bg-orange-400 hover:bg-orange-500";
 }
 
@@ -60,9 +60,9 @@
     const autoLoad = @(Model.AutoLoad ? "true" : "false");
     
     // 根據 mode 決定按鈕文字和連結
-    const buttonText = mode === 'ReadOnly' ? '查看' : mode === 'ReviewEdit' ? '審核' : '選擇';
+    const buttonText = mode === 'ReadOnly' ? '查看' : mode === 'Review' ? '審核' : '選擇';
     const buttonClass = mode === 'ReadOnly' ? 'bg-blue-400 hover:bg-blue-500' : 
-                        mode === 'ReviewEdit' ? 'bg-purple-400 hover:bg-purple-500' : 
+                        mode === 'Review' ? 'bg-purple-400 hover:bg-purple-500' : 
                         'bg-orange-400 hover:bg-orange-500';
     
     // 建立連結 URL
@@ -132,7 +132,7 @@
                 <td class="text-slate-900 dark:text-slate-100">${escapeHtml(c.school || '')}</td>
                 <td>
                     <a href="${buildUrl(c.caseId)}" class="badge-pill text-white ${buttonClass}">
-                        <i class="bi ${mode === 'ReadOnly' ? 'bi-eye' : mode === 'ReviewEdit' ? 'bi-check-circle' : 'bi-pencil'} me-1"></i>${buttonText}
+                        <i class="bi ${mode === 'ReadOnly' ? 'bi-eye' : mode === 'Review' ? 'bi-check-circle' : 'bi-pencil'} me-1"></i>${buttonText}
                     </a>
                 </td>
             </tr>

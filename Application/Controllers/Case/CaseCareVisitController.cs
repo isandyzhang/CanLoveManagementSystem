@@ -17,40 +17,29 @@ public class CaseCareVisitController : Controller
     }
 
     /// <summary>
-    /// 選擇個案（用於新增訪視記錄）
-    /// </summary>
-    [HttpGet]
-    public IActionResult SelectCase()
-    {
-        ViewData["Sidebar.CareVisitRecord"] = "關懷訪視記錄表";
-        ViewData["Title"] = "選擇個案";
-        ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
-        {
-            ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-            ("新增個案", Url.Action("Create", "CaseBasic") ?? string.Empty),
-            ("關懷訪視記錄表", string.Empty)
-        };
-        
-        ViewBag.TargetController = "CaseCareVisit";
-        ViewBag.TargetAction = "Create";
-        ViewBag.TargetTab = "CareVisitRecord";
-        ViewBag.TargetStep = "CareVisit";
-        ViewBag.Mode = "Create";
-        ViewBag.AutoLoad = false;
-        
-        return View("~/Views/Shared/SelectCase.cshtml");
-    }
-
-    /// <summary>
     /// 新增訪視記錄（預留，功能未開發）
     /// </summary>
     [HttpGet]
-    public IActionResult Create(string caseId)
+    public async Task<IActionResult> Create(string? caseId = null)
     {
+        ViewData["Sidebar.CareVisitRecord"] = "關懷訪視記錄表";
         ViewData["Title"] = "關懷訪視記錄表";
         ViewBag.CurrentPage = "Create";
         ViewBag.CurrentTab = "CareVisitRecord";
         ViewBag.CaseId = caseId;
+        
+        // 如果有 caseId，載入個案基本資訊
+        if (!string.IsNullOrEmpty(caseId))
+        {
+            var caseInfo = await _context.Cases
+                .Include(c => c.City)
+                .Include(c => c.District)
+                .Include(c => c.School)
+                .FirstOrDefaultAsync(c => c.CaseId == caseId && c.Deleted != true);
+            
+            ViewBag.CaseInfo = caseInfo;
+        }
+        
         return View("~/Views/Case/CareVisitRecord/CareVisitRecord/CareVisitRecord.cshtml");
     }
 
@@ -63,7 +52,7 @@ public class CaseCareVisitController : Controller
     {
         // 功能未開發
         TempData["InfoMessage"] = "此功能尚未開發";
-        return RedirectToAction(nameof(SelectCase));
+        return RedirectToAction(nameof(Create));
     }
 
     /// <summary>
@@ -82,11 +71,29 @@ public class CaseCareVisitController : Controller
     /// 審核訪視記錄（預留，功能未開發）
     /// </summary>
     [HttpGet]
-    public IActionResult Review(string? caseId = null)
+    public async Task<IActionResult> Review(string? caseId = null)
     {
         ViewData["Title"] = "個案審核 - 關懷訪視記錄表";
         ViewBag.CurrentPage = "Review";
         ViewBag.CurrentTab = "CareVisitRecord";
+        
+        // 計算各類型的待審項目數量
+        var caseBasicCount = await _context.Cases
+            .Where(c => c.Status == "PendingReview" && c.Deleted != true)
+            .CountAsync();
+        
+        var caseOpeningCount = await _context.CaseOpenings
+            .Where(o => o.Status == "PendingReview")
+            .CountAsync();
+        
+        // 設定 TypeCounts 供 _CaseFormTabs 使用
+        ViewBag.TypeCounts = new Dictionary<string, int>
+        {
+            { "CaseBasic", caseBasicCount },
+            { "CaseOpening", caseOpeningCount },
+            { "CareVisitRecord", 0 }, // 功能未開發
+            { "Consultation", 0 } // 功能未開發
+        };
         
         // 功能未開發，返回空列表
         var emptyList = new List<object>();

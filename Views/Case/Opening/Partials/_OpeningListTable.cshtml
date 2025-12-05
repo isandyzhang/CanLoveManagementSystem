@@ -1,0 +1,332 @@
+@model IEnumerable<CanLove_Backend.Domain.Case.Models.Opening.CaseOpening>
+@{
+    // 配置參數
+    var mode = ViewBag.TableMode as string ?? "Search"; // Search, Review
+    var showActions = ViewBag.ShowActions as bool? ?? true;
+    var actionButtons = ViewBag.ActionButtons as List<(string Text, string Action, string Controller, string Class)> ?? new List<(string, string, string, string)>();
+    var submitterNameMap = ViewBag.SubmitterNameMap as System.Collections.Generic.IDictionary<string, string>;
+    var onRowClick = ViewBag.OnRowClick as string ?? "viewOpeningDetails"; // JavaScript 函數名稱
+    var emptyMessage = ViewBag.EmptyMessage as string ?? "沒有資料";
+    var disableCardWrapper = ViewBag.DisableCardWrapper as bool? ?? false;
+}
+
+@if (Model != null && Model.Any())
+{
+    var outerWrapperClass = disableCardWrapper ? "" : "card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-[#FDBA74] dark:border-slate-800 mb-6";
+    var innerPaddingClass = disableCardWrapper ? "" : "p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100";
+
+    if (!disableCardWrapper)
+    {
+        <div class="@outerWrapperClass">
+            <div class="@innerPaddingClass">
+                <div class="overflow-auto">
+                    <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-800">
+                            <th class="text-slate-700 dark:text-slate-300">個案編號</th>
+                            <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
+                            @if (mode == "Search")
+                            {
+                                <th class="text-slate-700 dark:text-slate-300">開案日期</th>
+                                <th class="text-slate-700 dark:text-slate-300">狀態</th>
+                                <th class="text-slate-700 dark:text-slate-300">建立時間</th>
+                            }
+                            else if (mode == "Review")
+                            {
+                                <th class="text-slate-700 dark:text-slate-300">提交者</th>
+                                <th class="text-slate-700 dark:text-slate-300">提交時間</th>
+                                <th class="text-slate-700 dark:text-slate-300">狀態</th>
+                            }
+                            @if (showActions && actionButtons.Any())
+                            {
+                                <th class="text-slate-700 dark:text-slate-300">操作</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" onclick="@(onRowClick)('@item.CaseId')">
+                                <td class="text-slate-900 dark:text-slate-100">
+                                    <code class="text-slate-900 dark:text-slate-100">@item.CaseId</code>
+                                </td>
+                                <td class="text-slate-900 dark:text-slate-100">@(item.Case?.Name ?? string.Empty)</td>
+                                
+                                @if (mode == "Search")
+                                {
+                                    <td class="text-slate-900 dark:text-slate-100">
+                                        @if (item.OpenDate.HasValue)
+                                        {
+                                            @item.OpenDate.Value.ToString("yyyy-MM-dd")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-slate-400">未設定</span>
+                                        }
+                                    </td>
+                                    <td class="text-slate-900 dark:text-slate-100">
+                                        @{
+                                            var status = item.Status ?? "Draft";
+                                            var statusClass = status switch
+                                            {
+                                                "Approved" => "bg-green-300 text-green-900",
+                                                "PendingReview" => "bg-orange-300 text-orange-900",
+                                                "Rejected" => "bg-red-300 text-red-900",
+                                                "Closed" => "bg-gray-300 text-gray-900",
+                                                _ => "bg-slate-300 text-slate-900"
+                                            };
+                                            var statusText = status switch
+                                            {
+                                                "Approved" => "已開案",
+                                                "PendingReview" => "審核中",
+                                                "Rejected" => "被拒絕",
+                                                "Closed" => "已結案",
+                                                _ => "草稿"
+                                            };
+                                        }
+                                        <span class="badge-pill @statusClass text-sm">@statusText</span>
+                                    </td>
+                                    <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.CreatedAt"></datetime></td>
+                                }
+                                else if (mode == "Review")
+                                {
+                                    <td>
+                                        @{ 
+                                            var raw = item.SubmittedBy ?? "系統";
+                                            var name = (submitterNameMap != null && item.SubmittedBy != null && submitterNameMap.ContainsKey(item.SubmittedBy)) 
+                                                ? (submitterNameMap[item.SubmittedBy] ?? raw) 
+                                                : raw;
+                                        }
+                                        <span class="text-slate-900 dark:text-slate-100">@name</span>
+                                    </td>
+                                    <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.SubmittedAt"></datetime></td>
+                                    <td class="text-slate-900 dark:text-slate-100">
+                                        <span class="badge-pill bg-orange-300 text-orange-900 text-sm">待審閱</span>
+                                    </td>
+                                }
+                                
+                                @if (showActions)
+                                {
+                                    <td>
+                                        @{
+                                            // 根據狀態動態生成操作按鈕
+                                            var status = item.Status ?? "Draft";
+                                            var buttons = new List<(string Text, string Action, string Controller, string Class)>();
+                                            
+                                            if (mode == "Search")
+                                            {
+                                                switch (status)
+                                                {
+                                                    case "Draft":
+                                                        buttons.Add(("編輯", "Edit", "CaseOpening", "btn-sm"));
+                                                        buttons.Add(("查看", "View", "CaseOpening", "btn-sm btn--secondary"));
+                                                        break;
+                                                    case "PendingReview":
+                                                        buttons.Add(("檢視", "View", "CaseOpening", "btn-sm"));
+                                                        break;
+                                                    case "Rejected":
+                                                        buttons.Add(("重送", "Resubmit", "CaseOpening", "btn-sm"));
+                                                        buttons.Add(("檢視", "View", "CaseOpening", "btn-sm btn--secondary"));
+                                                        break;
+                                                    case "Approved":
+                                                    case "Closed":
+                                                        buttons.Add(("檢視", "View", "CaseOpening", "btn-sm"));
+                                                        break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                // Review 模式使用原有的 actionButtons
+                                                buttons = actionButtons;
+                                            }
+                                            
+                                            foreach (var button in buttons)
+                                            {
+                                                if (button.Action == "Resubmit")
+                                                {
+                                                    <form method="post" action="@Url.Action(button.Action, button.Controller, new { caseId = item.CaseId })" style="display: inline;" onsubmit="return confirm('確定要重新送審此開案記錄嗎？');">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm @button.Class" onclick="event.stopPropagation();">
+                                                            @button.Text
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <a href="@Url.Action(button.Action, button.Controller, new { caseId = item.CaseId, step = "CaseDetail" })" 
+                                                       class="btn btn-sm @button.Class" 
+                                                       onclick="event.stopPropagation();">
+                                                        @button.Text
+                                                    </a>
+                                                }
+                                            }
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="overflow-auto">
+            <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-800">
+                        <th class="text-slate-700 dark:text-slate-300">個案編號</th>
+                        <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
+                        @if (mode == "Search")
+                        {
+                            <th class="text-slate-700 dark:text-slate-300">開案日期</th>
+                            <th class="text-slate-700 dark:text-slate-300">狀態</th>
+                            <th class="text-slate-700 dark:text-slate-300">建立時間</th>
+                        }
+                        else if (mode == "Review")
+                        {
+                            <th class="text-slate-700 dark:text-slate-300">提交者</th>
+                            <th class="text-slate-700 dark:text-slate-300">提交時間</th>
+                            <th class="text-slate-700 dark:text-slate-300">狀態</th>
+                        }
+                        @if (showActions && actionButtons.Any())
+                        {
+                            <th class="text-slate-700 dark:text-slate-300">操作</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" onclick="@(onRowClick)('@item.CaseId')">
+                            <td class="text-slate-900 dark:text-slate-100">
+                                <code class="text-slate-900 dark:text-slate-100">@item.CaseId</code>
+                            </td>
+                            <td class="text-slate-900 dark:text-slate-100">@(item.Case?.Name ?? string.Empty)</td>
+                            
+                            @if (mode == "Search")
+                            {
+                                <td class="text-slate-900 dark:text-slate-100">
+                                    @if (item.OpenDate.HasValue)
+                                    {
+                                        @item.OpenDate.Value.ToString("yyyy-MM-dd")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-slate-400">未設定</span>
+                                    }
+                                </td>
+                                <td class="text-slate-900 dark:text-slate-100">
+                                    @{
+                                        var status = item.Status ?? "Draft";
+                                        var statusClass = status switch
+                                        {
+                                            "Approved" => "bg-green-300 text-green-900",
+                                            "PendingReview" => "bg-orange-300 text-orange-900",
+                                            "Rejected" => "bg-red-300 text-red-900",
+                                            "Closed" => "bg-gray-300 text-gray-900",
+                                            _ => "bg-slate-300 text-slate-900"
+                                        };
+                                        var statusText = status switch
+                                        {
+                                            "Approved" => "已開案",
+                                            "PendingReview" => "審核中",
+                                            "Rejected" => "被拒絕",
+                                            "Closed" => "已結案",
+                                            _ => "草稿"
+                                        };
+                                    }
+                                    <span class="badge-pill @statusClass text-sm">@statusText</span>
+                                </td>
+                                <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.CreatedAt"></datetime></td>
+                            }
+                            else if (mode == "Review")
+                            {
+                                <td>
+                                    @{ 
+                                        var raw = item.SubmittedBy ?? "系統";
+                                        var name = (submitterNameMap != null && item.SubmittedBy != null && submitterNameMap.ContainsKey(item.SubmittedBy)) 
+                                            ? (submitterNameMap[item.SubmittedBy] ?? raw) 
+                                            : raw;
+                                    }
+                                    <span class="text-slate-900 dark:text-slate-100">@name</span>
+                                </td>
+                                <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.SubmittedAt"></datetime></td>
+                                <td class="text-slate-900 dark:text-slate-100">
+                                    <span class="badge-pill bg-orange-300 text-orange-900 text-sm">待審閱</span>
+                                </td>
+                            }
+                            
+                            @if (showActions)
+                            {
+                                <td>
+                                    @{
+                                        // 根據狀態動態生成操作按鈕
+                                        var status = item.Status ?? "Draft";
+                                        var buttons = new List<(string Text, string Action, string Controller, string Class)>();
+                                        
+                                        if (mode == "Search")
+                                        {
+                                            switch (status)
+                                            {
+                                                case "Draft":
+                                                    buttons.Add(("編輯", "Edit", "CaseOpening", "btn-sm"));
+                                                    buttons.Add(("查看", "View", "CaseOpening", "btn-sm btn--secondary"));
+                                                    break;
+                                                case "PendingReview":
+                                                    buttons.Add(("檢視", "View", "CaseOpening", "btn-sm"));
+                                                    break;
+                                                case "Rejected":
+                                                    buttons.Add(("重送", "Resubmit", "CaseOpening", "btn-sm"));
+                                                    buttons.Add(("檢視", "View", "CaseOpening", "btn-sm btn--secondary"));
+                                                    break;
+                                                case "Approved":
+                                                case "Closed":
+                                                    buttons.Add(("檢視", "View", "CaseOpening", "btn-sm"));
+                                                    break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Review 模式使用原有的 actionButtons
+                                            buttons = actionButtons;
+                                        }
+                                        
+                                        foreach (var button in buttons)
+                                        {
+                                            if (button.Action == "Resubmit")
+                                            {
+                                                <form method="post" action="@Url.Action(button.Action, button.Controller, new { caseId = item.CaseId })" style="display: inline;" onsubmit="return confirm('確定要重新送審此開案記錄嗎？');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm @button.Class" onclick="event.stopPropagation();">
+                                                        @button.Text
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <a href="@Url.Action(button.Action, button.Controller, new { caseId = item.CaseId, step = "CaseDetail" })" 
+                                                   class="btn btn-sm @button.Class" 
+                                                   onclick="event.stopPropagation();">
+                                                    @button.Text
+                                                </a>
+                                            }
+                                        }
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+else
+{
+    <partial name="~/Views/Shared/Partials/_EmptyState.cshtml" />
+}
+
+

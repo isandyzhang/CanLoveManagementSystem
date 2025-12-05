@@ -1,9 +1,21 @@
 @{
-    var currentStep = ViewBag.CurrentStep ?? 1;
+    var currentStep = ViewBag.CurrentStep ?? 0;
     var caseId = ViewBag.CaseId ?? "";
+    var mode = ViewBag.Mode;
+    
+    // 根據導航上下文決定使用哪個 action
+    var navigationContext = ViewData["NavigationContext"] as string ?? "Create";
+    var actionName = navigationContext switch
+    {
+        "Review" => "Review",
+        "ReadOnly" => "View",
+        "Edit" => "Edit",
+        _ => "Create"
+    };
     
     var steps = new List<(int StepNumber, string Title, string StepName)>
     {
+        (0, "選擇個案", "SelectCase"),
         (1, "個案詳細資料", "CaseDetail"),
         (2, "社會工作服務內容", "SocialWorkerContent"),
         (3, "經濟狀況評估 (FQ)", "EconomicStatus"),
@@ -14,7 +26,8 @@
     };
     
     var totalSteps = steps.Count;
-    var progressPercentage = ((double)currentStep / totalSteps) * 100;
+    // 進度計算：Step0 完成後從 12.5% 開始，每完成一步增加 12.5%
+    var progressPercentage = currentStep == 0 ? 0 : ((double)currentStep / totalSteps) * 100;
 }
 
  
@@ -22,12 +35,39 @@
 <!-- 分頁導航（橫向排列） -->
 <div class="w-full mb-4">
     <div class="flex flex-wrap gap-2 items-stretch">
-        @foreach (var step in steps)
+    @foreach (var step in steps)
+    {
+        var isActive = currentStep == step.StepNumber;
+        var isCompleted = currentStep > step.StepNumber;
+        var routeValues = new { caseId = caseId, step = step.StepName };
+        
+        // 在 Review 和 ReadOnly 模式下禁用步驟0
+        var isStep0Disabled = step.StepNumber == 0 && (navigationContext == "Review" || navigationContext == "ReadOnly");
+        
+        var baseClasses = "flex-1 min-w-[120px] px-4 py-3 rounded-lg text-center transition-colors border";
+        var stateClasses = isActive 
+            ? "bg-orange-50 border-orange-400 text-slate-900 font-semibold shadow-card-lg" 
+            : isCompleted 
+                ? "bg-slate-50 border-slate-300 text-slate-600 hover:border-slate-400" 
+                : "bg-white border-slate-200 text-slate-500 hover:border-slate-300";
+        var disabledClasses = isStep0Disabled 
+            ? "opacity-50 cursor-not-allowed bg-slate-100 border-slate-300 text-slate-400" 
+            : "";
+        
+        if (isStep0Disabled)
         {
-            var isActive = currentStep == step.StepNumber;
-            var isCompleted = currentStep > step.StepNumber;
-            <a href="@Url.Action("Create", "CaseOpening", new { caseId = caseId, step = step.StepName })"
-               class="flex-1 min-w-[120px] px-4 py-3 rounded-lg text-center transition-colors border @(isActive ? "bg-orange-50 border-orange-400 text-slate-900 font-semibold shadow-card-lg" : isCompleted ? "bg-slate-50 border-slate-300 text-slate-600 hover:border-slate-400" : "bg-white border-slate-200 text-slate-500 hover:border-slate-300")">
+            <span class="@baseClasses @stateClasses @disabledClasses">
+                <div class="flex items-center justify-center gap-2 mb-1">
+                    <i class="bi bi-circle text-slate-300 text-xs"></i>
+                    <span class="text-xs font-medium">步驟 0</span>
+                </div>
+                <span class="block text-sm font-medium truncate">@step.Title</span>
+            </span>
+        }
+        else
+        {
+            <a href="@Url.Action(actionName, "CaseOpening", routeValues)"
+               class="@baseClasses @stateClasses @disabledClasses">
                 <div class="flex items-center justify-center gap-2 mb-1">
                     @if (isCompleted)
                     {
@@ -41,11 +81,12 @@
                     {
                         <i class="bi bi-circle text-slate-400 text-xs"></i>
                     }
-                    <span class="text-xs font-medium">步驟 @step.StepNumber</span>
+                    <span class="text-xs font-medium">@(step.StepNumber == 0 ? "步驟 0" : "步驟 " + step.StepNumber)</span>
                 </div>
                 <span class="block text-sm font-medium truncate">@step.Title</span>
             </a>
         }
+    }
     </div>
 
     <!-- 進度條（橘色） -->

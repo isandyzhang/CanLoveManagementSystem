@@ -408,8 +408,7 @@ public class CaseBasicController : Controller
                 .Include(c => c.City)
                 .Include(c => c.District)
                 .Include(c => c.School)
-                .Where(c => c.Deleted != true && 
-                    (c.Status == "Approved" || c.Status == "PendingReview"));
+                .Where(c => c.Deleted != true && c.Status == "Approved");
 
             // 如果有查詢條件，加入搜尋過濾
             if (!string.IsNullOrWhiteSpace(query))
@@ -429,11 +428,13 @@ public class CaseBasicController : Controller
                 {
                     caseId = c.CaseId,
                     name = c.Name,
-                    phone = c.Phone ?? "",
-                    birthDate = c.BirthDate.ToString("yyyy-MM-dd"),
-                    city = c.City != null ? c.City.CityName : "",
-                    district = c.District != null ? c.District.DistrictName : "",
-                    school = c.School != null ? c.School.SchoolName : ""
+                    gender = c.Gender ?? "",
+                    birthDate = c.BirthDate,
+                    city = c.City != null ? new { CityId = c.City.CityId, CityName = c.City.CityName } : null,
+                    district = c.District != null ? new { DistrictId = c.District.DistrictId, DistrictName = c.District.DistrictName } : null,
+                    school = c.School != null ? new { SchoolId = c.School.SchoolId, SchoolName = c.School.SchoolName } : null,
+                    submittedBy = c.SubmittedBy ?? "",
+                    createdAt = c.CreatedAt
                 })
                 .ToListAsync();
 
@@ -443,6 +444,16 @@ public class CaseBasicController : Controller
         {
             return Json(new { success = false, message = $"搜尋失敗：{ex.Message}" });
         }
+    }
+
+    /// <summary>
+    /// 個案編輯頁面（別名：EditItem）
+    /// </summary>
+    [HttpGet]
+    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
+    public async Task<IActionResult> EditItem(string id)
+    {
+        return await Edit(id);
     }
 
     /// <summary>
@@ -574,7 +585,7 @@ public class CaseBasicController : Controller
             Districts = new List<District>() // 地區資料通過 ViewBag.DistrictsByCity 傳遞
         };
         
-        return View("~/Views/Case/Basic/Edit.cshtml", viewModel);
+        return View("~/Views/Case/Basic/Edit/Item.cshtml", viewModel);
     }
 
     /// <summary>
@@ -719,7 +730,7 @@ public class CaseBasicController : Controller
                     }
                     ViewBag.PhotoUrl = photoUrlForError;
                     
-                    return View("~/Views/Case/Basic/Edit.cshtml", model);
+                    return View("~/Views/Case/Basic/Edit/Item.cshtml", model);
                 }
 
                 // 加密身分證字號
@@ -801,7 +812,7 @@ public class CaseBasicController : Controller
         }
         ViewBag.PhotoUrl = photoUrl;
         
-        return View("~/Views/Case/Basic/Edit.cshtml", model);
+        return View("~/Views/Case/Basic/Edit/Item.cshtml", model);
     }
 
     /// <summary>
@@ -1039,171 +1050,177 @@ public class CaseBasicController : Controller
         ViewBag.CurrentPage = "Search";
         ViewBag.CurrentTab = "CaseBasic";
         
-        // 如果 showAll 為 true，載入所有已審核個案列表（原本 Index 的功能）
-        if (showAll)
+        // 預設載入所有已審核個案列表
+        try
+        {
+            var allCases = await _context.Cases
+                .Include(c => c.City)
+                .Include(c => c.District)
+                .Include(c => c.School)
+                .Where(c => c.Deleted != true && c.Status == "Approved")
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new CanLove_Backend.Domain.Case.Models.Basic.Case
+                {
+                    CaseId = c.CaseId,
+                    Name = c.Name,
+                    Gender = c.Gender,
+                    Status = c.Status,
+                    BirthDate = c.BirthDate,
+                    City = c.City,
+                    District = c.District,
+                    School = c.School,
+                    SubmittedBy = c.SubmittedBy,
+                    SubmittedAt = c.SubmittedAt,
+                    ReviewedBy = c.ReviewedBy,
+                    ReviewedAt = c.ReviewedAt,
+                    IsLocked = c.IsLocked,
+                    LockedBy = c.LockedBy,
+                    LockedAt = c.LockedAt,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt
+                })
+                .AsNoTracking()
+                .ToListAsync();
+            
+            ViewBag.AllCases = allCases;
+            ViewBag.ShowAllCases = true;
+        }
+        catch (Exception ex)
+        {
+            ViewBag.ErrorMessage = $"查詢資料時發生錯誤：{ex.Message}";
+            ViewBag.AllCases = new List<CanLove_Backend.Domain.Case.Models.Basic.Case>();
+            ViewBag.ShowAllCases = true;
+        }
+        
+        return View("~/Views/Case/Basic/Search/Index.cshtml");
+    }
+
+    /// <summary>
+    /// 查看個案詳細資料（只讀模式）
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ViewItem(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return View("NotFound");
+        }
+
+        var caseItem = await _context.Cases
+            .Where(c => c.CaseId == id)
+            .Select(c => new
+            {
+                CaseId = c.CaseId,
+                AssessmentDate = c.AssessmentDate,
+                Name = c.Name,
+                Gender = c.Gender,
+                BirthDate = c.BirthDate,
+                IdNumber = c.IdNumber,
+                SchoolId = c.SchoolId,
+                CityId = c.CityId,
+                DistrictId = c.DistrictId,
+                Phone = c.Phone,
+                Email = c.Email,
+                Address = c.Address,
+                PhotoBlobId = c.PhotoBlobId
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+
+        if (caseItem == null)
+        {
+            return View("NotFound");
+        }
+
+        // 手動映射到 Case 物件
+        var item = new CanLove_Backend.Domain.Case.Models.Basic.Case
+        {
+            CaseId = caseItem.CaseId,
+            AssessmentDate = caseItem.AssessmentDate,
+            Name = caseItem.Name,
+            Gender = caseItem.Gender,
+            BirthDate = caseItem.BirthDate,
+            IdNumber = caseItem.IdNumber,
+            SchoolId = caseItem.SchoolId,
+            CityId = caseItem.CityId,
+            DistrictId = caseItem.DistrictId,
+            Phone = caseItem.Phone,
+            Email = caseItem.Email,
+            Address = caseItem.Address,
+            PhotoBlobId = caseItem.PhotoBlobId
+        };
+        
+        // 解密身分證字號
+        if (!string.IsNullOrWhiteSpace(item.IdNumber))
+        {
+            item.IdNumber = _encryptionService.DecryptSafely(item.IdNumber);
+        }
+
+        // 載入選項資料
+        var cities = await _context.Cities
+            .Select(c => new City { 
+                CityId = c.CityId, 
+                CityName = c.CityName 
+            })
+            .OrderBy(c => c.CityId)
+            .AsNoTracking()
+            .ToListAsync();
+        var schools = await _schoolService.GetAllSchoolsAsync();
+        var genderOptions = await _optionService.GetGenderOptionsAsync();
+        
+        // 載入地區資料（按城市分組）
+        var allDistricts = await _context.Districts
+            .Select(d => new { 
+                DistrictId = d.DistrictId, 
+                DistrictName = d.DistrictName,
+                CityId = d.CityId
+            })
+            .OrderBy(d => d.CityId)
+            .ThenBy(d => d.DistrictName)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var districtsByCity = allDistricts
+            .GroupBy(d => d.CityId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(d => new { 
+                    districtId = d.DistrictId, 
+                    districtName = d.DistrictName 
+                }).ToList()
+            );
+
+        ViewBag.DistrictsByCity = districtsByCity;
+        
+        // 取得照片 URL（如果有 PhotoBlobId）
+        string? photoUrl = null;
+        if (item.PhotoBlobId.HasValue)
         {
             try
             {
-                var allCases = await _context.Cases
-                    .Include(c => c.City)
-                    .Include(c => c.District)
-                    .Include(c => c.School)
-                    .Where(c => c.Deleted != true && c.Status == "Approved")
-                    .OrderByDescending(c => c.CreatedAt)
-                    .Select(c => new CanLove_Backend.Domain.Case.Models.Basic.Case
-                    {
-                        CaseId = c.CaseId,
-                        Name = c.Name,
-                        Gender = c.Gender,
-                        Status = c.Status,
-                        BirthDate = c.BirthDate,
-                        City = c.City,
-                        District = c.District,
-                        School = c.School,
-                        SubmittedBy = c.SubmittedBy,
-                        SubmittedAt = c.SubmittedAt,
-                        ReviewedBy = c.ReviewedBy,
-                        ReviewedAt = c.ReviewedAt,
-                        IsLocked = c.IsLocked,
-                        LockedBy = c.LockedBy,
-                        LockedAt = c.LockedAt,
-                        CreatedAt = c.CreatedAt,
-                        UpdatedAt = c.UpdatedAt
-                    })
-                    .AsNoTracking()
-                    .ToListAsync();
-                
-                ViewBag.AllCases = allCases;
-                ViewBag.ShowAllCases = true;
+                photoUrl = await _blobService.GetFileUrlAsync(item.PhotoBlobId.Value);
             }
             catch (Exception ex)
             {
-                ViewBag.ErrorMessage = $"查詢資料時發生錯誤：{ex.Message}";
-                ViewBag.AllCases = new List<CanLove_Backend.Domain.Case.Models.Basic.Case>();
+                System.Diagnostics.Debug.WriteLine($"取得照片 URL 失敗 (BlobId: {item.PhotoBlobId.Value}): {ex.Message}");
             }
         }
+        ViewBag.PhotoUrl = photoUrl;
+        ViewBag.PhotoBlobId = item.PhotoBlobId;
         
-        // 如果有 caseId，載入個案資料並顯示 readonly 表單
-        if (!string.IsNullOrWhiteSpace(caseId))
+        // 建立 CaseFormViewModel 並設置為 ReadOnly 模式
+        var viewModel = new CaseFormViewModel
         {
-            var caseItem = await _context.Cases
-                .Where(c => c.CaseId == caseId)
-                .Select(c => new
-                {
-                    CaseId = c.CaseId,
-                    AssessmentDate = c.AssessmentDate,
-                    Name = c.Name,
-                    Gender = c.Gender,
-                    BirthDate = c.BirthDate,
-                    IdNumber = c.IdNumber,
-                    SchoolId = c.SchoolId,
-                    CityId = c.CityId,
-                    DistrictId = c.DistrictId,
-                    Phone = c.Phone,
-                    Email = c.Email,
-                    Address = c.Address,
-                    PhotoBlobId = c.PhotoBlobId
-                })
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
-            if (caseItem != null)
-            {
-                // 手動映射到 Case 物件
-                var item = new CanLove_Backend.Domain.Case.Models.Basic.Case
-                {
-                    CaseId = caseItem.CaseId,
-                    AssessmentDate = caseItem.AssessmentDate,
-                    Name = caseItem.Name,
-                    Gender = caseItem.Gender,
-                    BirthDate = caseItem.BirthDate,
-                    IdNumber = caseItem.IdNumber,
-                    SchoolId = caseItem.SchoolId,
-                    CityId = caseItem.CityId,
-                    DistrictId = caseItem.DistrictId,
-                    Phone = caseItem.Phone,
-                    Email = caseItem.Email,
-                    Address = caseItem.Address,
-                    PhotoBlobId = caseItem.PhotoBlobId
-                };
-                
-                // 解密身分證字號
-                if (!string.IsNullOrWhiteSpace(item.IdNumber))
-                {
-                    item.IdNumber = _encryptionService.DecryptSafely(item.IdNumber);
-                }
-
-                // 載入選項資料
-                ViewBag.Cities = await _context.Cities
-                    .Select(c => new City { 
-                        CityId = c.CityId, 
-                        CityName = c.CityName 
-                    })
-                    .OrderBy(c => c.CityId)
-                    .AsNoTracking()
-                    .ToListAsync();
-                ViewBag.Schools = await _schoolService.GetAllSchoolsAsync();
-                ViewBag.GenderOptions = await _optionService.GetGenderOptionsAsync();
-                
-                // 載入地區資料（按城市分組）
-                var allDistricts = await _context.Districts
-                    .Select(d => new { 
-                        DistrictId = d.DistrictId, 
-                        DistrictName = d.DistrictName,
-                        CityId = d.CityId
-                    })
-                    .OrderBy(d => d.CityId)
-                    .ThenBy(d => d.DistrictName)
-                    .AsNoTracking()
-                    .ToListAsync();
-
-                var districtsByCity = allDistricts
-                    .GroupBy(d => d.CityId)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(d => new { 
-                            districtId = d.DistrictId, 
-                            districtName = d.DistrictName 
-                        }).ToList()
-                    );
-
-                ViewBag.DistrictsByCity = districtsByCity;
-                
-                // 取得照片 URL（如果有 PhotoBlobId）
-                string? photoUrl = null;
-                if (item.PhotoBlobId.HasValue)
-                {
-                    try
-                    {
-                        photoUrl = await _blobService.GetFileUrlAsync(item.PhotoBlobId.Value);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"取得照片 URL 失敗 (BlobId: {item.PhotoBlobId.Value}): {ex.Message}");
-                    }
-                }
-                ViewBag.PhotoUrl = photoUrl;
-                ViewBag.PhotoBlobId = item.PhotoBlobId;
-                
-                // 建立 CaseFormViewModel 並設置為 ReadOnly 模式
-                var viewModel = new CaseFormViewModel
-                {
-                    Mode = CaseFormMode.ReadOnly,
-                    Case = item,
-                    Cities = ViewBag.Cities as List<City> ?? new List<City>(),
-                    Schools = ViewBag.Schools as List<School> ?? new List<School>(),
-                    GenderOptions = ViewBag.GenderOptions as List<CanLove_Backend.Infrastructure.Options.Models.OptionSetValue> ?? new List<CanLove_Backend.Infrastructure.Options.Models.OptionSetValue>(),
-                    Districts = new List<District>()
-                };
-                
-                ViewBag.SelectedCase = viewModel;
-                ViewBag.ShowCaseDetails = true;
-            }
-        }
+            Mode = CaseFormMode.ReadOnly,
+            Case = item,
+            Cities = cities,
+            Schools = schools,
+            GenderOptions = genderOptions,
+            Districts = new List<District>()
+        };
         
-        return View("~/Views/Case/Basic/SearchBasic.cshtml");
+        return View("~/Views/Case/Basic/View/Item.cshtml", viewModel);
     }
-
 
     /// <summary>
     /// 個案審核頁面（個案基本資料）
@@ -1214,6 +1231,24 @@ public class CaseBasicController : Controller
         ViewData["Title"] = "個案審核 - 個案基本資料";
         ViewBag.CurrentPage = "Review";
         ViewBag.CurrentTab = "CaseBasic";
+        
+        // 計算各類型的待審項目數量
+        var caseBasicCount = await _context.Cases
+            .Where(c => c.Status == "PendingReview" && c.Deleted != true)
+            .CountAsync();
+        
+        var caseOpeningCount = await _context.CaseOpenings
+            .Where(o => o.Status == "PendingReview")
+            .CountAsync();
+        
+        // 設定 TypeCounts 供 _CaseFormTabs 使用
+        ViewBag.TypeCounts = new Dictionary<string, int>
+        {
+            { "CaseBasic", caseBasicCount },
+            { "CaseOpening", caseOpeningCount },
+            { "CareVisitRecord", 0 }, // 功能未開發
+            { "Consultation", 0 } // 功能未開發
+        };
         
         // 查詢 Cases 表中狀態為 PendingReview 的記錄
         var cases = await _context.Cases
@@ -1236,195 +1271,209 @@ public class CaseBasicController : Controller
 
         ViewBag.SubmitterNameMap = staffMap;
 
-        // 如果指定了 caseId，載入該個案的詳細資料
-        if (!string.IsNullOrWhiteSpace(caseId))
+        return View("~/Views/Case/Basic/Review/Index.cshtml", cases);
+    }
+
+    /// <summary>
+    /// 審核個案詳細資料（Review 模式）
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ReviewItem(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
         {
-            var selectedCase = await _context.Cases
-                .Where(c => c.CaseId == caseId && c.Deleted != true)
+            return View("NotFound");
+        }
+
+        var selectedCase = await _context.Cases
+            .Where(c => c.CaseId == id && c.Deleted != true)
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+
+        if (selectedCase == null || selectedCase.Status != "PendingReview")
+        {
+            TempData["ErrorMessage"] = "找不到指定的待審個案";
+            return RedirectToAction(nameof(Review));
+        }
+
+        // 查詢個案資料
+        CanLove_Backend.Domain.Case.Models.Basic.Case? item = null;
+        try
+        {
+            var caseData = await _context.Cases
+                .Where(c => c.CaseId == id && c.Deleted != true)
+                .Select(c => new
+                {
+                    CaseId = c.CaseId,
+                    AssessmentDate = c.AssessmentDate,
+                    Name = c.Name,
+                    Gender = c.Gender,
+                    BirthDate = c.BirthDate,
+                    IdNumber = c.IdNumber,
+                    SchoolId = c.SchoolId,
+                    CityId = c.CityId,
+                    DistrictId = c.DistrictId,
+                    Phone = c.Phone,
+                    Email = c.Email,
+                    Address = c.Address,
+                    PhotoBlobId = c.PhotoBlobId
+                })
                 .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .SingleOrDefaultAsync();
 
-            if (selectedCase != null && selectedCase.Status == "PendingReview")
+            if (caseData != null)
             {
-                // 查詢個案資料
-                CanLove_Backend.Domain.Case.Models.Basic.Case? item = null;
-                try
+                item = new CanLove_Backend.Domain.Case.Models.Basic.Case
                 {
-                    var caseData = await _context.Cases
-                        .Where(c => c.CaseId == caseId && c.Deleted != true)
-                        .Select(c => new
-                        {
-                            CaseId = c.CaseId,
-                            AssessmentDate = c.AssessmentDate,
-                            Name = c.Name,
-                            Gender = c.Gender,
-                            BirthDate = c.BirthDate,
-                            IdNumber = c.IdNumber,
-                            SchoolId = c.SchoolId,
-                            CityId = c.CityId,
-                            DistrictId = c.DistrictId,
-                            Phone = c.Phone,
-                            Email = c.Email,
-                            Address = c.Address,
-                            PhotoBlobId = c.PhotoBlobId
-                        })
-                        .AsNoTracking()
-                        .SingleOrDefaultAsync();
-
-                    if (caseData != null)
-                    {
-                        item = new CanLove_Backend.Domain.Case.Models.Basic.Case
-                        {
-                            CaseId = caseData.CaseId,
-                            AssessmentDate = caseData.AssessmentDate,
-                            Name = caseData.Name,
-                            Gender = caseData.Gender,
-                            BirthDate = caseData.BirthDate,
-                            IdNumber = caseData.IdNumber,
-                            SchoolId = caseData.SchoolId,
-                            CityId = caseData.CityId,
-                            DistrictId = caseData.DistrictId,
-                            Phone = caseData.Phone,
-                            Email = caseData.Email,
-                            Address = caseData.Address,
-                            PhotoBlobId = caseData.PhotoBlobId
-                        };
-                        
-                        // 解密身分證字號
-                        if (!string.IsNullOrWhiteSpace(item.IdNumber))
-                        {
-                            item.IdNumber = _encryptionService.DecryptSafely(item.IdNumber);
-                        }
-                    }
+                    CaseId = caseData.CaseId,
+                    AssessmentDate = caseData.AssessmentDate,
+                    Name = caseData.Name,
+                    Gender = caseData.Gender,
+                    BirthDate = caseData.BirthDate,
+                    IdNumber = caseData.IdNumber,
+                    SchoolId = caseData.SchoolId,
+                    CityId = caseData.CityId,
+                    DistrictId = caseData.DistrictId,
+                    Phone = caseData.Phone,
+                    Email = caseData.Email,
+                    Address = caseData.Address,
+                    PhotoBlobId = caseData.PhotoBlobId
+                };
+                
+                // 解密身分證字號
+                if (!string.IsNullOrWhiteSpace(item.IdNumber))
+                {
+                    item.IdNumber = _encryptionService.DecryptSafely(item.IdNumber);
                 }
-                catch (InvalidCastException)
+            }
+        }
+        catch (InvalidCastException)
+        {
+            // 如果型別轉換失敗，使用原始 SQL 查詢並手動處理型別轉換
+            var caseDataWithPhoto = await _context.Cases
+                .Where(c => c.CaseId == id && c.Deleted != true)
+                .Select(c => new
                 {
-                    // 如果型別轉換失敗，使用原始 SQL 查詢並手動處理型別轉換
-                    var caseDataWithPhoto = await _context.Cases
-                        .Where(c => c.CaseId == caseId && c.Deleted != true)
-                        .Select(c => new
-                        {
-                            CaseId = c.CaseId,
-                            AssessmentDate = c.AssessmentDate,
-                            Name = c.Name,
-                            Gender = c.Gender,
-                            BirthDate = c.BirthDate,
-                            IdNumber = c.IdNumber,
-                            SchoolId = c.SchoolId,
-                            CityId = c.CityId,
-                            DistrictId = c.DistrictId,
-                            Phone = c.Phone,
-                            Email = c.Email,
-                            Address = c.Address,
-                            PhotoBlobIdStr = c.PhotoBlobId != null ? c.PhotoBlobId.ToString() : null
-                        })
-                        .AsNoTracking()
-                        .SingleOrDefaultAsync();
+                    CaseId = c.CaseId,
+                    AssessmentDate = c.AssessmentDate,
+                    Name = c.Name,
+                    Gender = c.Gender,
+                    BirthDate = c.BirthDate,
+                    IdNumber = c.IdNumber,
+                    SchoolId = c.SchoolId,
+                    CityId = c.CityId,
+                    DistrictId = c.DistrictId,
+                    Phone = c.Phone,
+                    Email = c.Email,
+                    Address = c.Address,
+                    PhotoBlobIdStr = c.PhotoBlobId != null ? c.PhotoBlobId.ToString() : null
+                })
+                .AsNoTracking()
+                .SingleOrDefaultAsync();
 
-                    if (caseDataWithPhoto != null)
-                    {
-                        int? photoBlobId = null;
-                        if (!string.IsNullOrEmpty(caseDataWithPhoto.PhotoBlobIdStr) && int.TryParse(caseDataWithPhoto.PhotoBlobIdStr, out int parsedId))
-                        {
-                            photoBlobId = parsedId;
-                        }
-                        
-                        item = new CanLove_Backend.Domain.Case.Models.Basic.Case
-                        {
-                            CaseId = caseDataWithPhoto.CaseId,
-                            AssessmentDate = caseDataWithPhoto.AssessmentDate,
-                            Name = caseDataWithPhoto.Name,
-                            Gender = caseDataWithPhoto.Gender,
-                            BirthDate = caseDataWithPhoto.BirthDate,
-                            IdNumber = caseDataWithPhoto.IdNumber,
-                            SchoolId = caseDataWithPhoto.SchoolId,
-                            CityId = caseDataWithPhoto.CityId,
-                            DistrictId = caseDataWithPhoto.DistrictId,
-                            Phone = caseDataWithPhoto.Phone,
-                            Email = caseDataWithPhoto.Email,
-                            Address = caseDataWithPhoto.Address,
-                            PhotoBlobId = photoBlobId
-                        };
-                        
-                        if (!string.IsNullOrWhiteSpace(item.IdNumber))
-                        {
-                            item.IdNumber = _encryptionService.DecryptSafely(item.IdNumber);
-                        }
-                    }
+            if (caseDataWithPhoto != null)
+            {
+                int? photoBlobId = null;
+                if (!string.IsNullOrEmpty(caseDataWithPhoto.PhotoBlobIdStr) && int.TryParse(caseDataWithPhoto.PhotoBlobIdStr, out int parsedId))
+                {
+                    photoBlobId = parsedId;
                 }
-
-                if (item != null)
+                
+                item = new CanLove_Backend.Domain.Case.Models.Basic.Case
                 {
-                    // 載入選項資料
-                    ViewBag.Cities = await _context.Cities
-                        .Select(c => new City { 
-                            CityId = c.CityId, 
-                            CityName = c.CityName 
-                        })
-                        .OrderBy(c => c.CityId)
-                        .AsNoTracking()
-                        .ToListAsync();
-                    ViewBag.Schools = await _schoolService.GetAllSchoolsAsync();
-                    ViewBag.GenderOptions = await _optionService.GetGenderOptionsAsync();
-                    
-                    // 載入地區資料（按城市分組）
-                    var allDistricts = await _context.Districts
-                        .Select(d => new { 
-                            DistrictId = d.DistrictId, 
-                            DistrictName = d.DistrictName,
-                            CityId = d.CityId
-                        })
-                        .OrderBy(d => d.CityId)
-                        .ThenBy(d => d.DistrictName)
-                        .AsNoTracking()
-                        .ToListAsync();
-
-                    var districtsByCity = allDistricts
-                        .GroupBy(d => d.CityId)
-                        .ToDictionary(
-                            g => g.Key,
-                            g => g.Select(d => new { 
-                                districtId = d.DistrictId, 
-                                districtName = d.DistrictName 
-                            }).ToList()
-                        );
-
-                    ViewBag.DistrictsByCity = districtsByCity;
-                    
-                    // 取得照片 URL
-                    string? photoUrl = null;
-                    if (item.PhotoBlobId.HasValue)
-                    {
-                        try
-                        {
-                            photoUrl = await _blobService.GetFileUrlAsync(item.PhotoBlobId.Value);
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"取得照片 URL 失敗 (BlobId: {item.PhotoBlobId.Value}): {ex.Message}");
-                        }
-                    }
-                    ViewBag.PhotoUrl = photoUrl;
-                    ViewBag.PhotoBlobId = item.PhotoBlobId;
-                    
-                    // 建立 CaseFormViewModel
-                    var viewModel = new CaseFormViewModel
-                    {
-                        Mode = CaseFormMode.ReviewEdit,
-                        Case = item,
-                        Cities = ViewBag.Cities as List<City> ?? new List<City>(),
-                        Schools = ViewBag.Schools as List<School> ?? new List<School>(),
-                        GenderOptions = ViewBag.GenderOptions as List<CanLove_Backend.Infrastructure.Options.Models.OptionSetValue> ?? new List<CanLove_Backend.Infrastructure.Options.Models.OptionSetValue>(),
-                        Districts = new List<District>()
-                    };
-                    
-                    ViewBag.SelectedCase = viewModel;
-                    ViewBag.ShowCaseDetails = true;
+                    CaseId = caseDataWithPhoto.CaseId,
+                    AssessmentDate = caseDataWithPhoto.AssessmentDate,
+                    Name = caseDataWithPhoto.Name,
+                    Gender = caseDataWithPhoto.Gender,
+                    BirthDate = caseDataWithPhoto.BirthDate,
+                    IdNumber = caseDataWithPhoto.IdNumber,
+                    SchoolId = caseDataWithPhoto.SchoolId,
+                    CityId = caseDataWithPhoto.CityId,
+                    DistrictId = caseDataWithPhoto.DistrictId,
+                    Phone = caseDataWithPhoto.Phone,
+                    Email = caseDataWithPhoto.Email,
+                    Address = caseDataWithPhoto.Address,
+                    PhotoBlobId = photoBlobId
+                };
+                
+                // 解密身分證字號
+                if (!string.IsNullOrWhiteSpace(item.IdNumber))
+                {
+                    item.IdNumber = _encryptionService.DecryptSafely(item.IdNumber);
                 }
             }
         }
 
-        return View("~/Views/Case/Basic/Review.cshtml", cases);
+        if (item == null)
+        {
+            TempData["ErrorMessage"] = "找不到指定的個案";
+            return RedirectToAction(nameof(Review));
+        }
+
+        // 載入選項資料
+        var cities = await _context.Cities
+            .Select(c => new City { 
+                CityId = c.CityId, 
+                CityName = c.CityName 
+            })
+            .OrderBy(c => c.CityId)
+            .AsNoTracking()
+            .ToListAsync();
+        var schools = await _schoolService.GetAllSchoolsAsync();
+        var genderOptions = await _optionService.GetGenderOptionsAsync();
+        
+        // 載入地區資料（按城市分組）
+        var allDistricts = await _context.Districts
+            .Select(d => new { 
+                DistrictId = d.DistrictId, 
+                DistrictName = d.DistrictName,
+                CityId = d.CityId
+            })
+            .OrderBy(d => d.CityId)
+            .ThenBy(d => d.DistrictName)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var districtsByCity = allDistricts
+            .GroupBy(d => d.CityId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(d => new { 
+                    districtId = d.DistrictId, 
+                    districtName = d.DistrictName 
+                }).ToList()
+            );
+
+        ViewBag.DistrictsByCity = districtsByCity;
+        
+        // 取得照片 URL
+        string? photoUrl = null;
+        if (item.PhotoBlobId.HasValue)
+        {
+            try
+            {
+                photoUrl = await _blobService.GetFileUrlAsync(item.PhotoBlobId.Value);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"取得照片 URL 失敗 (BlobId: {item.PhotoBlobId.Value}): {ex.Message}");
+            }
+        }
+        ViewBag.PhotoUrl = photoUrl;
+        ViewBag.PhotoBlobId = item.PhotoBlobId;
+        
+        // 建立 CaseFormViewModel
+        var viewModel = new CaseFormViewModel
+        {
+            Mode = CaseFormMode.Review,
+            Case = item,
+            Cities = cities,
+            Schools = schools,
+            GenderOptions = genderOptions,
+            Districts = new List<District>()
+        };
+        
+        return View("~/Views/Case/Basic/Review/Item.cshtml", viewModel);
     }
 
     /// <summary>

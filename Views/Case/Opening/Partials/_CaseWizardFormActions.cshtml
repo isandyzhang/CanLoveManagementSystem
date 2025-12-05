@@ -7,6 +7,16 @@
     var mode = Model.Mode;
     var caseId = Model.CaseId;
 
+    // 根據導航上下文決定使用哪個 action
+    var navigationContext = ViewData["NavigationContext"] as string ?? "Create";
+    var actionName = navigationContext switch
+    {
+        "Review" => "Review",
+        "ReadOnly" => "View",
+        "Edit" => "Edit",
+        _ => "Create"
+    };
+
     // 步驟名稱映射
     var stepNames = new Dictionary<int, string>
     {
@@ -23,7 +33,7 @@
     {
         if (stepNames.ContainsKey(s))
         {
-            return Url.Action("Create", "CaseOpening", new { caseId = caseId, step = stepNames[s], mode = mode }) ?? "#";
+            return Url.Action(actionName, "CaseOpening", new { caseId = caseId, step = stepNames[s] }) ?? "#";
         }
         // 向後兼容：如果找不到映射，使用舊的 Step 方法
         return Url.Action($"Step{s}", "CaseOpening", new { caseId = caseId, mode = mode }) ?? "#";
@@ -38,10 +48,16 @@
                 <i class="fas fa-arrow-left me-1"></i>返回上一步
             </a>
         }
-        else if (mode == CaseFormMode.ReviewEdit)
+        else if (mode == CaseFormMode.Review)
         {
-            <a href="@Url.Action("Review", "CaseOpening", new { caseId = caseId })" class="btn btn--secondary w-full md:w-auto">
+            <a href="@Url.Action("Review", "CaseOpening")" class="btn btn--secondary w-full md:w-auto">
                 <i class="fas fa-arrow-left me-1"></i>返回審核頁
+            </a>
+        }
+        else if (mode == CaseFormMode.ReadOnly)
+        {
+            <a href="@Url.Action("Query", "CaseOpening")" class="btn btn--secondary w-full md:w-auto">
+                <i class="fas fa-arrow-left me-1"></i>返回查詢頁
             </a>
         }
     </div>
@@ -69,7 +85,7 @@
                 </a>
             }
         }
-        else if (mode == CaseFormMode.ReviewEdit)
+        else if (mode == CaseFormMode.Review)
         {
             if (step < 7)
             {
@@ -79,11 +95,17 @@
             }
             else
             {
-                <button type="submit" name="SubmitAction" value="Approve" class="btn w-full md:w-auto">
-                    <i class="bi bi-check2-circle me-1"></i>通過
+                <!-- 使用隱藏欄位保存 SubmitAction，避免因防重複提交腳本禁用按鈕而遺失值 -->
+                <input type="hidden" name="SubmitAction" value="" />
+                <button type="submit"
+                        class="btn bg-green-400 hover:bg-green-500 text-white w-full md:w-auto"
+                        onclick="this.form.SubmitAction.value='Approve';">
+                    <i class="bi bi-check-circle me-1"></i>通過
                 </button>
-                <button type="submit" name="SubmitAction" value="Reject" class="btn btn--secondary w-full md:w-auto">
-                    <i class="bi bi-x-circle me-1"></i>不通過
+                <button type="submit"
+                        class="btn bg-red-400 hover:bg-red-500 text-white w-full md:w-auto"
+                        onclick="this.form.SubmitAction.value='Reject';">
+                    <i class="bi bi-x-circle me-1"></i>駁回
                 </button>
             }
         }

@@ -1,0 +1,237 @@
+@{
+    ViewData["Title"] = "查詢個案 - 開案紀錄表";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("查詢個案", Url.Action("Query", "CaseOpening") ?? string.Empty),
+        ("開案紀錄表", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        @{ ViewBag.CurrentPage = "Search"; ViewBag.CurrentTab = "CaseOpening"; }
+        <partial name="~/Views/Shared/Partials/_CaseFormTabs.cshtml" />
+        
+        @Html.AntiForgeryToken()
+        
+        <!-- 搜尋與列表整合卡片 -->
+        <div class="card bg-white dark:bg-slate-900 shadow-card-lg border rounded-xl border-[#FDBA74] dark:border-slate-700 mb-6">
+            <div class="px-6 py-6">
+                <!-- 搜尋輸入框 -->
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="openingSearchInput" class="block text-sm text-slate-700 mb-1">搜尋個案（編號/姓名/電話）</label>
+                        <button type="button" id="showAllOpeningsBtn" class="btn btn-sm btn--secondary">
+                            <i class="bi bi-list-ul me-1"></i>顯示全部開案記錄
+                        </button>
+                    </div>
+                    <div class="flex">
+                        <span class="inline-flex items-center px-3 border border-r-0 border-border rounded-l-md bg-slate-50 text-slate-500"><i class="bi bi-search"></i></span>
+                        <input type="text" id="openingSearchInput" class="input flex-1 rounded-l-none" placeholder="請輸入關鍵字..." autocomplete="off" />
+                        <span id="openingSearchLoading" class="hidden items-center px-3 border border-l-0 border-border rounded-r-md"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                    </div>
+                </div>
+
+                <!-- 全部開案記錄列表區（使用公版 _OpeningListTable，搜尋時直接覆蓋此列表） -->
+                <div id="openingListContainer">
+                    @{
+                        var allOpenings = ViewBag.AllOpenings as IEnumerable<CanLove_Backend.Domain.Case.Models.Opening.CaseOpening> ?? new List<CanLove_Backend.Domain.Case.Models.Opening.CaseOpening>();
+                        var openingCount = allOpenings.Count();
+                    }
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300">全部開案記錄</h3>
+                            <span class="text-sm text-slate-600 dark:text-slate-400">共 <span id="openingCount">@openingCount</span> 筆</span>
+                        </div>
+                    </div>
+                    <div id="openingListTableWrapper">
+                        @if (ViewBag.ShowAllOpenings == true && allOpenings.Any())
+                        {
+                            ViewBag.TableMode = "Search";
+                            ViewBag.ShowActions = true;
+                            ViewBag.DisableCardWrapper = true;
+                            ViewBag.ActionButtons = new List<(string Text, string Action, string Controller, string Class)>
+                            {
+                                ("編輯", "EditItem", "CaseOpening", "btn-sm"),
+                                ("查看", "SearchItem", "CaseOpening", "btn-sm btn--secondary")
+                            };
+                            ViewBag.OnRowClick = "viewOpeningDetails";
+
+                            <partial name="~/Views/Case/Opening/Partials/_OpeningListTable.cshtml" model="allOpenings" />
+                        }
+                        else
+                        {
+                            <partial name="~/Views/Shared/Partials/_EmptyState.cshtml" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+            const input = document.getElementById('openingSearchInput');
+            const loading = document.getElementById('openingSearchLoading');
+            const tableWrapper = document.getElementById('openingListTableWrapper');
+            const openingCountSpan = document.getElementById('openingCount');
+            let timer;
+            
+            // 產生單列表列 HTML
+            function escapeHtml(t){ if(!t) return ''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+            
+            function renderRow(o) {
+                const status = o.status || 'Draft';
+                let actionButtons = '';
+                
+                const caseId = escapeHtml(o.caseId || '');
+                const editUrl = `/CaseOpening/Edit/CaseDetail?caseId=${caseId}`;
+                const viewUrl = `/CaseOpening/View/CaseDetail?caseId=${caseId}`;
+                const resubmitUrl = `/CaseOpening/Resubmit`;
+                
+                switch (status) {
+                    case 'Draft':
+                        actionButtons = `
+                            <a href="${editUrl}" class="btn btn-sm" onclick="event.stopPropagation();">
+                                <i class="bi bi-pencil me-1"></i>編輯
+                            </a>
+                            <a href="${viewUrl}" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
+                                <i class="bi bi-eye me-1"></i>查看
+                            </a>`;
+                        break;
+                    case 'PendingReview':
+                    case 'Approved':
+                    case 'Closed':
+                        actionButtons = `
+                            <a href="${viewUrl}" class="btn btn-sm" onclick="event.stopPropagation();">
+                                <i class="bi bi-eye me-1"></i>檢視
+                            </a>`;
+                        break;
+                    case 'Rejected':
+                        actionButtons = `
+                            <form method="post" action="${resubmitUrl}" style="display: inline;" onsubmit="return confirm('確定要重新送審此開案記錄嗎？');" onclick="event.stopPropagation();">
+                                <input type="hidden" name="caseId" value="${caseId}" />
+                                <input type="hidden" name="__RequestVerificationToken" value="${getAntiForgeryToken()}" />
+                                <button type="submit" class="btn btn-sm">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>重送
+                                </button>
+                            </form>
+                            <a href="${viewUrl}" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
+                                <i class="bi bi-eye me-1"></i>檢視
+                            </a>`;
+                        break;
+                    default:
+                        actionButtons = `
+                            <a href="${viewUrl}" class="btn btn-sm" onclick="event.stopPropagation();">
+                                <i class="bi bi-eye me-1"></i>檢視
+                            </a>`;
+                }
+                
+                return `
+                    <tr class="border-b border-border hover:bg-slate-50 cursor-pointer" onclick="viewOpeningDetails('${caseId}')">
+                        <td><code>${caseId}</code></td>
+                        <td>${escapeHtml(o.name || '')}</td>
+                        <td>${escapeHtml(o.openDate || '')}</td>
+                        <td>${escapeHtml(o.statusText || '')}</td>
+                        <td>${actionButtons}</td>
+                    </tr>`;
+            }
+            
+            function renderTable(openings) {
+                if (!tableWrapper || !openingCountSpan) return;
+                
+                if (!openings || !openings.length) {
+                    tableWrapper.innerHTML = `
+                        <div class="text-center py-10 text-slate-500">
+                            <i class="bi bi-inbox text-slate-400 text-5xl"></i>
+                            <h4 class="mt-3 text-slate-900">尚無開案記錄</h4>
+                            <p class="text-slate-600">目前沒有符合條件的開案記錄</p>
+                        </div>
+                    `;
+                    openingCountSpan.textContent = '0';
+                    return;
+                }
+                
+                openingCountSpan.textContent = openings.length.toString();
+                tableWrapper.innerHTML = `
+                    <div class="overflow-auto">
+                        <table class="data-table text-left w-full text-slate-900">
+                            <thead>
+                                <tr class="bg-slate-50">
+                                    <th class="text-slate-700">個案編號</th>
+                                    <th class="text-slate-700">姓名</th>
+                                    <th class="text-slate-700">開案日期</th>
+                                    <th class="text-slate-700">狀態</th>
+                                    <th class="text-slate-700">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${openings.map(renderRow).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            async function loadOpenings(query) {
+                if (!loading) return;
+                loading.classList.remove('hidden');
+                try {
+                    const url = query ? `/CaseOpening/SearchOpenings?query=${encodeURIComponent(query)}` : `/CaseOpening/SearchOpenings`;
+                    const resp = await fetch(url);
+                    const data = await resp.json();
+                    loading.classList.add('hidden');
+                    if (data.success && data.openings) {
+                        renderTable(data.openings);
+                    } else {
+                        renderTable([]);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    loading.classList.add('hidden');
+                    renderTable([]);
+                }
+            }
+            
+            if (input) {
+                input.addEventListener('input', function () {
+                    clearTimeout(timer);
+                    const q = this.value.trim();
+                    timer = setTimeout(() => {
+                        loadOpenings(q || '');
+                    }, 400);
+                });
+            }
+            
+            // 獲取 AntiForgeryToken
+            function getAntiForgeryToken() {
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                return tokenInput ? tokenInput.value : '';
+            }
+            
+            // 查看開案記錄詳細資料
+            window.viewOpeningDetails = function (caseId) {
+                if (caseId) {
+                    window.location.href = '@Url.Action("SearchItem", "CaseOpening")?id=' + encodeURIComponent(caseId);
+                }
+            }
+            
+            // 顯示全部開案記錄按鈕
+            const showAllBtn = document.getElementById('showAllOpeningsBtn');
+            if (showAllBtn) {
+                showAllBtn.addEventListener('click', function() {
+                    // 清空搜尋並回復顯示全部開案記錄（不重新導頁）
+                    if (input) {
+                        input.value = '';
+                    }
+                    loadOpenings('');
+                });
+            }
+        })();
+    </script>
+}
+
+

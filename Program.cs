@@ -169,6 +169,7 @@ app.UseCors("AllowAll");
 // 6.1 根路徑（/）的特殊處理
 // 用途：根據登入狀態決定導向首頁或登入頁
 // 必須在其他路由之前，因為它優先匹配根路徑
+// 注意：必須允許匿名訪問，否則會直接跳轉到 Azure AD
 app.MapGet("/", (HttpContext context) =>
 {
     // 檢查使用者是否已登入（由 UseAuthentication 中介軟體設定）
@@ -179,7 +180,7 @@ app.MapGet("/", (HttpContext context) =>
     }
     // 未登入：導向登入頁面
     return Results.Redirect("/Account/Login");
-});
+}).AllowAnonymous();
 
 // 6.2 個案基本資料路由（自訂路由）
 // 模式：CaseBasic/{action=Query}/{id?}
@@ -468,8 +469,12 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
     }
 
     // 註冊 DbContext（使用 SQL Server）
+    // 指定 Migrations 組件位置：Infrastructure.Data
     builder.Services.AddDbContext<CanLoveDbContext>(options =>
-        options.UseSqlServer(connectionString));
+    {
+        options.UseSqlServer(connectionString, sqlOptions =>
+            sqlOptions.MigrationsAssembly("CanLove_Backend.Infrastructure.Data"));
+    });
 }
 
 /// <summary>
@@ -505,17 +510,18 @@ static void RegisterApplicationServices(WebApplicationBuilder builder)
     // Case 相關服務
     // ========================================================================
     services.AddScoped<CaseService>(); // 個案服務
+    services.AddScoped<CaseWizardOpenCaseService>(); // 個案開案流程主要協調服務
 
     // ========================================================================
     // CaseOpening 相關服務（開案流程的 7 個步驟）
     // ========================================================================
-    services.AddScoped<CaseWizard_S1_CD_Service>();      // 步驟 1：個案詳細資料
-    services.AddScoped<CaseWizard_S2_CSWC_Service>();     // 步驟 2：社會工作服務內容
-    services.AddScoped<CaseWizard_S3_CFQES_Service>();    // 步驟 3：經濟狀況評估
-    services.AddScoped<CaseWizard_S4_CHQHS_Service>();    // 步驟 4：健康狀況評估
-    services.AddScoped<CaseWizard_S5_CIQAP_Service>();    // 步驟 5：學業表現評估
-    services.AddScoped<CaseWizard_S6_CEEE_Service>();     // 步驟 6：情緒評估
-    services.AddScoped<CaseWizard_S7_FAS_Service>();      // 步驟 7：最後評估表
+    services.AddScoped<CaseDetailService>();              // 步驟 1：個案詳細資料
+    services.AddScoped<SocialWorkerContentService>();     // 步驟 2：社會工作服務內容
+    services.AddScoped<EconomicStatusService>();          // 步驟 3：經濟狀況評估
+    services.AddScoped<HealthStatusService>();            // 步驟 4：健康狀況評估
+    services.AddScoped<AcademicPerformanceService>();     // 步驟 5：學業表現評估
+    services.AddScoped<EmotionalEvaluationService>();     // 步驟 6：情緒評估
+    services.AddScoped<FinalAssessmentService>();         // 步驟 7：最後評估表
 
     // ========================================================================
     // 框架服務

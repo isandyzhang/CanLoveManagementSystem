@@ -1,26 +1,49 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseWizard_S4_CHQHS_ViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Opening.HealthStatusVM
 
 @{
-    ViewData["Title"] = "開案紀錄表";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // 根據導航上下文動態設置標題和麵包屑
+    var navigationContext = ViewData["NavigationContext"] as string ?? "Create";
+    var breadcrumbParent = ViewData["BreadcrumbParent"] as string ?? "新增個案";
+    var breadcrumbParentUrl = ViewData["BreadcrumbParentUrl"] as string ?? (Url.Action("Create", "CaseBasic") ?? string.Empty);
+    var currentPageTitle = navigationContext switch
+    {
+        "Review" => "審核開案紀錄表",
+        "ReadOnly" => "查看開案紀錄表",
+        "Edit" => "編輯開案紀錄表",
+        _ => "開案紀錄表"
+    };
+    
+    ViewData["Title"] = currentPageTitle;
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
         ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("新增個案", Url.Action("Create", "CaseBasic") ?? string.Empty),
-        ("開案紀錄表", string.Empty)
+        (breadcrumbParent, breadcrumbParentUrl),
+        (currentPageTitle, string.Empty)
     };
 }
 
 <div class="w-full px-4 sm:px-6 lg:px-8">
     <div class="max-w-[1400px] mx-auto">
         <div class="w-full">
-            @{ ViewBag.CurrentPage = "Create"; ViewBag.CurrentTab = "CaseOpening"; }
-            <partial name="~/Views/Shared/Partials/_CaseTabs.cshtml" />
+            @{ 
+                ViewBag.CurrentPage = navigationContext switch
+                {
+                    "Review" => "Review",
+                    "ReadOnly" => "Query",
+                    "Edit" => "Query",
+                    _ => "Create"
+                };
+                ViewBag.CurrentTab = "CaseOpening"; 
+            }
+            <partial name="~/Views/Shared/Partials/_CaseFormTabs.cshtml" />
 
 
             @{
                 ViewBag.CurrentStep = 4;
                 ViewBag.CaseId = Model.CaseId;
+                ViewBag.Mode = Model.Mode;
             }
             
             <!-- 導航分頁和進度條 -->
@@ -34,11 +57,13 @@
                             <i class="bi bi-card-text"></i>
                             健康狀況評估
                         </span>
+                        <partial name="~/Views/Shared/Partials/_CurrentCaseInfo.cshtml" />
                     </div>
                     <div class="px-6 py-6">
                                 <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
                                 <!-- 隱藏欄位 -->
                                 <input asp-for="CaseId" type="hidden" />
+                                <input asp-for="Mode" type="hidden" />
                                 <input asp-for="CaregiverId" type="hidden" />
 
                                 <partial name="~/Views/Case/Opening/Partials/_Step4FormFields.cshtml" model="Model" />
@@ -52,8 +77,9 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/form-validation-notification.js" asp-append-version="true"></script>
     <script>
-        // 表單驗證
+        // 表單驗證（使用統一的驗證通知）
         (function() {
             'use strict';
             window.addEventListener('load', function() {
@@ -63,6 +89,18 @@
                         if (form.checkValidity() === false) {
                             event.preventDefault();
                             event.stopPropagation();
+                            
+                            // 顯示驗證錯誤通知
+                            if (typeof showValidationError === 'function') {
+                                showValidationError('請填寫所有必填欄位後再提交');
+                            }
+                            
+                            // 聚焦到第一個無效欄位
+                            const firstInvalid = form.querySelector(':invalid');
+                            if (firstInvalid) {
+                                firstInvalid.focus();
+                                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
                         }
                         form.classList.add('was-validated');
                     }, false);

@@ -1,4 +1,4 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseWizard_S3_CFQES_ViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Opening.EconomicStatusVM
 
 <!-- 經濟概況 -->
 <div class="row mb-4">
@@ -9,7 +9,7 @@
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="md:col-span-2">
-            <label asp-for="EconomicOverview" class="block text-lg font-medium mb-2 text-slate-900">家庭經濟概況描述 <small class="block text-slate-500">economic_overview（可空，NVARCHAR(200)）</small></label>
+            <label asp-for="EconomicOverview" class="block text-lg font-medium mb-2 text-slate-900">家庭經濟概況描述</label>
             <textarea asp-for="EconomicOverview" class="input" rows="3" placeholder="請描述家庭經濟概況" form-mode="@Model.Mode" readonly-when="ReadOnly"></textarea>
             <span asp-validation-for="EconomicOverview" class="text-red-600 text-sm"></span>
         </div>
@@ -25,12 +25,12 @@
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-            <label asp-for="WorkSituation" class="block text-lg font-medium mb-2 text-slate-900">工作情形 <small class="block text-slate-500">work_situation（可空，NVARCHAR(50)）</small></label>
+            <label asp-for="WorkSituation" class="block text-lg font-medium mb-2 text-slate-900">工作情形</label>
             <input asp-for="WorkSituation" class="input" placeholder="請描述工作情形" form-mode="@Model.Mode" readonly-when="ReadOnly" />
             <span asp-validation-for="WorkSituation" class="text-red-600 text-sm"></span>
         </div>
         <div>
-            <label asp-for="CivilWelfareResources" class="block text-lg font-medium mb-2 text-slate-900">民間福利資源 <small class="block text-slate-500">civil_welfare_resources（可空，NVARCHAR(50)）</small></label>
+            <label asp-for="CivilWelfareResources" class="block text-lg font-medium mb-2 text-slate-900">民間福利資源</label>
             <input asp-for="CivilWelfareResources" class="input" placeholder="請描述民間福利資源" form-mode="@Model.Mode" readonly-when="ReadOnly" />
             <span asp-validation-for="CivilWelfareResources" class="text-red-600 text-sm"></span>
         </div>
@@ -46,7 +46,7 @@
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-            <label asp-for="MonthlyIncome" class="block text-lg font-medium mb-2 text-slate-900">月收入 <small class="block text-slate-500">monthly_income（可空，DECIMAL(10,2)）</small></label>
+            <label asp-for="MonthlyIncome" class="block text-lg font-medium mb-2 text-slate-900">月收入</label>
             <div class="input-group">
                 <span class="input-group-text">NT$</span>
                 <input asp-for="MonthlyIncome" type="number" step="0.01" min="0" max="99999999.99" class="input" placeholder="請輸入月收入" form-mode="@Model.Mode" readonly-when="ReadOnly" />
@@ -54,7 +54,7 @@
             <span asp-validation-for="MonthlyIncome" class="text-red-600 text-sm"></span>
         </div>
         <div>
-            <label asp-for="MonthlyExpense" class="block text-lg font-medium mb-2 text-slate-900">月支出 <small class="block text-slate-500">monthly_expense（可空，DECIMAL(10,2)）</small></label>
+            <label asp-for="MonthlyExpense" class="block text-lg font-medium mb-2 text-slate-900">月支出</label>
             <div class="input-group">
                 <span class="input-group-text">NT$</span>
                 <input asp-for="MonthlyExpense" type="number" step="0.01" min="0" max="99999999.99" class="input" placeholder="請輸入月支出" form-mode="@Model.Mode" readonly-when="ReadOnly" />
@@ -62,7 +62,7 @@
             <span asp-validation-for="MonthlyExpense" class="text-red-600 text-sm"></span>
         </div>
         <div class="md:col-span-2">
-            <label asp-for="MonthlyExpenseNote" class="block text-lg font-medium mb-2 text-slate-900">月支出說明 <small class="block text-slate-500">monthly_expense_note（可空，NVARCHAR(50)）</small></label>
+            <label asp-for="MonthlyExpenseNote" class="block text-lg font-medium mb-2 text-slate-900">月支出說明</label>
             <input asp-for="MonthlyExpenseNote" class="input" placeholder="請說明月支出的詳細項目" form-mode="@Model.Mode" readonly-when="ReadOnly" />
             <span asp-validation-for="MonthlyExpenseNote" class="text-red-600 text-sm"></span>
         </div>
@@ -78,7 +78,7 @@
     </div>
     <div class="col-12">
         <div class="mb-3">
-            <label asp-for="Description" class="block text-lg font-medium mb-2 text-slate-900">描述 <small class="block text-slate-500">description（可空，NVARCHAR(50)）</small></label>
+            <label asp-for="Description" class="block text-lg font-medium mb-2 text-slate-900">描述</label>
             <textarea asp-for="Description" class="input" rows="3" placeholder="請輸入其他相關描述" form-mode="@Model.Mode" readonly-when="ReadOnly"></textarea>
             <span asp-validation-for="Description" class="text-red-600 text-sm"></span>
         </div>

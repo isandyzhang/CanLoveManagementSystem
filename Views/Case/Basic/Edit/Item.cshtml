@@ -1,0 +1,52 @@
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+
+@{
+    ViewData["Title"] = "編輯個案基本資料";
+    // 自訂麵包屑：首頁 > 個案管理 > 編輯個案 > 個案基本資料
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("編輯個案", Url.Action("Edit", "CaseBasic", new { id = Model.Case.CaseId }) ?? string.Empty),
+        ("個案基本資料", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        <div class="card bg-white dark:bg-slate-900 shadow-card-lg border rounded-xl border-[#9CCC65] dark:border-slate-700">
+            <div class="px-6 py-6">
+                <form asp-controller="CaseBasic" asp-action="Edit" method="post" enctype="multipart/form-data" class="prevent-double-submit">
+                    <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
+                    <input type="hidden" asp-for="Case.CaseId" />
+                    <partial name="~/Views/Case/Basic/Partials/_CaseFormFields.cshtml" model="Model" />
+                    @{
+                        ViewBag.IsEditMode = true;
+                        ViewBag.ReturnUrl = Url.Action("Query", "CaseBasic");
+                    }
+                    <partial name="~/Views/Shared/Partials/_CaseFormActions.cshtml" model="Model" />
+                </form>
+                </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/case-form-common.js"></script>
+    <script>
+        // 初始化城市/地區聯動（編輯模式，需要保留現有地區）
+        const districtsByCity = @Html.Raw(Json.Serialize(ViewBag.DistrictsByCity));
+        const currentDistrictId = document.getElementById('districtSelect')?.value || document.getElementById('districtSelect')?.getAttribute('data-current-district-id');
+        if (districtsByCity) {
+            initCityDistrict(districtsByCity, currentDistrictId);
+        }
+
+        // 初始化新增學校功能
+        initSchoolAdd();
+
+        // 初始化照片預覽功能（編輯模式，載入現有照片）
+            const photoUrl = @Html.Raw(Json.Serialize(ViewBag.PhotoUrl));
+        initPhotoPreview(photoUrl);
+    </script>
+}
+
+

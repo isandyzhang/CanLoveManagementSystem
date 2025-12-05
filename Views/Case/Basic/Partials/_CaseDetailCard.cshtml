@@ -1,0 +1,83 @@
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+@{
+    var caseId = Model?.Case?.CaseId ?? string.Empty;
+    var caseName = Model?.Case?.Name ?? string.Empty;
+    var cardTitle = ViewBag.CardTitle as string ?? "個案詳細資料";
+    var showCloseButton = ViewBag.ShowCloseButton as bool? ?? true;
+    var closeButtonUrl = ViewBag.CloseButtonUrl as string ?? Url.Action("Query", "CaseBasic");
+    var actionButtons = ViewBag.ActionButtons as List<(string Text, string Action, string Controller, string Class, string Icon, bool IsForm, string FormAction)> ?? new List<(string, string, string, string, string, bool, string)>();
+}
+
+<div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-[#9CCC65] dark:border-slate-800">
+    <div class="px-6 py-6">
+        @if (!string.IsNullOrEmpty(cardTitle) || showCloseButton)
+        {
+            <div class="flex items-center justify-between mb-4">
+                @if (!string.IsNullOrEmpty(cardTitle))
+                {
+                    <h3 class="text-xl font-semibold text-slate-700 dark:text-slate-100">@cardTitle</h3>
+                }
+                @if (showCloseButton)
+                {
+                    <button type="button" id="closeCaseDetails" class="btn btn--secondary">
+                        <i class="bi bi-x-circle me-1"></i>關閉
+                    </button>
+                }
+            </div>
+        }
+        <partial name="~/Views/Case/Basic/Partials/_CaseFormFields.cshtml" model="Model" />
+        
+        @if (actionButtons.Any())
+        {
+            <div class="mt-6 flex justify-end gap-3">
+                @foreach (var button in actionButtons)
+                {
+                    @if (button.IsForm)
+                    {
+                        <form method="post" asp-action="@button.FormAction" asp-controller="@button.Controller" class="inline prevent-double-submit">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="caseId" value="@caseId" />
+                            @if (button.FormAction == "ReviewItemDecision")
+                            {
+                                <input type="hidden" name="approved" value="@(button.Text == "通過" ? "true" : "false")" />
+                            }
+                            <button type="submit" class="btn @button.Class">
+                                @if (!string.IsNullOrEmpty(button.Icon))
+                                {
+                                    <i class="@button.Icon me-1"></i>
+                                }
+                                @button.Text
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action(button.Action, button.Controller, new { id = caseId })" class="btn @button.Class">
+                            @if (!string.IsNullOrEmpty(button.Icon))
+                            {
+                                <i class="@button.Icon me-1"></i>
+                            }
+                            @button.Text
+                        </a>
+                    }
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@if (showCloseButton)
+{
+    <script>
+        // 關閉個案詳細資料
+        (function() {
+            const closeBtn = document.getElementById('closeCaseDetails');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    window.location.href = '@closeButtonUrl';
+                });
+            }
+        })();
+    </script>
+}
+

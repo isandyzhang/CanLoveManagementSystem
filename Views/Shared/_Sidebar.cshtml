@@ -61,15 +61,34 @@
             </summary>
             <nav class="px-2 pb-2 mt-3 flex flex-col gap-4 sidebar-subnav">
                 @{
-                    bool isCreateAction = isCaseSection && (string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "SelectCase", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "Step1", StringComparison.OrdinalIgnoreCase));
+                    // 檢查當前頁面上下文（優先使用 ViewData，否則根據 action 判斷）
+                    var sidebarCurrentPage = ViewData["Sidebar.CurrentPage"] as string;
+                    bool isCreateAction = false;
+                    bool isQueryAction = false;
+                    bool isReviewAction = false;
+                    
+                    if (!string.IsNullOrEmpty(sidebarCurrentPage))
+                    {
+                        // 使用 ViewData 中的上下文
+                        isCreateAction = string.Equals(sidebarCurrentPage, "Create", StringComparison.OrdinalIgnoreCase);
+                        isQueryAction = string.Equals(sidebarCurrentPage, "Query", StringComparison.OrdinalIgnoreCase);
+                        isReviewAction = string.Equals(sidebarCurrentPage, "Review", StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        // 根據 action 名稱判斷
+                        isCreateAction = isCaseSection && (string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "Step0", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "Step1", StringComparison.OrdinalIgnoreCase));
+                        isQueryAction = isCaseSection && (string.Equals(currentAction, "Query", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "Search", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "View", StringComparison.OrdinalIgnoreCase));
+                        isReviewAction = isCaseSection && (string.Equals(currentAction, "Review", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "ReviewItem", StringComparison.OrdinalIgnoreCase));
+                    }
                 }
                 <a class="sidebar-link @(isCreateAction ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Create","CaseBasic")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@createCaseName</span>
                         </a>
-                <a class="sidebar-link @((isCaseSection && (string.Equals(currentAction, "Query", StringComparison.OrdinalIgnoreCase))) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Query","CaseBasic")">
+                <a class="sidebar-link @(isQueryAction ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Query","CaseBasic")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@queryCaseName</span>
                 </a>
-                <a class="sidebar-link @(isCaseSection && (string.Equals(currentAction, "Review", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "ReviewItem", StringComparison.OrdinalIgnoreCase)) ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Review","CaseBasic")">
+                <a class="sidebar-link @(isReviewAction ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Review","CaseBasic")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@caseReviewName</span>
                 </a>
             </nav>

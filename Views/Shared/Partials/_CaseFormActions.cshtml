@@ -1,18 +1,28 @@
 @model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+@{
+    var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("Query", "CaseBasic");
+    var isEditMode = ViewBag.IsEditMode as bool? ?? false;
+}
 
 <div class="mt-6 flex justify-end gap-3">
-    <a asp-controller="CaseBasic" asp-action="Query" class="btn btn--secondary">
+    <a href="@returnUrl" class="btn btn--secondary">
         <i class="bi bi-arrow-left me-1"></i>返回
     </a>
 
-    @if (Model.Mode == CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormMode.Create)
+    @if (isEditMode)
+    {
+        <button type="submit" class="btn">
+            <i class="bi bi-check-circle me-1"></i>儲存
+        </button>
+    }
+    else if (Model.Mode == CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormMode.Create)
     {
         <input type="hidden" name="SubmitAction" value="Submit" />
         <button type="submit" class="btn">
             <i class="bi bi-check-circle me-1"></i>提交審核
         </button>
     }
-    else if (Model.Mode == CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormMode.ReviewEdit)
+    else if (Model.Mode == CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormMode.Review)
     {
         <button type="submit" name="SubmitAction" value="Approve" class="btn">
             <i class="bi bi-check2-circle me-1"></i>通過

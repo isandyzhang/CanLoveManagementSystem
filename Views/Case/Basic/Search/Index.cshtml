@@ -1,0 +1,388 @@
+@{
+    ViewData["Title"] = "查詢個案 - 個案基本資料";
+    ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
+    {
+        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("查詢個案", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("個案基本資料", string.Empty)
+    };
+}
+
+<div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1400px] mx-auto">
+        @{ ViewBag.CurrentPage = "Search"; ViewBag.CurrentTab = "CaseBasic"; }
+        <partial name="~/Views/Shared/Partials/_CaseFormTabs.cshtml" />
+        
+        <!-- 搜尋與個案列表區（合併在同一個卡片） -->
+        <div class="card bg-white dark:bg-slate-900 shadow-card-lg border rounded-xl border-[#9CCC65] dark:border-slate-700 mb-6">
+            <div class="px-6 py-6">
+                <!-- 搜尋輸入框 -->
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="basicSearchInput" class="block text-sm text-slate-700 dark:text-slate-300 mb-1">搜尋個案（編號/姓名/電話）</label>
+                        <button type="button" id="showAllCasesBtn" class="btn btn-sm btn--secondary">
+                            <i class="bi bi-list-ul me-1"></i>顯示全部個案
+                        </button>
+                    </div>
+                    <div class="flex">
+                        <span class="inline-flex items-center px-3 border border-r-0 border-border dark:border-slate-700 rounded-l-md bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400"><i class="bi bi-search"></i></span>
+                        <input type="text" id="basicSearchInput" class="input flex-1 rounded-l-none dark:bg-slate-800 dark:text-slate-100" placeholder="請輸入關鍵字..." autocomplete="off" />
+                        <span id="basicSearchLoading" class="hidden items-center px-3 border border-l-0 border-border dark:border-slate-700 rounded-r-md bg-slate-50 dark:bg-slate-800"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                    </div>
+                </div>
+
+                <!-- 個案列表表格（統一顯示搜尋結果或全部個案） -->
+                <div id="caseListContainer">
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300">全部已審核個案</h3>
+                            <span class="text-sm text-slate-600 dark:text-slate-400">共 <span id="caseCount">@((ViewBag.AllCases as IEnumerable<CanLove_Backend.Domain.Case.Models.Basic.Case> ?? new List<CanLove_Backend.Domain.Case.Models.Basic.Case>()).Count())</span> 筆</span>
+                        </div>
+                    </div>
+                    <div id="caseListTableWrapper">
+                        @if (ViewBag.ShowAllCases == true && ViewBag.AllCases != null)
+                        {
+                            var allCases = ViewBag.AllCases as IEnumerable<CanLove_Backend.Domain.Case.Models.Basic.Case> ?? new List<CanLove_Backend.Domain.Case.Models.Basic.Case>();
+                            ViewBag.TableMode = "Search";
+                            ViewBag.ShowActions = true;
+                            ViewBag.ActionButtons = new List<(string Text, string Action, string Controller, string Class)>
+                            {
+                                ("編輯", "EditItem", "CaseBasic", "btn-sm"),
+                                ("查看", "ViewItem", "CaseBasic", "btn-sm btn--secondary")
+                            };
+                            ViewBag.OnRowClick = "viewCaseDetails";
+                            <div class="overflow-auto">
+                                <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
+                                    <thead>
+                                        <tr class="bg-slate-50 dark:bg-slate-800">
+                                            <th class="text-slate-700 dark:text-slate-300">個案編號</th>
+                                            <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
+                                            <th class="text-slate-700 dark:text-slate-300">性別</th>
+                                            <th class="text-slate-700 dark:text-slate-300">出生日期</th>
+                                            <th class="text-slate-700 dark:text-slate-300">城市</th>
+                                            <th class="text-slate-700 dark:text-slate-300">建立者</th>
+                                            <th class="text-slate-700 dark:text-slate-300">建立時間</th>
+                                            <th class="text-slate-700 dark:text-slate-300">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="caseListTableBody">
+                                        @foreach (var item in allCases)
+                                        {
+                                            <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" onclick="viewCaseDetails('@item.CaseId')">
+                                                <td class="text-slate-900 dark:text-slate-100">
+                                                    <code class="text-slate-900 dark:text-slate-100">@item.CaseId</code>
+                                                </td>
+                                                <td class="text-slate-900 dark:text-slate-100">@item.Name</td>
+                                                <td>
+                                                    @{ var g = (item.Gender ?? string.Empty).Trim().ToUpper(); }
+                                                    @if (g == "M" || g == "男")
+                                                    {
+                                                        <span class="badge-pill bg-blue-100 text-blue-900 text-sm">男</span>
+                                                    }
+                                                    else if (g == "F" || g == "女")
+                                                    {
+                                                        <span class="badge-pill bg-pink-100 text-pink-900 text-sm">女</span>
+                                                    }
+                                                    else if (g == "O" || g == "其他")
+                                                    {
+                                                        <span class="badge-pill bg-muted">其他</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge-pill bg-muted">未設定</span>
+                                                    }
+                                                </td>
+                                                <td class="text-slate-900 dark:text-slate-100">@item.BirthDate.ToTaiwanDateString()</td>
+                                                <td class="text-slate-900 dark:text-slate-100">@(item.City?.CityName ?? "未設定")</td>
+                                                <td>
+                                                    @{
+                                                        var displayName = item.SubmittedBy ?? "系統";
+                                                        if (displayName.Contains("@"))
+                                                        {
+                                                            displayName = displayName.Split('@')[0];
+                                                        }
+                                                    }
+                                                    <small class="text-slate-900 dark:text-slate-100">@displayName</small>
+                                                </td>
+                                                <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.CreatedAt"></datetime></td>
+                                                <td>
+                                                    <a href="@Url.Action("EditItem", "CaseBasic", new { id = item.CaseId })" class="btn btn-sm" onclick="event.stopPropagation();">
+                                                        <i class="bi bi-pencil me-1"></i>編輯
+                                                    </a>
+                                                    <a href="@Url.Action("ViewItem", "CaseBasic", new { id = item.CaseId })" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
+                                                        <i class="bi bi-eye me-1"></i>查看
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <partial name="~/Views/Shared/Partials/_EmptyState.cshtml" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+            const input = document.getElementById('basicSearchInput');
+            const loading = document.getElementById('basicSearchLoading');
+            const tbody = document.getElementById('caseListTableBody');
+            const caseCountSpan = document.getElementById('caseCount');
+            const tableWrapper = document.getElementById('caseListTableWrapper');
+            let timer;
+            let allCasesData = null; // 儲存所有個案資料，用於清空搜尋時恢復
+
+            // 儲存初始的個案資料
+            if (tbody) {
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                allCasesData = rows.map(row => {
+                    const caseId = row.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || '';
+                    const name = row.cells[1]?.textContent?.trim() || '';
+                    const gender = row.cells[2]?.querySelector('.badge-pill')?.textContent?.trim() || '';
+                    const birthDate = row.cells[3]?.textContent?.trim() || '';
+                    const city = row.cells[4]?.textContent?.trim() || '';
+                    const submittedBy = row.cells[5]?.textContent?.trim() || '';
+                    const createdAt = row.cells[6]?.textContent?.trim() || '';
+                    return { caseId, name, gender, birthDate, city, submittedBy, createdAt };
+                });
+            }
+
+            // 格式化日期
+            function formatDate(dateValue) {
+                if (!dateValue) return '';
+                try {
+                    let date;
+                    if (typeof dateValue === 'string') {
+                        // 處理 "2000-01-01" 格式
+                        date = new Date(dateValue + 'T00:00:00');
+                    } else if (dateValue instanceof Date) {
+                        date = dateValue;
+                    } else {
+                        return String(dateValue);
+                    }
+                    
+                    if (isNaN(date.getTime())) {
+                        return String(dateValue);
+                    }
+                    
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}/${month}/${day}`;
+                } catch {
+                    return String(dateValue || '');
+                }
+            }
+
+            // 格式化日期時間
+            function formatDateTime(dateValue) {
+                if (!dateValue) return '';
+                try {
+                    const date = new Date(dateValue);
+                    if (isNaN(date.getTime())) {
+                        return String(dateValue || '');
+                    }
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}/${month}/${day} ${hours}:${minutes}`;
+                } catch {
+                    return String(dateValue || '');
+                }
+            }
+
+            // 取得性別標籤 HTML
+            function getGenderBadge(gender) {
+                const g = (gender || '').trim().toUpperCase();
+                if (g === 'M' || g === '男') {
+                    return '<span class="badge-pill bg-blue-100 text-blue-900 text-sm">男</span>';
+                } else if (g === 'F' || g === '女') {
+                    return '<span class="badge-pill bg-pink-100 text-pink-900 text-sm">女</span>';
+                } else if (g === 'O' || g === '其他') {
+                    return '<span class="badge-pill bg-muted">其他</span>';
+                } else {
+                    return '<span class="badge-pill bg-muted">未設定</span>';
+                }
+            }
+
+            // 取得建立者顯示名稱
+            function getDisplayName(submittedBy) {
+                if (!submittedBy) return '系統';
+                var atSymbol = String.fromCharCode(64);
+                var atIndex = submittedBy.indexOf(atSymbol);
+                if (atIndex !== -1) {
+                    return submittedBy.substring(0, atIndex);
+                }
+                return submittedBy;
+            }
+
+            // 渲染表格
+            function renderTable(cases) {
+                if (!caseCountSpan || !tableWrapper) return;
+
+                if (!cases || cases.length === 0) {
+                    tableWrapper.innerHTML = `
+                        <div class="text-center py-10 text-slate-500 dark:text-slate-400">
+                            <i class="bi bi-inbox text-slate-400 dark:text-slate-500 text-5xl"></i>
+                            <h4 class="mt-3 text-slate-900 dark:text-slate-100">尚無個案資料</h4>
+                            <p class="text-slate-600 dark:text-slate-400">目前沒有符合條件的個案記錄</p>
+                        </div>
+                    `;
+                    caseCountSpan.textContent = '0';
+                    return;
+                }
+
+                // 確保表格結構存在
+                let currentTbody = tableWrapper.querySelector('#caseListTableBody');
+                if (!tableWrapper.querySelector('table')) {
+                    tableWrapper.innerHTML = `
+                        <div class="overflow-auto">
+                            <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-800">
+                                        <th class="text-slate-700 dark:text-slate-300">個案編號</th>
+                                        <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
+                                        <th class="text-slate-700 dark:text-slate-300">性別</th>
+                                        <th class="text-slate-700 dark:text-slate-300">出生日期</th>
+                                        <th class="text-slate-700 dark:text-slate-300">城市</th>
+                                        <th class="text-slate-700 dark:text-slate-300">建立者</th>
+                                        <th class="text-slate-700 dark:text-slate-300">建立時間</th>
+                                        <th class="text-slate-700 dark:text-slate-300">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="caseListTableBody"></tbody>
+                            </table>
+                        </div>
+                    `;
+                    // 重新取得 tbody 引用
+                    currentTbody = document.getElementById('caseListTableBody');
+                }
+
+                if (currentTbody) {
+                    currentTbody.innerHTML = cases.map(c => renderRow(c)).join('');
+                    caseCountSpan.textContent = cases.length.toString();
+                }
+            }
+
+            // 渲染單一列
+            function renderRow(c) {
+                const genderBadge = getGenderBadge(c.gender);
+                const birthDateStr = c.birthDate ? formatDate(c.birthDate) : '';
+                const cityName = c.city?.cityName || c.city || '未設定';
+                const displayName = getDisplayName(c.submittedBy);
+                const createdAtStr = c.createdAt ? formatDateTime(c.createdAt) : '';
+                const caseId = escapeHtml(c.caseId || '');
+
+                return `
+                    <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" onclick="viewCaseDetails('${caseId}')">
+                        <td class="text-slate-900 dark:text-slate-100">
+                            <code class="text-slate-900 dark:text-slate-100">${caseId}</code>
+                        </td>
+                        <td class="text-slate-900 dark:text-slate-100">${escapeHtml(c.name || '')}</td>
+                        <td>${genderBadge}</td>
+                        <td class="text-slate-900 dark:text-slate-100">${escapeHtml(birthDateStr)}</td>
+                        <td class="text-slate-900 dark:text-slate-100">${escapeHtml(cityName)}</td>
+                        <td>
+                            <small class="text-slate-900 dark:text-slate-100">${escapeHtml(displayName)}</small>
+                        </td>
+                        <td class="text-slate-900 dark:text-slate-100">${escapeHtml(createdAtStr)}</td>
+                        <td>
+                            <a href="@Url.Action("EditItem", "CaseBasic")?id=${caseId}" class="btn btn-sm" onclick="event.stopPropagation();">
+                                <i class="bi bi-pencil me-1"></i>編輯
+                            </a>
+                            <a href="@Url.Action("ViewItem", "CaseBasic")?id=${caseId}" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
+                                <i class="bi bi-eye me-1"></i>查看
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // 載入所有個案
+            async function loadAllCases() {
+                if (!loading) return;
+                
+                loading.classList.remove('hidden');
+                try {
+                    const resp = await fetch('/Case/SearchCases');
+                    const data = await resp.json();
+                    loading.classList.add('hidden');
+                    if (data.success && data.cases) {
+                        renderTable(data.cases);
+                    } else {
+                        renderTable([]);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    loading.classList.add('hidden');
+                    renderTable([]);
+                }
+            }
+
+            // 搜尋處理
+            input.addEventListener('input', function(){
+                clearTimeout(timer);
+                const q = this.value.trim();
+                
+                if (!q) {
+                    // 清空搜尋時，載入所有個案
+                    loadAllCases();
+                    return;
+                }
+
+                loading.classList.remove('hidden');
+                timer = setTimeout(async () => {
+                    try {
+                        const resp = await fetch(`/Case/SearchCases?query=${encodeURIComponent(q)}`);
+                        const data = await resp.json();
+                        loading.classList.add('hidden');
+                        if (data.success && data.cases) {
+                            renderTable(data.cases);
+                        } else {
+                            renderTable([]);
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        loading.classList.add('hidden');
+                        renderTable([]);
+                    }
+                }, 400);
+            });
+
+            function escapeHtml(t) {
+                if (!t) return '';
+                const d = document.createElement('div');
+                d.textContent = t;
+                return d.innerHTML;
+            }
+
+            // 查看個案詳細資料
+            window.viewCaseDetails = function(caseId) {
+                if (caseId) {
+                    window.location.href = '@Url.Action("ViewItem", "CaseBasic")?id=' + encodeURIComponent(caseId);
+                }
+            };
+
+            // 顯示全部個案按鈕
+            const showAllBtn = document.getElementById('showAllCasesBtn');
+            if (showAllBtn) {
+                showAllBtn.addEventListener('click', function() {
+                    input.value = '';
+                    loadAllCases();
+                });
+            }
+        })();
+    </script>
+}
+

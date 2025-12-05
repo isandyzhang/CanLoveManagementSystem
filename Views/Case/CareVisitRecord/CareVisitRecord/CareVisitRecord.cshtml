@@ -11,8 +11,30 @@
 <div class="w-full px-4 sm:px-6 lg:px-8">
     <div class="max-w-[1400px] mx-auto">
         @{ ViewBag.CurrentPage = "Create"; ViewBag.CurrentTab = "CareVisitRecord"; }
-        <partial name="~/Views/Shared/Partials/_CaseTabs.cshtml" />
-        <partial name="~/Views/Shared/Partials/_NotImplemented.cshtml" />
+        <partial name="~/Views/Shared/Partials/_CaseFormTabs.cshtml" />
+        
+        <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-pink-400 dark:border-slate-700 mt-3">
+            <div class="px-6 py-4 mb-5 flex items-center justify-between bg-pink-50 rounded-t-xl">
+                <span class="inline-flex items-center gap-3 text-2xl font-bold text-slate-800">
+                    <i class="bi bi-heart"></i>
+                    關懷訪視記錄表
+                </span>
+                <partial name="~/Views/Shared/Partials/_CurrentCaseInfo.cshtml" />
+            </div>
+            <div class="px-6 py-6">
+                <!-- 個案選擇 Autocomplete -->
+                @{
+                    ViewBag.CaseAutocompleteInputId = "caseAutocompleteInput";
+                    ViewBag.CaseAutocompleteInputName = "caseAutocomplete";
+                    ViewBag.CaseAutocompleteCaseIdFieldId = "CaseId";
+                    ViewBag.CaseAutocompleteOnSelectCallback = "";
+                }
+                <partial name="~/Views/Shared/Partials/_CaseAutocomplete.cshtml" />
+                <input type="hidden" id="CaseId" name="CaseId" value="@ViewBag.CaseId" />
+                
+                <partial name="~/Views/Shared/Partials/_NotImplemented.cshtml" />
+            </div>
+        </div>
     </div>
 </div>
 

@@ -1,14 +1,27 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseWizard_S1_CD_ViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseDetailVM
+@using CanLove_Backend.Domain.Case.Models.Basic
 
 @{
-    ViewData["Title"] = "開案紀錄表";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    // 自訂麵包屑：首頁 > 個案管理 > 新增個案 > 開案紀錄表
+    
+    // 根據導航上下文動態設置標題和麵包屑
+    var navigationContext = ViewData["NavigationContext"] as string ?? "Create";
+    var breadcrumbParent = ViewData["BreadcrumbParent"] as string ?? "新增個案";
+    var breadcrumbParentUrl = ViewData["BreadcrumbParentUrl"] as string ?? (Url.Action("Create", "CaseBasic") ?? string.Empty);
+    var currentPageTitle = navigationContext switch
+    {
+        "Review" => "審核開案紀錄表",
+        "ReadOnly" => "查看開案紀錄表",
+        "Edit" => "編輯開案紀錄表",
+        _ => "開案紀錄表"
+    };
+    
+    ViewData["Title"] = currentPageTitle;
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
         ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("新增個案", Url.Action("Create", "CaseBasic") ?? string.Empty),
-        ("開案紀錄表", string.Empty)
+        (breadcrumbParent, breadcrumbParentUrl),
+        (currentPageTitle, string.Empty)
     };
 }
 
@@ -16,78 +29,29 @@
     <div class="max-w-[1400px] mx-auto">
         <div class="w-full">
 
-            @{ ViewBag.CurrentPage = "Create"; ViewBag.CurrentTab = "CaseOpening"; }
-            <partial name="~/Views/Shared/Partials/_CaseTabs.cshtml" />
+            @{ 
+                ViewBag.CurrentPage = navigationContext switch
+                {
+                    "Review" => "Review",
+                    "ReadOnly" => "Query",
+                    "Edit" => "Query",
+                    _ => "Create"
+                };
+                ViewBag.CurrentTab = "CaseOpening"; 
+            }
+            <partial name="~/Views/Shared/Partials/_CaseFormTabs.cshtml" />
 
             @{
                 ViewBag.CurrentStep = 1;
                 ViewBag.CaseId = Model.CaseId;
+                ViewBag.Mode = Model.Mode;
                 var hasCaseId = !string.IsNullOrEmpty(Model.CaseId);
             }
             
-            <!-- 如果沒有選擇個案，顯示選擇個案區塊 -->
-            @if (!hasCaseId)
-            {
-                <div class="row justify-content-center mb-4">
-                    <div class="col-lg-8">
-                        <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-orange-400 dark:border-slate-700">
-                            <div class="px-6 py-4 rounded-t-xl bg-orange-50">
-                                <h5 class="mb-0 text-slate-900">
-                                    <i class="bi bi-person-plus me-1"></i>請先選擇個案
-                                </h5>
-                            </div>
-                            <div class="px-6 py-6">
-                                <p class="text-slate-600 dark:text-slate-400 mb-4">請輸入個案編號、姓名或電話號碼進行搜尋</p>
-                                
-                                <!-- 搜尋輸入框 -->
-                                <div class="mb-4">
-                                    <label for="caseSearchInput" class="block text-sm text-slate-700 mb-1">搜尋個案</label>
-                                    <div class="flex">
-                                        <span class="inline-flex items-center px-3 border border-r-0 border-border rounded-l-md bg-slate-50 text-slate-500"><i class="bi bi-search"></i></span>
-                                        <input type="text" id="caseSearchInput" class="input flex-1 rounded-l-none" placeholder="請輸入個案編號、姓名或電話號碼..." autocomplete="off" />
-                                        <span id="caseSearchLoading" class="hidden items-center px-3 border border-l-0 border-border rounded-r-md"><span class="spinner-border spinner-border-sm" role="status"></span></span>
-                                    </div>
-                                </div>
+            <!-- 導航分頁和進度條 -->
+            @await Html.PartialAsync("~/Views/Case/Opening/_WizardNavigation.cshtml")
 
-                                <!-- 搜尋結果（表格樣式，對齊個案審核列表） -->
-                                <div id="caseSearchResults" class="d-none">
-                                    <div class="card bg-white rounded-xl border border-border shadow-sm">
-                                        <div class="p-3 pb-0">
-                                            <h6 class="text-slate-900 mb-2">搜尋結果</h6>
-                                        </div>
-                                        <div class="p-3 pt-0 overflow-auto">
-                                            <table class="data-table text-left w-full text-slate-900">
-                                                <thead>
-                                                    <tr class="bg-slate-50">
-                                                        <th class="text-slate-700">姓名</th>
-                                                        <th class="text-slate-700">出生日期</th>
-                                                        <th class="text-slate-700">操作</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="caseResultsList">
-                                                    <!-- 動態插入 -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 移除多餘提示，保持乾淨介面 -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-            
-            <!-- 導航分頁和進度條（只在有 caseId 時顯示） -->
-            @if (hasCaseId)
-            {
-                @await Html.PartialAsync("~/Views/Case/Opening/_WizardNavigation.cshtml")
-            }
-
-            <!-- 表單（只在有 caseId 時顯示） -->
-            @if (hasCaseId)
-            {
+            <!-- 表單 -->
             <form asp-action="Step1" method="post" class="needs-validation case-detail-form prevent-double-submit" novalidate>
                 <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-orange-400 dark:border-slate-700">
                     <div class="px-6 py-4 mb-5 flex items-center justify-between bg-orange-50 rounded-t-xl">
@@ -95,110 +59,29 @@
                             <i class="bi bi-card-text"></i>
                             個案詳細資料
                         </span>
+                        <partial name="~/Views/Shared/Partials/_CurrentCaseInfo.cshtml" />
                     </div>
                     <div class="px-6 py-6">
-                                <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
-                                <!-- 隱藏欄位 -->
-                                <input asp-for="CaseId" type="hidden" />
+                        <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
+                        
+                        <!-- 隱藏欄位 -->
+                        <input asp-for="CaseId" type="hidden" />
+                        <input asp-for="Mode" type="hidden" />
 
-                                <partial name="~/Views/Case/Opening/Partials/_Step1FormFields.cshtml" model="Model" />
+                        <partial name="~/Views/Case/Opening/Partials/_Step1FormFields.cshtml" model="Model" />
 
-                                <partial name="~/Views/Case/Opening/Partials/_CaseWizardFormActions.cshtml" model="Model" />
+                        <partial name="~/Views/Case/Opening/Partials/_CaseWizardFormActions.cshtml" model="Model" />
                     </div>
                 </div>
             </form>
-            }
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @if (!hasCaseId)
-    {
+    <script src="~/js/form-validation-notification.js" asp-append-version="true"></script>
     <script>
-        // 個案搜尋功能
-        (function() {
-            const searchInput = document.getElementById('caseSearchInput');
-            const searchResults = document.getElementById('caseSearchResults');
-            const resultsList = document.getElementById('caseResultsList');
-            const searchLoading = document.getElementById('caseSearchLoading');
-
-            let searchTimeout;
-
-            searchInput.addEventListener('input', function() {
-                const query = this.value.trim();
-
-                // 清除之前的延遲
-                clearTimeout(searchTimeout);
-
-                // 如果輸入為空，清空並隱藏結果
-                if (query === '') {
-                    hideAll();
-                    return;
-                }
-
-                // 顯示載入中
-                searchLoading.classList.remove('d-none');
-
-                // 設定延遲搜尋（防抖，500ms）
-                searchTimeout = setTimeout(async function() {
-                    try {
-                        const response = await fetch(`/Case/SearchCases?query=${encodeURIComponent(query)}`);
-                        const data = await response.json();
-
-                        searchLoading.classList.add('d-none');
-
-                        if (data.success && data.cases && data.cases.length > 0) {
-                            displayResults(data.cases);
-                        } else {
-                            hideAll();
-                        }
-                    } catch (error) {
-                        console.error('搜尋失敗:', error);
-                        searchLoading.classList.add('d-none');
-                        hideAll();
-                        alert('搜尋時發生錯誤，請稍後再試');
-                    }
-                }, 500);
-            });
-
-            function displayResults(cases) {
-                hideAll();
-                searchResults.classList.remove('d-none');
-
-                // 表格列渲染：姓名 / 出生日期 / 操作
-                resultsList.innerHTML = cases.map(c => `
-                    <tr class="border-b border-border">
-                        <td class="text-slate-900">
-                            <span class="fw-semibold">${escapeHtml(c.name || '')}</span>
-                        </td>
-                        <td class="text-slate-900">${c.birthDate ? escapeHtml(c.birthDate) : ''}</td>
-                        <td>
-                            <a class="badge-pill bg-primary text-white" href="@Url.Action("Create", "CaseOpening", new { step = "CaseDetail" })?caseId=${encodeURIComponent(c.caseId)}">選擇</a>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-
-            function hideAll() {
-                searchResults.classList.add('d-none');
-                resultsList.innerHTML = '';
-            }
-
-            function escapeHtml(text) {
-                if (!text) return '';
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-
-            // 初始聚焦到搜尋框
-            searchInput.focus();
-        })();
-    </script>
-    }
-    <script>
-        // 表單驗證
+        // 表單驗證（使用統一的驗證通知）
         (function() {
             'use strict';
             window.addEventListener('load', function() {
@@ -208,6 +91,18 @@
                         if (form.checkValidity() === false) {
                             event.preventDefault();
                             event.stopPropagation();
+                            
+                            // 顯示驗證錯誤通知
+                            if (typeof showValidationError === 'function') {
+                                showValidationError('請填寫所有必填欄位後再提交');
+                            }
+                            
+                            // 聚焦到第一個無效欄位
+                            const firstInvalid = form.querySelector(':invalid');
+                            if (firstInvalid) {
+                                firstInvalid.focus();
+                                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
                         }
                         form.classList.add('was-validated');
                     }, false);

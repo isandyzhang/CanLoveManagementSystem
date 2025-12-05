@@ -6,19 +6,12 @@
 
 <div class="card bg-white dark:bg-slate-900 rounded-xl shadow-card-lg border border-[#FDBA74] dark:border-slate-800">
     <div class="px-6 py-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-semibold text-slate-700 dark:text-slate-100">開案紀錄表詳細資料</h3>
-            <button type="button" id="closeOpeningDetails" class="btn btn--secondary">
-                <i class="bi bi-x-circle me-1"></i>關閉
-            </button>
-        </div>
-        
         <div class="mb-4 text-slate-600 dark:text-slate-400">
             <p>此審核項目為「開案紀錄表」。請點擊下方按鈕前往表單分頁進行編輯後再回到此頁通過/拒絕。</p>
         </div>
         
         <div class="mb-4">
-            <a class="btn bg-orange-400 hover:bg-orange-500 text-white" href="@Url.Action("Create","CaseOpening", new { caseId = caseId, step = "CaseDetail", mode = CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormMode.ReviewEdit })">
+            <a class="btn bg-orange-400 hover:bg-orange-500 text-white" href="@Url.Action("Review","CaseOpening", new { caseId = caseId, step = "CaseDetail" })">
                 <i class="bi bi-pencil me-1"></i>前往編輯開案資料
             </a>
         </div>
@@ -43,14 +36,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    // 關閉開案詳細資料
-    const closeBtn = document.getElementById('closeOpeningDetails');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            window.location.href = '@Url.Action("Review", "CaseOpening")';
-        });
-    }
-</script>
-
