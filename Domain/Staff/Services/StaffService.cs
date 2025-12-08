@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using CanLove_Backend.Infrastructure.Data.Contexts;
@@ -37,6 +38,7 @@ public class StaffService : IStaffService
                 ?? principal.FindFirst("name")?.Value,
             JobTitle = principal.FindFirst("jobTitle")?.Value,
             Department = principal.FindFirst("department")?.Value,
+            EmployeeId = await GenerateNextEmployeeIdAsync(),
             IsActive = true,
             CreatedAt = DateTimeExtensions.TaiwanTime,
             UpdatedAt = DateTimeExtensions.TaiwanTime,
@@ -113,6 +115,33 @@ public class StaffService : IStaffService
         staff.UpdatedAt = DateTimeExtensions.TaiwanTime;
 
         await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// 生成下一個遞增的員工編號（格式：001, 002, 003...）
+    /// </summary>
+    private async Task<string> GenerateNextEmployeeIdAsync()
+    {
+        // 查詢所有非 NULL 的 EmployeeId
+        var existingEmployeeIds = await _context.Staffs
+            .Where(s => s.EmployeeId != null && !s.Deleted)
+            .Select(s => s.EmployeeId!)
+            .ToListAsync();
+
+        int maxEmployeeId = 0;
+
+        // 找出所有可解析為數字的 EmployeeId 中的最大值
+        foreach (var employeeId in existingEmployeeIds)
+        {
+            // 移除前導零後解析為數字
+            if (int.TryParse(employeeId.TrimStart('0'), out int id) && id > maxEmployeeId)
+            {
+                maxEmployeeId = id;
+            }
+        }
+
+        // 返回下一個編號，格式為三位數（001, 002, 003...）
+        return (maxEmployeeId + 1).ToString("D3");
     }
 
     /// <summary>
