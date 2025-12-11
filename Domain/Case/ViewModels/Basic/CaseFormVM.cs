@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace CanLove_Backend.Domain.Case.ViewModels.Basic;
 
-public class CaseFormViewModel
+public class CaseFormVM
 {
     public CaseFormMode Mode { get; set; } = CaseFormMode.Create;
 
@@ -23,5 +23,3 @@ public class CaseFormViewModel
 
     public string? SubmitAction { get; set; }
 }
-
-

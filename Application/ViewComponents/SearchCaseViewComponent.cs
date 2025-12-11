@@ -15,7 +15,7 @@ public class SearchCaseViewComponent : ViewComponent
         string targetStep = "CaseDetail",
         bool autoLoad = false)
     {
-        var model = new SearchCaseViewModel
+        var model = new SearchCaseVM
         {
             Mode = mode,
             TargetAction = targetAction,
@@ -31,7 +31,7 @@ public class SearchCaseViewComponent : ViewComponent
 /// <summary>
 /// SearchCase ViewComponent 的 ViewModel
 /// </summary>
-public class SearchCaseViewModel
+public class SearchCaseVM
 {
     public string Mode { get; set; } = "Create";
     public string TargetAction { get; set; } = "Create";

@@ -1,6 +1,6 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
 @{
-    var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("Query", "CaseBasic");
+    var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("Query", "CaseBasicQuery");
     var isEditMode = ViewBag.IsEditMode as bool? ?? false;
 }
 

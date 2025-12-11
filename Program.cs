@@ -12,6 +12,7 @@ using CanLove_Backend.Infrastructure.Data.Contexts;
 using CanLove_Backend.Core.Extensions;
 using CanLove_Backend.Core.Authentication;
 using CanLove_Backend.Core.DataProtection;
+using CanLove_Backend.Core.Middleware;
 using CanLove_Backend.Domain.Case.Services.Basic;
 using CanLove_Backend.Domain.Case.Services.Opening;
 using CanLove_Backend.Domain.Case.Services.Opening.Steps;
@@ -37,6 +38,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 判斷是否為開發環境（用於條件式配置）
 var isDevelopment = builder.Environment.IsDevelopment();
+
+// ============================================================================
+// 0. 配置 Application Insights（Azure 日誌收集）
+// ============================================================================
+// Application Insights 用於在 Azure 上收集、分析和監控應用程式日誌
+// 如果設定了 ConnectionString，則啟用 Application Insights
+var appInsightsConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+if (!string.IsNullOrWhiteSpace(appInsightsConnectionString))
+{
+    builder.Services.AddApplicationInsightsTelemetry(options =>
+    {
+        options.ConnectionString = appInsightsConnectionString;
+    });
+    Console.WriteLine("[ApplicationInsights] 已啟用 Application Insights 遙測");
+}
+else
+{
+    Console.WriteLine("[ApplicationInsights] 未設定 ConnectionString，跳過 Application Insights 配置");
+}
 
 // ============================================================================
 // 1. 配置 Kestrel Web 伺服器
@@ -143,6 +163,10 @@ app.UseHttpsRedirection();
 // 5.3 靜態檔案（CSS、JS、圖片等）
 // 從 wwwroot 目錄提供靜態檔案
 app.UseStaticFiles();
+
+// 5.3.5 全局錯誤處理中介軟體
+// 必須在 UseRouting() 之前，以便捕獲所有路由中的異常
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // 5.4 路由
 // 必須在 UseAuthentication/UseAuthorization 之前
@@ -475,6 +499,16 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
         options.UseSqlServer(connectionString, sqlOptions =>
             sqlOptions.MigrationsAssembly("CanLove_Backend.Infrastructure.Data"));
     });
+    
+    // 註冊 DbContextFactory（用於並行操作時創建獨立的 DbContext 實例）
+    // 解決並行查詢時的 DbContext 並發衝突問題
+    // 注意：Factory 使用獨立的配置，不依賴已註冊的 Scoped DbContextOptions
+    builder.Services.AddDbContextFactory<CanLoveDbContext>((serviceProvider, options) =>
+    {
+        // 直接使用連接字串配置，不依賴已註冊的 DbContextOptions
+        options.UseSqlServer(connectionString, sqlOptions =>
+            sqlOptions.MigrationsAssembly("CanLove_Backend.Infrastructure.Data"));
+    }, ServiceLifetime.Scoped);
 }
 
 /// <summary>
@@ -500,6 +534,7 @@ static void RegisterApplicationServices(WebApplicationBuilder builder)
     // ========================================================================
     // 共用服務（所有模組都會用到）
     // ========================================================================
+    services.AddMemoryCache();                      // 記憶體快取服務（用於選項資料快取）
     services.AddScoped<OptionService>();           // 選項資料服務（下拉選單等）
     services.AddScoped<SchoolService>();            // 學校資料服務
     services.AddScoped<IStaffService, StaffService>(); // 員工服務（使用介面，方便測試）
@@ -511,10 +546,15 @@ static void RegisterApplicationServices(WebApplicationBuilder builder)
     // ========================================================================
     services.AddScoped<CaseService>(); // 個案服務
     services.AddScoped<CaseWizardOpenCaseService>(); // 個案開案流程主要協調服務
+    services.AddScoped<CaseInfoService>(); // 個案資訊服務（含快取機制）
+    services.AddScoped<CaseBasicValidationService>(); // 個案基本資料驗證服務
+    services.AddScoped<CaseBasicOptionsService>(); // 個案基本資料選項服務
+    services.AddScoped<CaseBasicPhotoService>(); // 個案基本資料照片處理服務
 
     // ========================================================================
     // CaseOpening 相關服務（開案流程的 7 個步驟）
     // ========================================================================
+    services.AddScoped<CaseOpeningValidationService>();   // 開案記錄驗證服務
     services.AddScoped<CaseDetailService>();              // 步驟 1：個案詳細資料
     services.AddScoped<SocialWorkerContentService>();     // 步驟 2：社會工作服務內容
     services.AddScoped<EconomicStatusService>();          // 步驟 3：經濟狀況評估

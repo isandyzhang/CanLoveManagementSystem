@@ -1,9 +1,10 @@
 @{
-    // 參數：inputId, inputName, caseIdFieldId, onSelectCallback
+    // 參數：inputId, inputName, caseIdFieldId, onSelectCallback, excludeWithOpeningRecord
     var inputId = ViewBag.CaseAutocompleteInputId as string ?? "caseAutocompleteInput";
     var inputName = ViewBag.CaseAutocompleteInputName as string ?? "caseAutocomplete";
     var caseIdFieldId = ViewBag.CaseAutocompleteCaseIdFieldId as string ?? "CaseId";
     var onSelectCallback = ViewBag.CaseAutocompleteOnSelectCallback as string ?? "";
+    var excludeWithOpeningRecord = ViewBag.CaseAutocompleteExcludeWithOpeningRecord as bool? ?? false;
 }
 
 <div class="mb-4">
@@ -17,7 +18,8 @@
             name="@inputName"
             class="input flex-1 focus:ring-orange-400 focus:border-orange-400 dark:bg-slate-800 dark:text-slate-100" 
             placeholder="請輸入個案編號、姓名或電話..." 
-            autocomplete="off" />
+            autocomplete="off"
+            data-exclude-with-opening-record="@(excludeWithOpeningRecord ? "true" : "false")" />
         <button 
             type="button" 
             id="@(inputId)SearchBtn" 
@@ -151,7 +153,12 @@
             
             try {
                 // 嘗試使用 CaseBasic 控制器路由
-                const res = await fetch(`/CaseBasic/SearchCases?query=${encodeURIComponent(query)}`);
+                // 檢查是否需要排除已有開案紀錄的個案（從 ViewBag 或 data 屬性取得）
+                const excludeWithOpeningRecord = searchInput.dataset.excludeWithOpeningRecord === 'true';
+                const url = excludeWithOpeningRecord 
+                    ? `/CaseBasicQuery/SearchCases?query=${encodeURIComponent(query)}&excludeWithOpeningRecord=true`
+                    : `/CaseBasicQuery/SearchCases?query=${encodeURIComponent(query)}`;
+                const res = await fetch(url);
                 
                 if (!res.ok) {
                     let errorText = '';

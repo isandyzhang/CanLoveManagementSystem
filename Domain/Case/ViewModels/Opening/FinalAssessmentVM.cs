@@ -7,7 +7,7 @@ namespace CanLove_Backend.Domain.Case.ViewModels.Opening
     /// <summary>
     /// 步驟7: 最後評估表視圖模型 (FinalAssessmentSummary 表格)
     /// </summary>
-    public class FinalAssessmentVM : ICaseWizardViewModel
+    public class FinalAssessmentVM : ICaseWizardVM
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;

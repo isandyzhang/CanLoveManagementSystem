@@ -7,7 +7,7 @@ namespace CanLove_Backend.Domain.Case.ViewModels.Opening
     /// <summary>
     /// 步驟2: 社會工作服務內容視圖模型 (CaseSocialWorkerContent 表格)
     /// </summary>
-    public class SocialWorkerContentVM : ICaseWizardViewModel
+    public class SocialWorkerContentVM : ICaseWizardVM
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;

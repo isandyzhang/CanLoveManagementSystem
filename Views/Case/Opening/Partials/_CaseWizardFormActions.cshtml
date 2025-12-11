@@ -1,4 +1,4 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Opening.ICaseWizardViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Opening.ICaseWizardVM
 @using CanLove_Backend.Domain.Case.ViewModels.Basic
 @using CanLove_Backend.Domain.Case.ViewModels.Opening
 
@@ -7,14 +7,14 @@
     var mode = Model.Mode;
     var caseId = Model.CaseId;
 
-    // 根據導航上下文決定使用哪個 action
+    // 根據導航上下文決定使用哪個 action 和 controller
     var navigationContext = ViewData["NavigationContext"] as string ?? "Create";
-    var actionName = navigationContext switch
+    var (actionName, controllerName) = navigationContext switch
     {
-        "Review" => "Review",
-        "ReadOnly" => "View",
-        "Edit" => "Edit",
-        _ => "Create"
+        "Review" => ("Review", "CaseOpeningReview"),
+        "ReadOnly" => ("View", "CaseOpeningQuery"),
+        "Edit" => ("Edit", "CaseOpeningCreateEdit"),
+        _ => ("Create", "CaseOpeningCreateEdit")  // Create
     };
 
     // 步驟名稱映射
@@ -33,10 +33,10 @@
     {
         if (stepNames.ContainsKey(s))
         {
-            return Url.Action(actionName, "CaseOpening", new { caseId = caseId, step = stepNames[s] }) ?? "#";
+            return Url.Action(actionName, controllerName, new { caseId = caseId, step = stepNames[s] }) ?? "#";
         }
         // 向後兼容：如果找不到映射，使用舊的 Step 方法
-        return Url.Action($"Step{s}", "CaseOpening", new { caseId = caseId, mode = mode }) ?? "#";
+        return Url.Action($"Step{s}", controllerName, new { caseId = caseId, mode = mode }) ?? "#";
     }
 }
 
@@ -50,13 +50,13 @@
         }
         else if (mode == CaseFormMode.Review)
         {
-            <a href="@Url.Action("Review", "CaseOpening")" class="btn btn--secondary w-full md:w-auto">
+            <a href="@Url.Action("Review", "CaseOpeningReview")" class="btn btn--secondary w-full md:w-auto">
                 <i class="fas fa-arrow-left me-1"></i>返回審核頁
             </a>
         }
         else if (mode == CaseFormMode.ReadOnly)
         {
-            <a href="@Url.Action("Query", "CaseOpening")" class="btn btn--secondary w-full md:w-auto">
+            <a href="@Url.Action("Query", "CaseOpeningQuery")" class="btn btn--secondary w-full md:w-auto">
                 <i class="fas fa-arrow-left me-1"></i>返回查詢頁
             </a>
         }
@@ -70,7 +70,7 @@
                 <button type="submit" class="btn w-full md:w-auto">
                     <i class="fas fa-save me-1"></i>儲存並繼續
                 </button>
-                <a asp-controller="CaseBasic" asp-action="Query" class="btn btn--secondary w-full md:w-auto">
+                <a asp-controller="CaseBasicQuery" asp-action="Query" class="btn btn--secondary w-full md:w-auto">
                     <i class="fas fa-times me-1"></i>取消
                 </a>
             }
@@ -80,7 +80,7 @@
                 <button type="submit" class="btn w-full md:w-auto">
                     <i class="bi bi-check-circle me-1"></i>提交審閱
                 </button>
-                <a asp-controller="CaseBasic" asp-action="Query" class="btn btn--secondary w-full md:w-auto">
+                <a asp-controller="CaseBasicQuery" asp-action="Query" class="btn btn--secondary w-full md:w-auto">
                     <i class="fas fa-times me-1"></i>取消
                 </a>
             }

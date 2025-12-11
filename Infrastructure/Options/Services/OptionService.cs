@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using CanLove_Backend.Infrastructure.Data.Contexts;
 using CanLove_Backend.Domain.Case.Shared.Models;
 using CanLove_Backend.Infrastructure.Options.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CanLove_Backend.Infrastructure.Options.Services;
 
@@ -11,24 +13,54 @@ namespace CanLove_Backend.Infrastructure.Options.Services;
 public class OptionService
 {
     private readonly CanLoveDbContext _context;
+    private readonly IDbContextFactory<CanLoveDbContext> _contextFactory;
+    private readonly IMemoryCache _cache;
+    private const int CacheExpirationMinutes = 30; // 快取過期時間：30分鐘
 
-    public OptionService(CanLoveDbContext context)
+    public OptionService(
+        CanLoveDbContext context,
+        IDbContextFactory<CanLoveDbContext> contextFactory,
+        IMemoryCache cache)
     {
         _context = context;
+        _contextFactory = contextFactory;
+        _cache = cache;
     }
 
     /// <summary>
-    /// 根據選項鍵值取得選項清單
+    /// 根據選項鍵值取得選項清單（含快取）
+    /// 使用獨立的 DbContext 實例以避免並發問題
     /// </summary>
     /// <param name="optionKey">選項鍵值 (例如: "GENDER", "CONTACT_RELATION")</param>
     /// <returns>選項清單</returns>
     public async Task<List<OptionSetValue>> GetOptionsByKeyAsync(string optionKey)
     {
-        return await _context.OptionSetValues
+        var cacheKey = $"OptionSet_{optionKey}";
+        
+        // 嘗試從快取取得
+        if (_cache.TryGetValue(cacheKey, out List<OptionSetValue>? cachedOptions) && cachedOptions != null)
+        {
+            return cachedOptions;
+        }
+
+        // 使用 Factory 創建獨立的 DbContext 實例
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var options = await context.OptionSetValues
             .Include(o => o.OptionSet)
             .Where(o => o.OptionSet.OptionKey == optionKey)
             .OrderBy(o => o.ValueCode)
+            .AsNoTracking()
             .ToListAsync();
+
+        // 存入快取
+        var cacheOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(CacheExpirationMinutes),
+            SlidingExpiration = TimeSpan.FromMinutes(10) // 滑動過期時間：10分鐘
+        };
+        _cache.Set(cacheKey, options, cacheOptions);
+
+        return options;
     }
 
     /// <summary>
@@ -136,5 +168,65 @@ public class OptionService
     public async Task<List<OptionSetValue>> GetStaffJobTitleOptionsAsync()
     {
         return await GetOptionsByKeyAsync("STAFF_JOB_TITLE");
+    }
+
+    /// <summary>
+    /// 取得家庭結構類型清單（含快取）
+    /// </summary>
+    public async Task<List<FamilyStructureType>> GetFamilyStructureTypesAsync()
+    {
+        const string cacheKey = "FamilyStructureTypes";
+        
+        // 嘗試從快取取得
+        if (_cache.TryGetValue(cacheKey, out List<FamilyStructureType>? cachedTypes) && cachedTypes != null)
+        {
+            return cachedTypes;
+        }
+
+        // 從資料庫查詢
+        var types = await _context.FamilyStructureTypes
+            .OrderBy(f => f.StructureTypeId)
+            .AsNoTracking()
+            .ToListAsync();
+
+        // 存入快取
+        var cacheOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(CacheExpirationMinutes),
+            SlidingExpiration = TimeSpan.FromMinutes(10) // 滑動過期時間：10分鐘
+        };
+        _cache.Set(cacheKey, types, cacheOptions);
+
+        return types;
+    }
+
+    /// <summary>
+    /// 取得國籍清單（含快取）
+    /// </summary>
+    public async Task<List<Nationality>> GetNationalitiesAsync()
+    {
+        const string cacheKey = "Nationalities";
+        
+        // 嘗試從快取取得
+        if (_cache.TryGetValue(cacheKey, out List<Nationality>? cachedNationalities) && cachedNationalities != null)
+        {
+            return cachedNationalities;
+        }
+
+        // 從資料庫查詢
+        var nationalities = await _context.Nationalities
+            .OrderBy(n => n.NationalityId)
+            .AsNoTracking()
+            .ToListAsync();
+
+        // 存入快取
+        var cacheOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(CacheExpirationMinutes),
+            SlidingExpiration = TimeSpan.FromMinutes(10) // 滑動過期時間：10分鐘
+        };
+        _cache.Set(cacheKey, nationalities, cacheOptions);
+
+        return nationalities;
     }
 }

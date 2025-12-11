@@ -2,8 +2,8 @@
     ViewData["Title"] = "查詢個案 - 個案基本資料";
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("查詢個案", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
+        ("查詢個案", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
         ("個案基本資料", string.Empty)
     };
 }
@@ -47,8 +47,8 @@
                             ViewBag.ShowActions = true;
                             ViewBag.ActionButtons = new List<(string Text, string Action, string Controller, string Class)>
                             {
-                                ("編輯", "EditItem", "CaseBasic", "btn-sm"),
-                                ("查看", "ViewItem", "CaseBasic", "btn-sm btn--secondary")
+                                ("編輯", "EditItem", "CaseBasicCreateEdit", "btn-sm"),
+                                ("查看", "ViewItem", "CaseBasicQuery", "btn-sm btn--secondary")
                             };
                             ViewBag.OnRowClick = "viewCaseDetails";
                             <div class="overflow-auto">
@@ -106,10 +106,10 @@
                                                 </td>
                                                 <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.CreatedAt"></datetime></td>
                                                 <td>
-                                                    <a href="@Url.Action("EditItem", "CaseBasic", new { id = item.CaseId })" class="btn btn-sm" onclick="event.stopPropagation();">
+                                                    <a href="@Url.Action("EditItem", "CaseBasicCreateEdit", new { id = item.CaseId })" class="btn btn-sm" onclick="event.stopPropagation();">
                                                         <i class="bi bi-pencil me-1"></i>編輯
                                                     </a>
-                                                    <a href="@Url.Action("ViewItem", "CaseBasic", new { id = item.CaseId })" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
+                                                    <a href="@Url.Action("ViewItem", "CaseBasicQuery", new { id = item.CaseId })" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
                                                         <i class="bi bi-eye me-1"></i>查看
                                                     </a>
                                                 </td>
@@ -298,10 +298,10 @@
                         </td>
                         <td class="text-slate-900 dark:text-slate-100">${escapeHtml(createdAtStr)}</td>
                         <td>
-                            <a href="@Url.Action("EditItem", "CaseBasic")?id=${caseId}" class="btn btn-sm" onclick="event.stopPropagation();">
+                            <a href="@Url.Action("EditItem", "CaseBasicCreateEdit")?id=${caseId}" class="btn btn-sm" onclick="event.stopPropagation();">
                                 <i class="bi bi-pencil me-1"></i>編輯
                             </a>
-                            <a href="@Url.Action("ViewItem", "CaseBasic")?id=${caseId}" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
+                            <a href="@Url.Action("ViewItem", "CaseBasicQuery")?id=${caseId}" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
                                 <i class="bi bi-eye me-1"></i>查看
                             </a>
                         </td>
@@ -315,7 +315,7 @@
                 
                 loading.classList.remove('hidden');
                 try {
-                    const resp = await fetch('/Case/SearchCases');
+                    const resp = await fetch('/CaseBasicQuery/SearchCases');
                     const data = await resp.json();
                     loading.classList.add('hidden');
                     if (data.success && data.cases) {
@@ -344,7 +344,7 @@
                 loading.classList.remove('hidden');
                 timer = setTimeout(async () => {
                     try {
-                        const resp = await fetch(`/Case/SearchCases?query=${encodeURIComponent(q)}`);
+                        const resp = await fetch(`/CaseBasicQuery/SearchCases?query=${encodeURIComponent(q)}`);
                         const data = await resp.json();
                         loading.classList.add('hidden');
                         if (data.success && data.cases) {
@@ -370,7 +370,7 @@
             // 查看個案詳細資料
             window.viewCaseDetails = function(caseId) {
                 if (caseId) {
-                    window.location.href = '@Url.Action("ViewItem", "CaseBasic")?id=' + encodeURIComponent(caseId);
+                    window.location.href = '@Url.Action("ViewItem", "CaseBasicQuery")?id=' + encodeURIComponent(caseId);
                 }
             };
 

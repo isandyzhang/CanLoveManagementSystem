@@ -54,7 +54,7 @@ public class CaseWizardOpenCaseService
     /// <summary>
     /// 建立新個案
     /// </summary>
-    public async Task<(bool Success, string Message)> CreateCaseAsync(CaseCreateViewModel model)
+    public async Task<(bool Success, string Message)> CreateCaseAsync(CaseCreateVM model)
     {
         try
         {

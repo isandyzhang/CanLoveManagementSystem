@@ -7,7 +7,7 @@ namespace CanLove_Backend.Domain.Case.ViewModels.Opening
     /// <summary>
     /// 步驟6: 情緒評估視圖模型 (CaseEQemotionalEvaluation 表格)
     /// </summary>
-    public class EmotionalEvaluationVM : ICaseWizardViewModel
+    public class EmotionalEvaluationVM : ICaseWizardVM
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;

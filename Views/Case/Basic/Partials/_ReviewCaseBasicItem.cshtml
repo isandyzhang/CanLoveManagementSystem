@@ -1,4 +1,4 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
 @{
     var caseId = Model?.Case?.CaseId ?? string.Empty;
     var caseName = Model?.Case?.Name ?? string.Empty;
@@ -15,7 +15,7 @@
         <partial name="~/Views/Case/Basic/Partials/_CaseFormFields.cshtml" model="Model" />
         
         <div class="mt-6 flex justify-end gap-3">
-            <form method="post" asp-action="ReviewItemDecision" asp-controller="CaseBasic" class="inline prevent-double-submit">
+            <form method="post" asp-action="ReviewItemDecision" asp-controller="CaseBasicReview" class="inline prevent-double-submit">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="caseId" value="@caseId" />
                 <input type="hidden" name="approved" value="true" />
@@ -23,7 +23,7 @@
                     <i class="bi bi-check-circle me-1"></i>通過
                 </button>
             </form>
-            <form method="post" asp-action="ReviewItemDecision" asp-controller="CaseBasic" class="inline prevent-double-submit">
+            <form method="post" asp-action="ReviewItemDecision" asp-controller="CaseBasicReview" class="inline prevent-double-submit">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="caseId" value="@caseId" />
                 <input type="hidden" name="approved" value="false" />
@@ -41,7 +41,7 @@
         const closeBtn = document.getElementById('closeCaseDetails');
         if (closeBtn) {
             closeBtn.addEventListener('click', function() {
-                window.location.href = '@Url.Action("Review", "CaseBasic")';
+                window.location.href = '@Url.Action("Review", "CaseBasicReview")';
             });
         }
     })();

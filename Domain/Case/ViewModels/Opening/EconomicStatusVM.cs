@@ -7,7 +7,7 @@ namespace CanLove_Backend.Domain.Case.ViewModels.Opening
     /// <summary>
     /// 步驟3: 經濟狀況評估視圖模型 (CaseFQeconomicStatus 表格)
     /// </summary>
-    public class EconomicStatusVM : ICaseWizardViewModel
+    public class EconomicStatusVM : ICaseWizardVM
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;

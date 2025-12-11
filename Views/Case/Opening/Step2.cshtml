@@ -6,7 +6,7 @@
     // 根據導航上下文動態設置標題和麵包屑
     var navigationContext = ViewData["NavigationContext"] as string ?? "Create";
     var breadcrumbParent = ViewData["BreadcrumbParent"] as string ?? "新增個案";
-    var breadcrumbParentUrl = ViewData["BreadcrumbParentUrl"] as string ?? (Url.Action("Create", "CaseBasic") ?? string.Empty);
+    var breadcrumbParentUrl = ViewData["BreadcrumbParentUrl"] as string ?? (Url.Action("Create", "CaseBasicCreateEdit") ?? string.Empty);
     var currentPageTitle = navigationContext switch
     {
         "Review" => "審核開案紀錄表",
@@ -18,7 +18,7 @@
     ViewData["Title"] = currentPageTitle;
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
         (breadcrumbParent, breadcrumbParentUrl),
         (currentPageTitle, string.Empty)
     };

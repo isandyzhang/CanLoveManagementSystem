@@ -1,12 +1,12 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseWizard_S0_SelectCase_ViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Opening.CaseWizard_S0_SelectCase_VM
 
 @{
     ViewData["Title"] = "開案紀錄表 - 選擇個案";
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("新增個案", Url.Action("Create", "CaseBasic") ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
+        ("新增個案", Url.Action("Create", "CaseBasicCreateEdit") ?? string.Empty),
         ("開案紀錄表", string.Empty)
     };
 }
@@ -59,6 +59,7 @@
                             ViewBag.CaseAutocompleteInputName = "caseAutocomplete";
                             ViewBag.CaseAutocompleteCaseIdFieldId = "CaseId";
                             ViewBag.CaseAutocompleteOnSelectCallback = "onCaseSelected";
+                            ViewBag.CaseAutocompleteExcludeWithOpeningRecord = true; // 新增開案紀錄時，排除已有開案紀錄的個案
                         }
                         <partial name="~/Views/Shared/Partials/_CaseAutocomplete.cshtml" />
                         
@@ -69,7 +70,7 @@
 
                         <!-- 表單操作按鈕 -->
                         <div class="flex justify-end gap-3 mt-6">
-                            <a href="@Url.Action("Query", "CaseOpening")" class="btn btn-secondary">
+                            <a href="@Url.Action("Query", "CaseOpeningQuery")" class="btn btn-secondary">
                                 <i class="bi bi-x-circle me-1"></i>取消
                             </a>
                             <button type="submit" id="nextButton" class="btn btn-primary" disabled>

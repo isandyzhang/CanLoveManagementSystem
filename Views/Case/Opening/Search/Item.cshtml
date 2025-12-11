@@ -2,8 +2,8 @@
     ViewData["Title"] = "查看開案紀錄表";
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("查詢個案", Url.Action("Query", "CaseOpening") ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
+        ("查詢個案", Url.Action("Query", "CaseOpeningQuery") ?? string.Empty),
         ("查看開案紀錄表", string.Empty)
     };
     
@@ -14,7 +14,7 @@
 {
     <script>
         // 直接導向 Step1（只讀模式）
-        window.location.href = '@Url.Action("View", "CaseOpening", new { caseId = caseId, step = "CaseDetail" })';
+        window.location.href = '@Url.Action("View", "CaseOpeningQuery", new { caseId = caseId, step = "CaseDetail" })';
     </script>
 }
 else
@@ -25,7 +25,7 @@ else
                 <div class="px-6 py-6">
                     <div class="text-center">
                         <p class="text-slate-600 dark:text-slate-400">找不到指定的開案記錄</p>
-                        <a href="@Url.Action("Query", "CaseOpening")" class="btn btn--secondary mt-4">
+                        <a href="@Url.Action("Query", "CaseOpeningQuery")" class="btn btn--secondary mt-4">
                             <i class="bi bi-arrow-left me-1"></i>返回查詢列表
                         </a>
                     </div>

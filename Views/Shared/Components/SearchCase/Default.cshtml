@@ -1,4 +1,4 @@
-@model CanLove_Backend.Application.ViewComponents.SearchCaseViewModel
+@model CanLove_Backend.Application.ViewComponents.SearchCaseVM
 
 @{
     // 根據 mode 決定按鈕文字
@@ -95,8 +95,8 @@
         searchTimeout = setTimeout(async () => {
             try {
                 const url = query === '' && autoLoad 
-                    ? '/Case/SearchCases' 
-                    : `/Case/SearchCases?query=${encodeURIComponent(query)}`;
+                    ? '/CaseBasicQuery/SearchCases' 
+                    : `/CaseBasicQuery/SearchCases?query=${encodeURIComponent(query)}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 searchLoading.classList.add('hidden');

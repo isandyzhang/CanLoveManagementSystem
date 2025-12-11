@@ -1,11 +1,11 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
 
 @{
     ViewData["Title"] = "審核個案 - 個案基本資料";
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("個案審核", Url.Action("Review", "CaseBasic") ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
+        ("個案審核", Url.Action("Review", "CaseBasicReview") ?? string.Empty),
         ("審核個案", string.Empty)
     };
 }
@@ -16,11 +16,11 @@
             // 審核模式：避免卡片內再出現額外標題與關閉按鈕，僅保留表單本身的「個案基本資料表」抬頭
             ViewBag.CardTitle = "";
             ViewBag.ShowCloseButton = false;
-            ViewBag.CloseButtonUrl = Url.Action("Review", "CaseBasic");
+            ViewBag.CloseButtonUrl = Url.Action("Review", "CaseBasicReview");
             ViewBag.ActionButtons = new List<(string Text, string Action, string Controller, string Class, string Icon, bool IsForm, string FormAction)>
             {
-                ("通過", "ReviewItemDecision", "CaseBasic", "btn bg-green-400 hover:bg-green-500 text-white", "bi bi-check-circle", true, "ReviewItemDecision"),
-                ("不通過", "ReviewItemDecision", "CaseBasic", "btn bg-red-400 hover:bg-red-500 text-white", "bi bi-x-circle", true, "ReviewItemDecision")
+                ("通過", "ReviewItemDecision", "CaseBasicReview", "btn bg-green-400 hover:bg-green-500 text-white", "bi bi-check-circle", true, "ReviewItemDecision"),
+                ("不通過", "ReviewItemDecision", "CaseBasicReview", "btn bg-red-400 hover:bg-red-500 text-white", "bi bi-x-circle", true, "ReviewItemDecision")
             };
         }
         <partial name="~/Views/Case/Basic/Partials/_CaseDetailCard.cshtml" model="Model" />

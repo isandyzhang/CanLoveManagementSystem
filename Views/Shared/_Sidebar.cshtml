@@ -82,13 +82,13 @@
                         isReviewAction = isCaseSection && (string.Equals(currentAction, "Review", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "ReviewItem", StringComparison.OrdinalIgnoreCase));
                     }
                 }
-                <a class="sidebar-link @(isCreateAction ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Create","CaseBasic")">
+                <a class="sidebar-link @(isCreateAction ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Create","CaseBasicCreateEdit")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@createCaseName</span>
                         </a>
-                <a class="sidebar-link @(isQueryAction ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Query","CaseBasic")">
+                <a class="sidebar-link @(isQueryAction ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Query","CaseBasicQuery")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@queryCaseName</span>
                 </a>
-                <a class="sidebar-link @(isReviewAction ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Review","CaseBasic")">
+                <a class="sidebar-link @(isReviewAction ? "sidebar-link--active" : string.Empty)" href="@Url.Action("Review","CaseBasicReview")">
                     <span class="sidebar-link__label text-slate-900 dark:text-slate-100">@caseReviewName</span>
                 </a>
             </nav>

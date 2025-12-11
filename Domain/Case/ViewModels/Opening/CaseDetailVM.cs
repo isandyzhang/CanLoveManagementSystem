@@ -7,7 +7,7 @@ namespace CanLove_Backend.Domain.Case.ViewModels.Opening
     /// <summary>
     /// 步驟1: 個案詳細資料視圖模型 (CaseDetail 表格)
     /// </summary>
-    public class CaseDetailVM : ICaseWizardViewModel
+    public class CaseDetailVM : ICaseWizardVM
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;

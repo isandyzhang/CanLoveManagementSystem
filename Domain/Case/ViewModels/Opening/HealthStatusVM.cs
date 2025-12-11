@@ -7,7 +7,7 @@ namespace CanLove_Backend.Domain.Case.ViewModels.Opening
     /// <summary>
     /// 步驟4: 健康狀況評估視圖模型 (CaseHQhealthStatus 表格)
     /// </summary>
-    public class HealthStatusVM : ICaseWizardViewModel
+    public class HealthStatusVM : ICaseWizardVM
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;

@@ -1,10 +1,10 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
 @{
     var caseId = Model?.Case?.CaseId ?? string.Empty;
     var caseName = Model?.Case?.Name ?? string.Empty;
     var cardTitle = ViewBag.CardTitle as string ?? "個案詳細資料";
     var showCloseButton = ViewBag.ShowCloseButton as bool? ?? true;
-    var closeButtonUrl = ViewBag.CloseButtonUrl as string ?? Url.Action("Query", "CaseBasic");
+    var closeButtonUrl = ViewBag.CloseButtonUrl as string ?? Url.Action("Query", "CaseBasicQuery");
     var actionButtons = ViewBag.ActionButtons as List<(string Text, string Action, string Controller, string Class, string Icon, bool IsForm, string FormAction)> ?? new List<(string, string, string, string, string, bool, string)>();
 }
 

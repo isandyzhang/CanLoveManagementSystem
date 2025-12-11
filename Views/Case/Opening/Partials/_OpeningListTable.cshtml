@@ -118,19 +118,19 @@
                                                 switch (status)
                                                 {
                                                     case "Draft":
-                                                        buttons.Add(("編輯", "Edit", "CaseOpening", "btn-sm"));
-                                                        buttons.Add(("查看", "View", "CaseOpening", "btn-sm btn--secondary"));
+                                                        buttons.Add(("編輯", "Edit", "CaseOpeningCreateEdit", "btn-sm"));
+                                                        buttons.Add(("查看", "View", "CaseOpeningQuery", "btn-sm btn--secondary"));
                                                         break;
                                                     case "PendingReview":
-                                                        buttons.Add(("檢視", "View", "CaseOpening", "btn-sm"));
+                                                        buttons.Add(("檢視", "View", "CaseOpeningQuery", "btn-sm"));
                                                         break;
                                                     case "Rejected":
-                                                        buttons.Add(("重送", "Resubmit", "CaseOpening", "btn-sm"));
-                                                        buttons.Add(("檢視", "View", "CaseOpening", "btn-sm btn--secondary"));
+                                                        buttons.Add(("重送", "Resubmit", "CaseOpeningCreateEdit", "btn-sm"));
+                                                        buttons.Add(("檢視", "View", "CaseOpeningQuery", "btn-sm btn--secondary"));
                                                         break;
                                                     case "Approved":
                                                     case "Closed":
-                                                        buttons.Add(("檢視", "View", "CaseOpening", "btn-sm"));
+                                                        buttons.Add(("檢視", "View", "CaseOpeningQuery", "btn-sm"));
                                                         break;
                                                 }
                                             }
@@ -272,19 +272,19 @@
                                             switch (status)
                                             {
                                                 case "Draft":
-                                                    buttons.Add(("編輯", "Edit", "CaseOpening", "btn-sm"));
-                                                    buttons.Add(("查看", "View", "CaseOpening", "btn-sm btn--secondary"));
+                                                    buttons.Add(("編輯", "Edit", "CaseOpeningCreateEdit", "btn-sm"));
+                                                    buttons.Add(("查看", "View", "CaseOpeningQuery", "btn-sm btn--secondary"));
                                                     break;
                                                 case "PendingReview":
-                                                    buttons.Add(("檢視", "View", "CaseOpening", "btn-sm"));
+                                                    buttons.Add(("檢視", "View", "CaseOpeningQuery", "btn-sm"));
                                                     break;
                                                 case "Rejected":
-                                                    buttons.Add(("重送", "Resubmit", "CaseOpening", "btn-sm"));
-                                                    buttons.Add(("檢視", "View", "CaseOpening", "btn-sm btn--secondary"));
+                                                    buttons.Add(("重送", "Resubmit", "CaseOpeningCreateEdit", "btn-sm"));
+                                                    buttons.Add(("檢視", "View", "CaseOpeningQuery", "btn-sm btn--secondary"));
                                                     break;
                                                 case "Approved":
                                                 case "Closed":
-                                                    buttons.Add(("檢視", "View", "CaseOpening", "btn-sm"));
+                                                    buttons.Add(("檢視", "View", "CaseOpeningQuery", "btn-sm"));
                                                     break;
                                             }
                                         }

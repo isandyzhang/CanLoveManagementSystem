@@ -7,7 +7,7 @@ namespace CanLove_Backend.Domain.Case.ViewModels.Opening
     /// <summary>
     /// 步驟5: 學業表現評估視圖模型 (CaseIQacademicPerformance 表格)
     /// </summary>
-    public class AcademicPerformanceVM : ICaseWizardViewModel
+    public class AcademicPerformanceVM : ICaseWizardVM
     {
         [Required]
         public string CaseId { get; set; } = string.Empty;

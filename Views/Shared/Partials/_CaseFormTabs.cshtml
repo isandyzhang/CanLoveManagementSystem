@@ -14,11 +14,11 @@
             // 各分頁各自審核頁
             return tab switch
             {
-                "CaseBasic" => Url.Action("Review", "CaseBasic") ?? "#",
-                "CaseOpening" => Url.Action("Review", "CaseOpening") ?? "#",
+                "CaseBasic" => Url.Action("Review", "CaseBasicReview") ?? "#",
+                "CaseOpening" => Url.Action("Review", "CaseOpeningReview") ?? "#",
                 "CareVisitRecord" => Url.Action("Review", "CaseCareVisit") ?? "#",
                 "Consultation" => Url.Action("Review", "CaseConsultation") ?? "#",
-                _ => Url.Action("Review", "CaseBasic") ?? "#"
+                _ => Url.Action("Review", "CaseBasicReview") ?? "#"
             };
         }
         if (string.Equals(currentPage, "Search", System.StringComparison.OrdinalIgnoreCase))
@@ -26,21 +26,21 @@
             // 各分頁各自查詢頁
             return tab switch
             {
-                "CaseBasic" => Url.Action("Query", "CaseBasic") ?? "#",
-                "CaseOpening" => Url.Action("Query", "CaseOpening") ?? "#",
+                "CaseBasic" => Url.Action("Query", "CaseBasicQuery") ?? "#",
+                "CaseOpening" => Url.Action("Query", "CaseOpeningQuery") ?? "#",
                 "CareVisitRecord" => Url.Action("Query", "CaseCareVisit") ?? "#",
                 "Consultation" => Url.Action("Query", "CaseConsultation") ?? "#",
-                _ => Url.Action("Query", "CaseBasic") ?? "#"
+                _ => Url.Action("Query", "CaseBasicQuery") ?? "#"
             };
         }
         // Create 頁
         return tab switch
         {
-            "CaseBasic" => Url.Action("Create", "CaseBasic") ?? "#",
-            "CaseOpening" => Url.Action("Create", "CaseOpening") ?? "#",
+            "CaseBasic" => Url.Action("Create", "CaseBasicCreateEdit") ?? "#",
+            "CaseOpening" => Url.Action("Create", "CaseOpeningCreateEdit") ?? "#",
             "CareVisitRecord" => Url.Action("Create", "CaseCareVisit") ?? "#",
             "Consultation" => Url.Action("Create", "CaseConsultation") ?? "#",
-            _ => Url.Action("Create", "CaseBasic") ?? "#"
+            _ => Url.Action("Create", "CaseBasicCreateEdit") ?? "#"
         };
     }
 

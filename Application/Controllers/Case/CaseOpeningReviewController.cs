@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using CanLove_Backend.Infrastructure.Data.Contexts;
 using CanLove_Backend.Domain.Case.Models.Opening;
+using CanLove_Backend.Domain.Case.ViewModels.Basic;
+using CanLove_Backend.Domain.Case.Services.Opening;
+using CanLove_Backend.Domain.Case.Shared.Services;
 using CanLove_Backend.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,11 +12,15 @@ namespace CanLove_Backend.Application.Controllers.Case;
 /// <summary>
 /// 開案審核控制器：專責處理 CaseOpening 的審核流程
 /// </summary>
-public class CaseOpeningReviewController : Controller
+public class CaseOpeningReviewController : CaseOpeningBaseController
 {
     private readonly CanLoveDbContext _context;
 
-    public CaseOpeningReviewController(CanLoveDbContext context)
+    public CaseOpeningReviewController(
+        CanLoveDbContext context,
+        CaseOpeningValidationService validationService,
+        CaseInfoService caseInfoService)
+        : base(validationService, caseInfoService)
     {
         _context = context;
     }
@@ -69,6 +76,19 @@ public class CaseOpeningReviewController : Controller
         ViewBag.SubmitterNameMap = staffMap;
 
         return View("~/Views/Case/Opening/Review/Index.cshtml", openings);
+    }
+
+    /// <summary>
+    /// 審核開案紀錄表入口 - 使用語義化步驟名稱（Wizard 審核）
+    /// 重定向到 CaseOpeningCreateEditController 處理 Wizard 流程
+    /// </summary>
+    [HttpGet]
+    [Route("CaseOpening/Review/{step}")]
+    public IActionResult Review(string caseId, string step)
+    {
+        // 重定向到 CaseOpeningCreateEditController 的 Create 方法，但使用 Review 模式
+        // 注意：這裡使用 Create 方法，因為它會根據 navigationContext 處理不同的模式
+        return RedirectToAction("Create", "CaseOpeningCreateEdit", new { caseId, step, mode = CaseFormMode.Review });
     }
 
     /// <summary>
@@ -129,7 +149,7 @@ public class CaseOpeningReviewController : Controller
         // 驗證狀態必須是 Rejected
         if (opening.Status != "Rejected")
         {
-            TempData["ErrorMessage"] = $"此開案記錄狀態為「{opening.Status}」，無法重新送審。只有被拒絕的記錄可以重新送審。";
+            TempData["ErrorMessage"] = $"此開案記錄狀態為「{GetStatusText(opening.Status)}」，無法重新送審。只有被拒絕的記錄可以重新送審。";
             return RedirectToAction(nameof(Review));
         }
 

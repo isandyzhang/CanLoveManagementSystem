@@ -1,11 +1,11 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
 
 @{
     ViewData["Title"] = "查看個案基本資料";
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("查看個案", Url.Action("ViewItem", "CaseBasic", new { id = Model.Case.CaseId }) ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
+        ("查看個案", Url.Action("ViewItem", "CaseBasicQuery", new { id = Model.Case.CaseId }) ?? string.Empty),
         ("個案基本資料", string.Empty)
     };
 }
@@ -15,10 +15,10 @@
         @{
             ViewBag.CardTitle = "個案詳細資料";
             ViewBag.ShowCloseButton = true;
-            ViewBag.CloseButtonUrl = Url.Action("Query", "CaseBasic");
+            ViewBag.CloseButtonUrl = Url.Action("Query", "CaseBasicQuery");
             ViewBag.ActionButtons = new List<(string Text, string Action, string Controller, string Class, string Icon, bool IsForm, string FormAction)>
             {
-                ("編輯", "EditItem", "CaseBasic", "btn", "bi bi-pencil", false, "")
+                ("編輯", "EditItem", "CaseBasicCreateEdit", "btn", "bi bi-pencil", false, "")
             };
         }
         <partial name="~/Views/Case/Basic/Partials/_CaseDetailCard.cshtml" model="Model" />

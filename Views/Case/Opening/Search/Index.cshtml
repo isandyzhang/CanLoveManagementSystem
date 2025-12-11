@@ -2,8 +2,8 @@
     ViewData["Title"] = "查詢個案 - 開案紀錄表";
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("查詢個案", Url.Action("Query", "CaseOpening") ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
+        ("查詢個案", Url.Action("Query", "CaseOpeningQuery") ?? string.Empty),
         ("開案紀錄表", string.Empty)
     };
 }
@@ -53,8 +53,8 @@
                             ViewBag.DisableCardWrapper = true;
                             ViewBag.ActionButtons = new List<(string Text, string Action, string Controller, string Class)>
                             {
-                                ("編輯", "EditItem", "CaseOpening", "btn-sm"),
-                                ("查看", "SearchItem", "CaseOpening", "btn-sm btn--secondary")
+                                ("編輯", "EditItem", "CaseOpeningQuery", "btn-sm"),
+                                ("查看", "SearchItem", "CaseOpeningQuery", "btn-sm btn--secondary")
                             };
                             ViewBag.OnRowClick = "viewOpeningDetails";
 
@@ -215,7 +215,7 @@
             // 查看開案記錄詳細資料
             window.viewOpeningDetails = function (caseId) {
                 if (caseId) {
-                    window.location.href = '@Url.Action("SearchItem", "CaseOpening")?id=' + encodeURIComponent(caseId);
+                    window.location.href = '@Url.Action("SearchItem", "CaseOpeningQuery")?id=' + encodeURIComponent(caseId);
                 }
             }
             

@@ -6,8 +6,8 @@
     // 自訂麵包屑：個案管理 > 個案審核
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("個案審核", Url.Action("Review", "CaseBasic") ?? string.Empty)
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
+        ("個案審核", Url.Action("Review", "CaseBasicReview") ?? string.Empty)
     };
 }
 
@@ -40,7 +40,7 @@
         // 查看個案詳細資料（導向 ReviewItem）
         function viewCaseDetails(caseId) {
             if (caseId) {
-                window.location.href = '@Url.Action("ReviewItem", "CaseBasic")?id=' + encodeURIComponent(caseId);
+                window.location.href = '@Url.Action("ReviewItem", "CaseBasicReview")?id=' + encodeURIComponent(caseId);
             }
         }
     </script>

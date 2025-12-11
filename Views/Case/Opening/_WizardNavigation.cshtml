@@ -3,14 +3,14 @@
     var caseId = ViewBag.CaseId ?? "";
     var mode = ViewBag.Mode;
     
-    // 根據導航上下文決定使用哪個 action
+    // 根據導航上下文決定使用哪個 action 和 controller
     var navigationContext = ViewData["NavigationContext"] as string ?? "Create";
-    var actionName = navigationContext switch
+    var (actionName, controllerName) = navigationContext switch
     {
-        "Review" => "Review",
-        "ReadOnly" => "View",
-        "Edit" => "Edit",
-        _ => "Create"
+        "Review" => ("Review", "CaseOpeningReview"),
+        "ReadOnly" => ("View", "CaseOpeningQuery"),
+        "Edit" => ("Edit", "CaseOpeningCreateEdit"),
+        _ => ("Create", "CaseOpeningCreateEdit")  // Create
     };
     
     var steps = new List<(int StepNumber, string Title, string StepName)>
@@ -44,29 +44,35 @@
         // 在 Review 和 ReadOnly 模式下禁用步驟0
         var isStep0Disabled = step.StepNumber == 0 && (navigationContext == "Review" || navigationContext == "ReadOnly");
         
+        // 當步驟 0 且尚未選擇個案時，禁用步驟 1-7
+        var isStepDisabled = step.StepNumber > 0 && currentStep == 0 && string.IsNullOrWhiteSpace(caseId);
+        
+        // 判斷步驟是否應該被禁用
+        var shouldDisable = isStep0Disabled || isStepDisabled;
+        
         var baseClasses = "flex-1 min-w-[120px] px-4 py-3 rounded-lg text-center transition-colors border";
         var stateClasses = isActive 
             ? "bg-orange-50 border-orange-400 text-slate-900 font-semibold shadow-card-lg" 
             : isCompleted 
                 ? "bg-slate-50 border-slate-300 text-slate-600 hover:border-slate-400" 
                 : "bg-white border-slate-200 text-slate-500 hover:border-slate-300";
-        var disabledClasses = isStep0Disabled 
+        var disabledClasses = shouldDisable 
             ? "opacity-50 cursor-not-allowed bg-slate-100 border-slate-300 text-slate-400" 
             : "";
         
-        if (isStep0Disabled)
+        if (shouldDisable)
         {
             <span class="@baseClasses @stateClasses @disabledClasses">
                 <div class="flex items-center justify-center gap-2 mb-1">
                     <i class="bi bi-circle text-slate-300 text-xs"></i>
-                    <span class="text-xs font-medium">步驟 0</span>
+                    <span class="text-xs font-medium">@(step.StepNumber == 0 ? "步驟 0" : "步驟 " + step.StepNumber)</span>
                 </div>
                 <span class="block text-sm font-medium truncate">@step.Title</span>
             </span>
         }
         else
         {
-            <a href="@Url.Action(actionName, "CaseOpening", routeValues)"
+            <a href="@Url.Action(actionName, controllerName, routeValues)"
                class="@baseClasses @stateClasses @disabledClasses">
                 <div class="flex items-center justify-center gap-2 mb-1">
                     @if (isCompleted)

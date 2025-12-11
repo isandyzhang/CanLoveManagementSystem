@@ -2,7 +2,7 @@
     ViewData["Title"] = "審核開案紀錄表";
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
         ("個案審核", Url.Action("Review", "CaseOpeningReview") ?? string.Empty),
         ("審核開案紀錄表", string.Empty)
     };
@@ -14,7 +14,7 @@
 {
     <script>
         // 直接導向 Step1（審核模式）
-        window.location.href = '@Url.Action("Review", "CaseOpening", new { caseId = caseId, step = "CaseDetail" })';
+        window.location.href = '@Url.Action("Review", "CaseOpeningReview", new { caseId = caseId, step = "CaseDetail" })';
     </script>
 }
 else

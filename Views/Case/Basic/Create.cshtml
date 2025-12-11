@@ -1,12 +1,12 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
 
 @{
     ViewData["Title"] = "新增個案基本資料";
     // 自訂麵包屑：首頁 > 個案管理 > 新增個案 > 個案基本資料
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("新增個案", Url.Action("Create", "CaseBasic") ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
+        ("新增個案", Url.Action("Create", "CaseBasicCreateEdit") ?? string.Empty),
         ("個案基本資料", string.Empty)
     };
 }
@@ -17,7 +17,7 @@
         <partial name="~/Views/Shared/Partials/_CaseFormTabs.cshtml" />
         <div class="card bg-white dark:bg-slate-900 shadow-card-lg border rounded-xl border-[#9CCC65] dark:border-slate-700 mt-3">
             <div class="px-6 py-6">
-                <form asp-controller="CaseBasic" asp-action="Create" method="post" enctype="multipart/form-data" class="prevent-double-submit">
+                <form asp-controller="CaseBasicCreateEdit" asp-action="Create" method="post" enctype="multipart/form-data" class="prevent-double-submit">
                     <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
                     <partial name="~/Views/Case/Basic/Partials/_CaseFormFields.cshtml" model="Model" />
                     <partial name="~/Views/Shared/Partials/_CaseFormActions.cshtml" model="Model" />

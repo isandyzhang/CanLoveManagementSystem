@@ -1,12 +1,12 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormViewModel
+@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
 
 @{
     ViewData["Title"] = "編輯個案基本資料";
     // 自訂麵包屑：首頁 > 個案管理 > 編輯個案 > 個案基本資料
     ViewData["Breadcrumbs"] = new List<(string Text, string Url)>
     {
-        ("個案管理", Url.Action("Query", "CaseBasic") ?? string.Empty),
-        ("編輯個案", Url.Action("Edit", "CaseBasic", new { id = Model.Case.CaseId }) ?? string.Empty),
+        ("個案管理", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
+        ("編輯個案", Url.Action("Edit", "CaseBasicCreateEdit", new { id = Model.Case.CaseId }) ?? string.Empty),
         ("個案基本資料", string.Empty)
     };
 }
@@ -15,13 +15,13 @@
     <div class="max-w-[1400px] mx-auto">
         <div class="card bg-white dark:bg-slate-900 shadow-card-lg border rounded-xl border-[#9CCC65] dark:border-slate-700">
             <div class="px-6 py-6">
-                <form asp-controller="CaseBasic" asp-action="Edit" method="post" enctype="multipart/form-data" class="prevent-double-submit">
+                <form asp-controller="CaseBasicCreateEdit" asp-action="Edit" method="post" enctype="multipart/form-data" class="prevent-double-submit">
                     <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
                     <input type="hidden" asp-for="Case.CaseId" />
                     <partial name="~/Views/Case/Basic/Partials/_CaseFormFields.cshtml" model="Model" />
                     @{
                         ViewBag.IsEditMode = true;
-                        ViewBag.ReturnUrl = Url.Action("Query", "CaseBasic");
+                        ViewBag.ReturnUrl = Url.Action("Query", "CaseBasicQuery");
                     }
                     <partial name="~/Views/Shared/Partials/_CaseFormActions.cshtml" model="Model" />
                 </form>
