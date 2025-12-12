@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using CanLove_Backend.Domain.Case.Models.Basic;
@@ -229,11 +229,21 @@ public partial class CanLoveDbContext : DbContext
             entity.Property(e => e.LockedAt).HasColumnName("locked_at");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.Deleted)
+                .HasDefaultValue(false)
+                .HasColumnName("deleted");
+            entity.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+            entity.Property(e => e.DeletedBy)
+                .HasMaxLength(30)
+                .HasColumnName("deleted_by");
 
             entity.HasOne(d => d.Case).WithOne()
                 .HasForeignKey<CaseOpening>(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CaseOpening_Case");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
 

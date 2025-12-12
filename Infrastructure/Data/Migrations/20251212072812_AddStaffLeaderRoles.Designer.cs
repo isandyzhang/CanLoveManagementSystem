@@ -4,6 +4,7 @@ using CanLove_Backend.Infrastructure.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CanLove_Backend.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(CanLoveDbContext))]
-    partial class CanLoveDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251212072812_AddStaffLeaderRoles")]
+    partial class AddStaffLeaderRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,7 +173,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
                     b.HasIndex(new[] { "IdNumber" }, "UQ__Cases__D58CDE11C0544CB6")
                         .IsUnique();
 
-                    b.ToTable("Cases", null, t =>
+                    b.ToTable("Cases", t =>
                         {
                             t.HasTrigger("TR_Cases_UpdateTime");
                         });
@@ -243,7 +246,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
 
                     b.HasIndex(new[] { "ConsultationDatetime" }, "IX_CaseConsultationRecords_consultation_datetime");
 
-                    b.ToTable("CaseConsultationRecords", (string)null);
+                    b.ToTable("CaseConsultationRecords");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Domain.Case.Models.Opening.CaseDetail", b =>
@@ -522,7 +525,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
 
                     b.HasIndex("MemberTypeValueId");
 
-                    b.ToTable("CaseFamilyMembers", (string)null);
+                    b.ToTable("CaseFamilyMembers");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Domain.Case.Models.Opening.CaseFamilyMemberNote", b =>
@@ -583,7 +586,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
 
                     b.HasIndex("MemberTypeValueId");
 
-                    b.ToTable("CaseFamilyMemberNotes", (string)null);
+                    b.ToTable("CaseFamilyMemberNotes");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Domain.Case.Models.Opening.CaseFamilySpecialStatus", b =>
@@ -917,6 +920,21 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
+                    b.Property<bool>("Deleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("deleted");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("deleted_by");
+
                     b.Property<bool?>("IsLocked")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -1166,7 +1184,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
 
                     b.HasIndex("ServiceTypeValueId");
 
-                    b.ToTable("CaseSocialWorkerServices", (string)null);
+                    b.ToTable("CaseSocialWorkerServices");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Domain.Case.Models.Opening.FinalAssessmentSummary", b =>
@@ -1259,7 +1277,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
                     b.HasIndex(new[] { "CityName" }, "UQ__Cities__1AA4F7B590443F24")
                         .IsUnique();
 
-                    b.ToTable("Cities", (string)null);
+                    b.ToTable("Cities");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Domain.Case.Shared.Models.District", b =>
@@ -1289,7 +1307,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
                     b.HasIndex(new[] { "DistrictName" }, "UQ__District__9E05AFF9CEDD6473")
                         .IsUnique();
 
-                    b.ToTable("Districts", (string)null);
+                    b.ToTable("Districts");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Domain.Case.Shared.Models.School", b =>
@@ -1319,7 +1337,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
                     b.HasIndex(new[] { "SchoolName" }, "UQ__Schools__007188191EFA6D19")
                         .IsUnique();
 
-                    b.ToTable("Schools", (string)null);
+                    b.ToTable("Schools");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Domain.Staff.Models.Staff", b =>
@@ -1427,7 +1445,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
 
                     b.HasKey("StaffId");
 
-                    b.ToTable("Staffs", (string)null);
+                    b.ToTable("Staffs");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Infrastructure.Data.Audit.DataChangeLog", b =>
@@ -1731,7 +1749,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
                     b.HasIndex(new[] { "StructureCode" }, "UQ__FamilySt__84CB930AE64C5F03")
                         .IsUnique();
 
-                    b.ToTable("FamilyStructureTypes", (string)null);
+                    b.ToTable("FamilyStructureTypes");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Infrastructure.Options.Models.Nationality", b =>
@@ -1764,7 +1782,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
                     b.HasIndex(new[] { "NationalityCode" }, "UQ__National__A22D2FE5AD603ECB")
                         .IsUnique();
 
-                    b.ToTable("Nationalities", (string)null);
+                    b.ToTable("Nationalities");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Infrastructure.Options.Models.OptionSet", b =>
@@ -1794,7 +1812,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
                     b.HasIndex(new[] { "OptionKey" }, "UQ__OptionSe__C54F5DD694F6E72D")
                         .IsUnique();
 
-                    b.ToTable("OptionSets", (string)null);
+                    b.ToTable("OptionSets");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Infrastructure.Options.Models.OptionSetValue", b =>
@@ -1827,7 +1845,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
 
                     b.HasIndex("OptionSetId");
 
-                    b.ToTable("OptionSetValues", (string)null);
+                    b.ToTable("OptionSetValues");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Infrastructure.Storage.Blob.BlobStorage", b =>
@@ -1934,7 +1952,7 @@ namespace CanLove_Backend.Infrastructure.Data.Migrations
 
                     b.HasIndex("UploadedBy");
 
-                    b.ToTable("BlobStorage", (string)null);
+                    b.ToTable("BlobStorage");
                 });
 
             modelBuilder.Entity("CanLove_Backend.Domain.Case.Models.Basic.Case", b =>

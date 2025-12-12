@@ -12,17 +12,14 @@ namespace CanLove_Backend.Infrastructure.Options.Services;
 /// </summary>
 public class OptionService
 {
-    private readonly CanLoveDbContext _context;
     private readonly IDbContextFactory<CanLoveDbContext> _contextFactory;
     private readonly IMemoryCache _cache;
     private const int CacheExpirationMinutes = 30; // 快取過期時間：30分鐘
 
     public OptionService(
-        CanLoveDbContext context,
         IDbContextFactory<CanLoveDbContext> contextFactory,
         IMemoryCache cache)
     {
-        _context = context;
         _contextFactory = contextFactory;
         _cache = cache;
     }
@@ -148,9 +145,11 @@ public class OptionService
     /// </summary>
     public async Task<List<string>> GetAllOptionKeysAsync()
     {
-        return await _context.OptionSets
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        return await context.OptionSets
             .Select(o => o.OptionKey)
             .OrderBy(o => o)
+            .AsNoTracking()
             .ToListAsync();
     }
 
@@ -183,8 +182,9 @@ public class OptionService
             return cachedTypes;
         }
 
-        // 從資料庫查詢
-        var types = await _context.FamilyStructureTypes
+        // 從資料庫查詢（使用獨立 DbContext 以避免並發問題）
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var types = await context.FamilyStructureTypes
             .OrderBy(f => f.StructureTypeId)
             .AsNoTracking()
             .ToListAsync();
@@ -213,8 +213,9 @@ public class OptionService
             return cachedNationalities;
         }
 
-        // 從資料庫查詢
-        var nationalities = await _context.Nationalities
+        // 從資料庫查詢（使用獨立 DbContext 以避免並發問題）
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var nationalities = await context.Nationalities
             .OrderBy(n => n.NationalityId)
             .AsNoTracking()
             .ToListAsync();

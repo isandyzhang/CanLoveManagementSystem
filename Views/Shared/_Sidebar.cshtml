@@ -1,10 +1,9 @@
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
-    bool isCaseSection = string.Equals(currentController, "CaseBasic", StringComparison.OrdinalIgnoreCase) 
-        || string.Equals(currentController, "CaseOpening", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(currentController, "CaseCareVisit", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(currentController, "CaseConsultation", StringComparison.OrdinalIgnoreCase);
+    // 個案模組的控制器命名多樣（CaseBasicQuery / CaseOpeningQuery / CaseBasicCreateEdit...）
+    // 這裡用 prefix 判斷避免漏掉，確保 sidebar 會正確展開/高亮
+    bool isCaseSection = currentController.StartsWith("Case", StringComparison.OrdinalIgnoreCase);
     bool isSupplySection = string.Equals(currentController, "Supply", StringComparison.OrdinalIgnoreCase);
     bool isAttendanceSection = string.Equals(currentController, "Attendance", StringComparison.OrdinalIgnoreCase);
     
@@ -71,14 +70,21 @@
                     {
                         // 使用 ViewData 中的上下文
                         isCreateAction = string.Equals(sidebarCurrentPage, "Create", StringComparison.OrdinalIgnoreCase);
-                        isQueryAction = string.Equals(sidebarCurrentPage, "Query", StringComparison.OrdinalIgnoreCase);
+                        // 查詢頁目前可能使用 Query 或 Search（例如列表/搜尋畫面）
+                        isQueryAction =
+                            string.Equals(sidebarCurrentPage, "Query", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(sidebarCurrentPage, "Search", StringComparison.OrdinalIgnoreCase);
                         isReviewAction = string.Equals(sidebarCurrentPage, "Review", StringComparison.OrdinalIgnoreCase);
                     }
                     else
                     {
                         // 根據 action 名稱判斷
                         isCreateAction = isCaseSection && (string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "Step0", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "Step1", StringComparison.OrdinalIgnoreCase));
-                        isQueryAction = isCaseSection && (string.Equals(currentAction, "Query", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "Search", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "View", StringComparison.OrdinalIgnoreCase));
+                        // 查詢相關 action 命名可能包含 Query / Search / View（含 ViewItem / ViewDetails / SearchCases...）
+                        isQueryAction = isCaseSection &&
+                            (string.Equals(currentAction, "Query", StringComparison.OrdinalIgnoreCase) ||
+                             currentAction.Contains("Search", StringComparison.OrdinalIgnoreCase) ||
+                             currentAction.Contains("View", StringComparison.OrdinalIgnoreCase));
                         isReviewAction = isCaseSection && (string.Equals(currentAction, "Review", StringComparison.OrdinalIgnoreCase) || string.Equals(currentAction, "ReviewItem", StringComparison.OrdinalIgnoreCase));
                     }
                 }

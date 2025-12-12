@@ -127,6 +127,12 @@
                                                                 <i class="bi bi-pencil-square text-lg"></i>
                                                             </a>
                                                         }
+                                                        <button type="button" 
+                                                                class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                                                title="刪除"
+                                                                onclick="confirmDeleteOpening('@item.CaseId', '@(item.Case?.Name ?? string.Empty)')">
+                                                            <i class="bi bi-trash text-lg"></i>
+                                                        </button>
                                                     </div>
                                                 </td>
                                                 <td class="text-slate-900 dark:text-slate-100">
@@ -163,6 +169,12 @@
         </div>
     </div>
 </div>
+
+<!-- 引入確認 Modal -->
+<partial name="~/Views/Shared/Partials/_ConfirmModal.cshtml" />
+
+<!-- 引入 Toast 提示組件 -->
+<partial name="~/Views/Shared/Partials/_Toast.cshtml" />
 
 @section Scripts {
     <script>
@@ -255,6 +267,12 @@
                                    title="編輯">
                                     <i class="bi bi-pencil-square text-lg"></i>
                                 </a>` : ''}
+                                <button type="button"
+                                        class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                        title="刪除"
+                                        onclick="confirmDeleteOpening('${caseId}', '${caseName.replace(/'/g, "\\'")}')">
+                                    <i class="bi bi-trash text-lg"></i>
+                                </button>
                             </div>
                         </td>
                         <td class="text-slate-900 dark:text-slate-100">
@@ -360,6 +378,46 @@
                     statusFilter.value = '';
                     loadOpenings();
                 });
+            }
+
+            // 刪除開案記錄確認
+            window.confirmDeleteOpening = function(caseId, caseName) {
+                showConfirmModal({
+                    title: '確認刪除開案記錄',
+                    message: `您確定要刪除開案記錄「${caseName}」(${caseId}) 嗎？此操作無法復原。`,
+                    confirmText: '確認刪除',
+                    cancelText: '取消',
+                    onConfirm: function() {
+                        deleteOpening(caseId);
+                    }
+                });
+            };
+
+            // 執行刪除
+            async function deleteOpening(caseId) {
+                try {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    const formData = new FormData();
+                    if (token) {
+                        formData.append('__RequestVerificationToken', token);
+                    }
+
+                    const resp = await fetch(`/CaseOpening/Delete?caseId=${encodeURIComponent(caseId)}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await resp.json();
+
+                    if (data.success) {
+                        loadOpenings();
+                        showToast(data.message || '開案記錄已成功刪除', 'success', 3);
+                    } else {
+                        showToast(data.message || '刪除失敗', 'error', 5);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    showToast('刪除時發生錯誤', 'error', 5);
+                }
             }
         })();
     </script>

@@ -5,6 +5,10 @@
     var caseIdFieldId = ViewBag.CaseAutocompleteCaseIdFieldId as string ?? "CaseId";
     var onSelectCallback = ViewBag.CaseAutocompleteOnSelectCallback as string ?? "";
     var excludeWithOpeningRecord = ViewBag.CaseAutocompleteExcludeWithOpeningRecord as bool? ?? false;
+    var autoSearchOnLoad = ViewBag.CaseAutocompleteAutoSearchOnLoad as bool? ?? false;
+    var thirdColumn = ViewBag.CaseAutocompleteThirdColumn as string ?? "Phone"; // Phone | School
+    var placeholder = ViewBag.CaseAutocompletePlaceholder as string ?? "請輸入個案編號、姓名或電話...";
+    var thirdColumnLabel = thirdColumn == "School" ? "學校" : "電話";
 }
 
 <div class="mb-4">
@@ -17,7 +21,7 @@
             id="@inputId" 
             name="@inputName"
             class="input flex-1 focus:ring-orange-400 focus:border-orange-400 dark:bg-slate-800 dark:text-slate-100" 
-            placeholder="請輸入個案編號、姓名或電話..." 
+            placeholder="@placeholder" 
             autocomplete="off"
             data-exclude-with-opening-record="@(excludeWithOpeningRecord ? "true" : "false")" />
         <button 
@@ -43,7 +47,7 @@
                         <tr>
                             <th class="px-4 py-2 text-left text-slate-700 dark:text-slate-300">個案編號</th>
                             <th class="px-4 py-2 text-left text-slate-700 dark:text-slate-300">姓名</th>
-                            <th class="px-4 py-2 text-left text-slate-700 dark:text-slate-300">電話</th>
+                            <th class="px-4 py-2 text-left text-slate-700 dark:text-slate-300">@thirdColumnLabel</th>
                             <th class="px-4 py-2 text-left text-slate-700 dark:text-slate-300">操作</th>
                         </tr>
                     </thead>
@@ -92,6 +96,8 @@
         const inputId = '@inputId';
         const caseIdFieldId = '@caseIdFieldId';
         const onSelectCallback = '@onSelectCallback';
+        const autoSearchOnLoad = @((autoSearchOnLoad ? "true" : "false"));
+        const thirdColumn = '@thirdColumn';
         
         const searchInput = document.getElementById(inputId);
         const searchBtn = document.getElementById(inputId + 'SearchBtn');
@@ -115,7 +121,7 @@
         
         // 查詢按鈕點擊事件
         searchBtn.addEventListener('click', async function() {
-            await performSearch();
+            await performSearch({ allowEmpty: false });
         });
         
         // 輸入框 Enter 鍵事件
@@ -134,12 +140,13 @@
         }
         
         // 執行搜尋
-        async function performSearch() {
-            const query = searchInput.value.trim();
+        async function performSearch(options = {}) {
+            const allowEmpty = !!options.allowEmpty;
+            const query = (searchInput?.value || '').trim();
             
-            if (query === '') {
+            if (query === '' && !allowEmpty) {
                 alert('請輸入搜尋關鍵字');
-                searchInput.focus();
+                searchInput?.focus();
                 return;
             }
             
@@ -152,12 +159,13 @@
             }
             
             try {
-                // 嘗試使用 CaseBasic 控制器路由
                 // 檢查是否需要排除已有開案紀錄的個案（從 ViewBag 或 data 屬性取得）
                 const excludeWithOpeningRecord = searchInput.dataset.excludeWithOpeningRecord === 'true';
-                const url = excludeWithOpeningRecord 
-                    ? `/CaseBasicQuery/SearchCases?query=${encodeURIComponent(query)}&excludeWithOpeningRecord=true`
-                    : `/CaseBasicQuery/SearchCases?query=${encodeURIComponent(query)}`;
+                
+                const params = new URLSearchParams();
+                if (query !== '') params.set('query', query);
+                if (excludeWithOpeningRecord) params.set('excludeWithOpeningRecord', 'true');
+                const url = `/CaseBasicQuery/SearchCases${params.toString() ? `?${params.toString()}` : ''}`;
                 const res = await fetch(url);
                 
                 if (!res.ok) {
@@ -229,7 +237,15 @@
             resultsList.innerHTML = cases.map((c) => {
                 const caseId = escapeHtml(c.caseId || '');
                 const caseName = escapeHtml(c.name || '');
-                const phone = escapeHtml(c.phone || '');
+                const phone = escapeHtml(c.phone || c.Phone || '');
+                const schoolName = escapeHtml(
+                    c.schoolName ||
+                    (c.school && (c.school.SchoolName || c.school.schoolName)) ||
+                    ''
+                );
+                const thirdValue = (thirdColumn === 'School')
+                    ? (schoolName || '-')
+                    : (phone || '-');
                 const caseIdAttr = escapeHtmlForAttribute(c.caseId || '');
                 const caseNameAttr = escapeHtmlForAttribute(c.name || '');
                 
@@ -239,7 +255,7 @@
                             <code class="text-sm text-orange-600 dark:text-orange-400 font-mono">${caseId}</code>
                         </td>
                         <td class="px-4 py-3 font-medium">${caseName}</td>
-                        <td class="px-4 py-3">${phone}</td>
+                        <td class="px-4 py-3">${thirdValue}</td>
                         <td class="px-4 py-3">
                             <button 
                                 type="button" 
@@ -353,6 +369,12 @@
             }
             return true;
         };
+
+        // Step0（開案）可選擇自動載入清單：有 CaseBasic、但沒有 CaseOpening
+        if (autoSearchOnLoad) {
+            // 允許空 query（代表載入預設清單）
+            performSearch({ allowEmpty: true });
+        }
     }
 })();
 </script>

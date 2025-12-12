@@ -1,6 +1,8 @@
 @model CanLove_Backend.Domain.Staff.ViewModels.StaffEditViewModel
 @{
     ViewData["Title"] = "編輯員工";
+    ViewData["BreadcrumbParent"] = "員工管理";
+    ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Staff");
 }
 
 <div class="w-full px-4 sm:px-6 lg:px-8">

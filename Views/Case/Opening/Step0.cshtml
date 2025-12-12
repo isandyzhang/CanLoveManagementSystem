@@ -60,6 +60,9 @@
                             ViewBag.CaseAutocompleteCaseIdFieldId = "CaseId";
                             ViewBag.CaseAutocompleteOnSelectCallback = "onCaseSelected";
                             ViewBag.CaseAutocompleteExcludeWithOpeningRecord = true; // 新增開案紀錄時，排除已有開案紀錄的個案
+                            ViewBag.CaseAutocompleteAutoSearchOnLoad = true; // 進入頁面自動載入清單
+                            ViewBag.CaseAutocompleteThirdColumn = "School"; // 第三欄顯示學校
+                            ViewBag.CaseAutocompletePlaceholder = "請輸入個案編號或姓名..."; // 仍可手動搜尋
                         }
                         <partial name="~/Views/Shared/Partials/_CaseAutocomplete.cshtml" />
                         

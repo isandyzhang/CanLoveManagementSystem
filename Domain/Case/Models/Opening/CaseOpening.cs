@@ -38,6 +38,13 @@ public class CaseOpening
 
     public DateTime? UpdatedAt { get; set; }
 
+    // 軟刪除欄位（比照其他 Case* 表）
+    public bool Deleted { get; set; } = false;
+
+    public DateTime? DeletedAt { get; set; }
+
+    public string? DeletedBy { get; set; }
+
     public virtual CanLove_Backend.Domain.Case.Models.Basic.Case Case { get; set; } = null!;
 
     public virtual ICollection<CaseHqhealthStatus> CaseHqhealthStatuses { get; set; } = new List<CaseHqhealthStatus>();
