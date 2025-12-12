@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using CanLove_Backend.Domain.Case.ViewModels.Basic;
+using CanLove_Backend.Application.ViewModels.Case.Basic;
 using CanLove_Backend.Domain.Case.ViewModels.Opening;
 
 namespace CanLove_Backend.Domain.Case.ViewModels.Opening

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using CanLove_Backend.Infrastructure.Data.Contexts;
 using CanLove_Backend.Domain.Case.Models.Opening;
-using CanLove_Backend.Domain.Case.ViewModels.Basic;
+using CanLove_Backend.Application.ViewModels.Case.Basic;
 using CanLove_Backend.Domain.Case.ViewModels.Opening;
 using CanLove_Backend.Domain.Case.Services.Opening;
 using CanLove_Backend.Domain.Case.Services.Opening.Steps;
@@ -290,14 +290,22 @@ public class CaseOpeningQueryController : CaseOpeningBaseController
     /// <summary>
     /// 搜尋開案記錄 API（AJAX）
     /// </summary>
+    /// <param name="query">搜尋關鍵字</param>
+    /// <param name="status">狀態篩選（選填：Draft, PendingReview, Approved, Rejected, Closed）</param>
     [HttpGet]
-    public async Task<IActionResult> SearchOpenings(string query)
+    public async Task<IActionResult> SearchOpenings(string? query = null, string? status = null)
     {
         try
         {
             var queryable = _context.CaseOpenings
                 .Include(o => o.Case)
                 .Where(o => o.Case != null && o.Case.Deleted != true);
+
+            // 狀態篩選
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                queryable = queryable.Where(o => o.Status == status);
+            }
 
             // 如果有查詢條件，加入搜尋過濾
             if (!string.IsNullOrWhiteSpace(query))
@@ -328,7 +336,8 @@ public class CaseOpeningQueryController : CaseOpeningBaseController
                     "Rejected" => "被拒絕",
                     "Closed" => "已結案",
                     _ => "草稿"
-                }
+                },
+                createdAt = o.CreatedAt
             }).ToList();
 
             return Json(new { success = true, openings = result });

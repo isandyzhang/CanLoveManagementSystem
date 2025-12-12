@@ -2,12 +2,13 @@ using CanLove_Backend.Domain.Case.Models.Basic;
 using CanLove_Backend.Domain.Case.Shared.Models;
 using CanLove_Backend.Infrastructure.Options.Models;
 using Microsoft.AspNetCore.Http;
+using AppCaseFormMode = CanLove_Backend.Application.ViewModels.Case.Basic.CaseFormMode;
 
 namespace CanLove_Backend.Domain.Case.ViewModels.Basic;
 
 public class CaseFormVM
 {
-    public CaseFormMode Mode { get; set; } = CaseFormMode.Create;
+    public AppCaseFormMode Mode { get; set; } = AppCaseFormMode.Create;
 
         public CanLove_Backend.Domain.Case.Models.Basic.Case Case { get; set; } = new CanLove_Backend.Domain.Case.Models.Basic.Case();
 

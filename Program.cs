@@ -544,7 +544,7 @@ static void RegisterApplicationServices(WebApplicationBuilder builder)
     // ========================================================================
     // Case 相關服務
     // ========================================================================
-    services.AddScoped<CaseService>(); // 個案服務
+    services.AddScoped<ICaseBasicService, CaseBasicService>(); // 個案基本資料服務（使用介面）
     services.AddScoped<CaseWizardOpenCaseService>(); // 個案開案流程主要協調服務
     services.AddScoped<CaseInfoService>(); // 個案資訊服務（含快取機制）
     services.AddScoped<CaseBasicValidationService>(); // 個案基本資料驗證服務
@@ -580,14 +580,30 @@ static void RegisterApplicationServices(WebApplicationBuilder builder)
     // CORS（跨來源資源共享）
     // ========================================================================
     // 用途：允許前端應用程式（不同域名）訪問此 API
-    // 注意：開發環境使用 AllowAll，生產環境應該限制特定域名
+    // 開發環境：允許所有來源（方便測試）
+    // 生產環境：限制特定域名（安全性考量）
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
+        ?? Array.Empty<string>();
+    
     services.AddCors(options =>
     {
         options.AddPolicy("AllowAll", policy =>
         {
-            policy.AllowAnyOrigin()    // 允許任何來源（開發環境）
-                  .AllowAnyMethod()    // 允許任何 HTTP 方法（GET、POST 等）
-                  .AllowAnyHeader();   // 允許任何標頭
+            if (builder.Environment.IsDevelopment() || allowedOrigins.Length == 0)
+            {
+                // 開發環境或未設定：允許所有來源
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            }
+            else
+            {
+                // 生產環境：限制特定來源
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials(); // 允許攜帶 Cookie
+            }
         });
     });
 }

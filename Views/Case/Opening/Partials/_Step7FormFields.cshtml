@@ -22,7 +22,7 @@
     <div class="col-12">
         <div class="mb-3">
             <label asp-for="FqSummary" class="block text-lg font-medium mb-2 text-slate-900">FQ 簡述評估</label>
-            <textarea asp-for="FqSummary" class="input" rows="4" placeholder="請總結經濟狀況評估的要點，包括：&#10;• 家庭經濟概況&#10;• 工作情形與收入狀況&#10;• 民間福利資源使用情況&#10;• 收支平衡狀況&#10;• 經濟壓力與挑戰&#10;• 建議與改善方向" form-mode="@Model.Mode" readonly-when="ReadOnly"></textarea>
+            <textarea asp-for="FqSummary" class="input" rows="4" placeholder="請總結經濟狀況評估的要點，包括：&#10;• 家庭經濟概況&#10;• 工作情形與收入狀況&#10;• 民間福利資源使用情況&#10;• 收支平衡狀況&#10;• 經濟壓力與挑戰&#10;• 建議與改善方向" form-mode="@Model.Mode" locked-when="ReadOnly,Review"></textarea>
             <div class="form-text">
                 <i class="fas fa-lightbulb me-1"></i>
                 請總結經濟狀況評估的要點，包括家庭經濟概況、工作情形、福利資源使用、收支狀況等。
@@ -42,7 +42,7 @@
     <div class="col-12">
         <div class="mb-3">
             <label asp-for="HqSummary" class="block text-lg font-medium mb-2 text-slate-900">HQ 簡述評估</label>
-            <textarea asp-for="HqSummary" class="input" rows="4" placeholder="請總結健康狀況評估的要點，包括：&#10;• 照顧者健康狀況&#10;• 兒少健康狀態&#10;• 情緒表現與穩定性&#10;• 受照顧品質&#10;• 健康風險評估&#10;• 醫療需求與建議" form-mode="@Model.Mode" readonly-when="ReadOnly"></textarea>
+            <textarea asp-for="HqSummary" class="input" rows="4" placeholder="請總結健康狀況評估的要點，包括：&#10;• 照顧者健康狀況&#10;• 兒少健康狀態&#10;• 情緒表現與穩定性&#10;• 受照顧品質&#10;• 健康風險評估&#10;• 醫療需求與建議" form-mode="@Model.Mode" locked-when="ReadOnly,Review"></textarea>
             <div class="form-text">
                 <i class="fas fa-lightbulb me-1"></i>
                 請總結健康狀況評估的要點，包括照顧者與兒少的健康狀況、情緒表現、受照顧品質等。
@@ -62,7 +62,7 @@
     <div class="col-12">
         <div class="mb-3">
             <label asp-for="IqSummary" class="block text-lg font-medium mb-2 text-slate-900">IQ 簡述評估</label>
-            <textarea asp-for="IqSummary" class="input" rows="4" placeholder="請總結學業表現評估的要點，包括：&#10;• 學習動機與態度&#10;• 學業成績表現&#10;• 學習能力評估&#10;• 特殊學習需求&#10;• 社交學習情況&#10;• 家庭學習支持&#10;• 教育建議與資源" form-mode="@Model.Mode" readonly-when="ReadOnly"></textarea>
+            <textarea asp-for="IqSummary" class="input" rows="4" placeholder="請總結學業表現評估的要點，包括：&#10;• 學習動機與態度&#10;• 學業成績表現&#10;• 學習能力評估&#10;• 特殊學習需求&#10;• 社交學習情況&#10;• 家庭學習支持&#10;• 教育建議與資源" form-mode="@Model.Mode" locked-when="ReadOnly,Review"></textarea>
             <div class="form-text">
                 <i class="fas fa-lightbulb me-1"></i>
                 請總結學業表現評估的要點，包括學習動機、成績表現、學習能力、特殊需求等。
@@ -82,7 +82,7 @@
     <div class="col-12">
         <div class="mb-3">
             <label asp-for="EqSummary" class="block text-lg font-medium mb-2 text-slate-900">EQ 簡述評估</label>
-            <textarea asp-for="EqSummary" class="input" rows="4" placeholder="請總結情緒評估的要點，包括：&#10;• 情緒穩定性評估&#10;• 情緒調節能力&#10;• 挫折處理能力&#10;• 情緒表達與理解&#10;• 社會情緒發展&#10;• 情緒支持需求&#10;• 情緒管理建議" form-mode="@Model.Mode" readonly-when="ReadOnly"></textarea>
+            <textarea asp-for="EqSummary" class="input" rows="4" placeholder="請總結情緒評估的要點，包括：&#10;• 情緒穩定性評估&#10;• 情緒調節能力&#10;• 挫折處理能力&#10;• 情緒表達與理解&#10;• 社會情緒發展&#10;• 情緒支持需求&#10;• 情緒管理建議" form-mode="@Model.Mode" locked-when="ReadOnly,Review"></textarea>
             <div class="form-text">
                 <i class="fas fa-lightbulb me-1"></i>
                 請總結情緒評估的要點，包括情緒穩定性、調節能力、挫折處理、情緒表達等。

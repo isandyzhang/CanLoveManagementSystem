@@ -6,6 +6,16 @@
         ("查詢個案", Url.Action("Query", "CaseBasicQuery") ?? string.Empty),
         ("個案基本資料", string.Empty)
     };
+    
+    // 狀態選項
+    var statusOptions = new List<(string Value, string Text)>
+    {
+        ("", "全部狀態"),
+        ("Draft", "草稿"),
+        ("PendingReview", "待審閱"),
+        ("Approved", "已審核"),
+        ("Rejected", "已退回")
+    };
 }
 
 <div class="w-full px-4 sm:px-6 lg:px-8">
@@ -16,26 +26,45 @@
         <!-- 搜尋與個案列表區（合併在同一個卡片） -->
         <div class="card bg-white dark:bg-slate-900 shadow-card-lg border rounded-xl border-[#9CCC65] dark:border-slate-700 mb-6">
             <div class="px-6 py-6">
-                <!-- 搜尋輸入框 -->
+                <!-- 搜尋列：搜尋框 + 狀態篩選 + 顯示全部按鈕 -->
                 <div class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <label for="basicSearchInput" class="block text-sm text-slate-700 dark:text-slate-300 mb-1">搜尋個案（編號/姓名/電話）</label>
-                        <button type="button" id="showAllCasesBtn" class="btn btn-sm btn--secondary">
-                            <i class="bi bi-list-ul me-1"></i>顯示全部個案
-                        </button>
-                    </div>
-                    <div class="flex">
-                        <span class="inline-flex items-center px-3 border border-r-0 border-border dark:border-slate-700 rounded-l-md bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400"><i class="bi bi-search"></i></span>
-                        <input type="text" id="basicSearchInput" class="input flex-1 rounded-l-none dark:bg-slate-800 dark:text-slate-100" placeholder="請輸入關鍵字..." autocomplete="off" />
-                        <span id="basicSearchLoading" class="hidden items-center px-3 border border-l-0 border-border dark:border-slate-700 rounded-r-md bg-slate-50 dark:bg-slate-800"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                    <div class="flex flex-col md:flex-row md:items-end gap-4">
+                        <!-- 搜尋輸入框 -->
+                        <div class="flex-1">
+                            <label for="basicSearchInput" class="block text-sm text-slate-700 dark:text-slate-300 mb-1">搜尋個案（編號/姓名/電話）</label>
+                            <div class="flex">
+                                <span class="inline-flex items-center px-3 border border-r-0 border-border dark:border-slate-700 rounded-l-md bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400"><i class="bi bi-search"></i></span>
+                                <input type="text" id="basicSearchInput" class="input flex-1 rounded-l-none rounded-r-none dark:bg-slate-800 dark:text-slate-100" placeholder="請輸入關鍵字..." autocomplete="off" />
+                                <span id="basicSearchLoading" class="hidden items-center px-3 border border-l-0 border-border dark:border-slate-700 rounded-r-md bg-slate-50 dark:bg-slate-800"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                            </div>
+                        </div>
+                        
+                        <!-- 狀態篩選下拉選單 -->
+                        <div class="flex-1">
+                            <label for="statusFilter" class="block text-sm text-slate-700 dark:text-slate-300 mb-1">狀態</label>
+                            <select id="statusFilter" class="input w-full dark:bg-slate-800 dark:text-slate-100">
+                                @foreach (var opt in statusOptions)
+                                {
+                                    <option value="@opt.Value">@opt.Text</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <!-- 顯示全部按鈕 -->
+                        <div class="flex-shrink-0">
+                            <label class="block text-sm text-transparent mb-1 select-none">&nbsp;</label>
+                            <button type="button" id="showAllCasesBtn" class="btn btn--secondary whitespace-nowrap">
+                                <i class="bi bi-list-ul me-1"></i>顯示全部
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 個案列表表格（統一顯示搜尋結果或全部個案） -->
+                <!-- 個案列表表格 -->
                 <div id="caseListContainer">
                     <div class="mb-4">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300">全部已審核個案</h3>
+                            <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300" id="listTitle">全部個案</h3>
                             <span class="text-sm text-slate-600 dark:text-slate-400">共 <span id="caseCount">@((ViewBag.AllCases as IEnumerable<CanLove_Backend.Domain.Case.Models.Basic.Case> ?? new List<CanLove_Backend.Domain.Case.Models.Basic.Case>()).Count())</span> 筆</span>
                         </div>
                     </div>
@@ -43,32 +72,61 @@
                         @if (ViewBag.ShowAllCases == true && ViewBag.AllCases != null)
                         {
                             var allCases = ViewBag.AllCases as IEnumerable<CanLove_Backend.Domain.Case.Models.Basic.Case> ?? new List<CanLove_Backend.Domain.Case.Models.Basic.Case>();
-                            ViewBag.TableMode = "Search";
-                            ViewBag.ShowActions = true;
-                            ViewBag.ActionButtons = new List<(string Text, string Action, string Controller, string Class)>
-                            {
-                                ("編輯", "EditItem", "CaseBasicCreateEdit", "btn-sm"),
-                                ("查看", "ViewItem", "CaseBasicQuery", "btn-sm btn--secondary")
-                            };
-                            ViewBag.OnRowClick = "viewCaseDetails";
                             <div class="overflow-auto">
                                 <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
                                     <thead>
                                         <tr class="bg-slate-50 dark:bg-slate-800">
+                                            <th class="text-slate-700 dark:text-slate-300 text-center w-24">功能</th>
                                             <th class="text-slate-700 dark:text-slate-300">個案編號</th>
                                             <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
                                             <th class="text-slate-700 dark:text-slate-300">性別</th>
                                             <th class="text-slate-700 dark:text-slate-300">出生日期</th>
                                             <th class="text-slate-700 dark:text-slate-300">城市</th>
+                                            <th class="text-slate-700 dark:text-slate-300">狀態</th>
                                             <th class="text-slate-700 dark:text-slate-300">建立者</th>
                                             <th class="text-slate-700 dark:text-slate-300">建立時間</th>
-                                            <th class="text-slate-700 dark:text-slate-300">操作</th>
                                         </tr>
                                     </thead>
                                     <tbody id="caseListTableBody">
                                         @foreach (var item in allCases)
                                         {
-                                            <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" onclick="viewCaseDetails('@item.CaseId')">
+                                            var statusClass = item.Status switch
+                                            {
+                                                "Approved" => "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+                                                "PendingReview" => "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+                                                "Rejected" => "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+                                                "Draft" => "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300",
+                                                _ => "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300"
+                                            };
+                                            var statusText = item.Status switch
+                                            {
+                                                "Approved" => "已審核",
+                                                "PendingReview" => "待審閱",
+                                                "Rejected" => "已退回",
+                                                "Draft" => "草稿",
+                                                _ => "未知"
+                                            };
+                                            <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+                                                <td class="text-center">
+                                                    <div class="inline-flex items-center gap-1">
+                                                        <a href="@Url.Action("ViewItem", "CaseBasicQuery", new { id = item.CaseId })" 
+                                                           class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                                                           title="查看">
+                                                            <i class="bi bi-eye text-lg"></i>
+                                                        </a>
+                                                        <a href="@Url.Action("EditItem", "CaseBasicCreateEdit", new { id = item.CaseId })" 
+                                                           class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                           title="編輯">
+                                                            <i class="bi bi-pencil-square text-lg"></i>
+                                                        </a>
+                                                        <button type="button" 
+                                                                class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                                                title="刪除"
+                                                                onclick="confirmDeleteCase('@item.CaseId', '@item.Name')">
+                                                            <i class="bi bi-trash text-lg"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
                                                 <td class="text-slate-900 dark:text-slate-100">
                                                     <code class="text-slate-900 dark:text-slate-100">@item.CaseId</code>
                                                 </td>
@@ -95,6 +153,9 @@
                                                 <td class="text-slate-900 dark:text-slate-100">@item.BirthDate.ToTaiwanDateString()</td>
                                                 <td class="text-slate-900 dark:text-slate-100">@(item.City?.CityName ?? "未設定")</td>
                                                 <td>
+                                                    <span class="badge-pill @statusClass text-sm">@statusText</span>
+                                                </td>
+                                                <td>
                                                     @{
                                                         var displayName = item.SubmittedBy ?? "系統";
                                                         if (displayName.Contains("@"))
@@ -105,14 +166,6 @@
                                                     <small class="text-slate-900 dark:text-slate-100">@displayName</small>
                                                 </td>
                                                 <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.CreatedAt"></datetime></td>
-                                                <td>
-                                                    <a href="@Url.Action("EditItem", "CaseBasicCreateEdit", new { id = item.CaseId })" class="btn btn-sm" onclick="event.stopPropagation();">
-                                                        <i class="bi bi-pencil me-1"></i>編輯
-                                                    </a>
-                                                    <a href="@Url.Action("ViewItem", "CaseBasicQuery", new { id = item.CaseId })" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
-                                                        <i class="bi bi-eye me-1"></i>查看
-                                                    </a>
-                                                </td>
                                             </tr>
                                         }
                                     </tbody>
@@ -130,31 +183,38 @@
     </div>
 </div>
 
+<!-- 引入確認 Modal -->
+<partial name="~/Views/Shared/Partials/_ConfirmModal.cshtml" />
+
+<!-- 引入 Toast 提示組件 -->
+<partial name="~/Views/Shared/Partials/_Toast.cshtml" />
+
 @section Scripts {
     <script>
         (function(){
             const input = document.getElementById('basicSearchInput');
             const loading = document.getElementById('basicSearchLoading');
-            const tbody = document.getElementById('caseListTableBody');
+            const statusFilter = document.getElementById('statusFilter');
             const caseCountSpan = document.getElementById('caseCount');
             const tableWrapper = document.getElementById('caseListTableWrapper');
+            const listTitle = document.getElementById('listTitle');
             let timer;
-            let allCasesData = null; // 儲存所有個案資料，用於清空搜尋時恢復
 
-            // 儲存初始的個案資料
-            if (tbody) {
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-                allCasesData = rows.map(row => {
-                    const caseId = row.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || '';
-                    const name = row.cells[1]?.textContent?.trim() || '';
-                    const gender = row.cells[2]?.querySelector('.badge-pill')?.textContent?.trim() || '';
-                    const birthDate = row.cells[3]?.textContent?.trim() || '';
-                    const city = row.cells[4]?.textContent?.trim() || '';
-                    const submittedBy = row.cells[5]?.textContent?.trim() || '';
-                    const createdAt = row.cells[6]?.textContent?.trim() || '';
-                    return { caseId, name, gender, birthDate, city, submittedBy, createdAt };
-                });
-            }
+            // 狀態文字對應
+            const statusTextMap = {
+                'Draft': '草稿',
+                'PendingReview': '待審閱',
+                'Approved': '已審核',
+                'Rejected': '已退回'
+            };
+
+            // 狀態樣式對應
+            const statusClassMap = {
+                'Approved': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                'PendingReview': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+                'Rejected': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+                'Draft': 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300'
+            };
 
             // 格式化日期
             function formatDate(dateValue) {
@@ -162,7 +222,6 @@
                 try {
                     let date;
                     if (typeof dateValue === 'string') {
-                        // 處理 "2000-01-01" 格式
                         date = new Date(dateValue + 'T00:00:00');
                     } else if (dateValue instanceof Date) {
                         date = dateValue;
@@ -216,6 +275,13 @@
                 }
             }
 
+            // 取得狀態標籤 HTML
+            function getStatusBadge(status) {
+                const statusClass = statusClassMap[status] || 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
+                const statusText = statusTextMap[status] || '未知';
+                return `<span class="badge-pill ${statusClass} text-sm">${statusText}</span>`;
+            }
+
             // 取得建立者顯示名稱
             function getDisplayName(submittedBy) {
                 if (!submittedBy) return '系統';
@@ -243,79 +309,102 @@
                     return;
                 }
 
-                // 確保表格結構存在
-                let currentTbody = tableWrapper.querySelector('#caseListTableBody');
-                if (!tableWrapper.querySelector('table')) {
-                    tableWrapper.innerHTML = `
-                        <div class="overflow-auto">
-                            <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
-                                <thead>
-                                    <tr class="bg-slate-50 dark:bg-slate-800">
-                                        <th class="text-slate-700 dark:text-slate-300">個案編號</th>
-                                        <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
-                                        <th class="text-slate-700 dark:text-slate-300">性別</th>
-                                        <th class="text-slate-700 dark:text-slate-300">出生日期</th>
-                                        <th class="text-slate-700 dark:text-slate-300">城市</th>
-                                        <th class="text-slate-700 dark:text-slate-300">建立者</th>
-                                        <th class="text-slate-700 dark:text-slate-300">建立時間</th>
-                                        <th class="text-slate-700 dark:text-slate-300">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="caseListTableBody"></tbody>
-                            </table>
-                        </div>
-                    `;
-                    // 重新取得 tbody 引用
-                    currentTbody = document.getElementById('caseListTableBody');
-                }
-
-                if (currentTbody) {
-                    currentTbody.innerHTML = cases.map(c => renderRow(c)).join('');
-                    caseCountSpan.textContent = cases.length.toString();
-                }
+                tableWrapper.innerHTML = `
+                    <div class="overflow-auto">
+                        <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-800">
+                                    <th class="text-slate-700 dark:text-slate-300 text-center w-24">功能</th>
+                                    <th class="text-slate-700 dark:text-slate-300">個案編號</th>
+                                    <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
+                                    <th class="text-slate-700 dark:text-slate-300">性別</th>
+                                    <th class="text-slate-700 dark:text-slate-300">出生日期</th>
+                                    <th class="text-slate-700 dark:text-slate-300">城市</th>
+                                    <th class="text-slate-700 dark:text-slate-300">狀態</th>
+                                    <th class="text-slate-700 dark:text-slate-300">建立者</th>
+                                    <th class="text-slate-700 dark:text-slate-300">建立時間</th>
+                                </tr>
+                            </thead>
+                            <tbody id="caseListTableBody">
+                                ${cases.map(c => renderRow(c)).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                caseCountSpan.textContent = cases.length.toString();
             }
 
             // 渲染單一列
             function renderRow(c) {
                 const genderBadge = getGenderBadge(c.gender);
+                const statusBadge = getStatusBadge(c.status);
                 const birthDateStr = c.birthDate ? formatDate(c.birthDate) : '';
                 const cityName = c.city?.cityName || c.city || '未設定';
                 const displayName = getDisplayName(c.submittedBy);
                 const createdAtStr = c.createdAt ? formatDateTime(c.createdAt) : '';
                 const caseId = escapeHtml(c.caseId || '');
+                const caseName = escapeHtml(c.name || '');
 
                 return `
-                    <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" onclick="viewCaseDetails('${caseId}')">
+                    <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+                        <td class="text-center">
+                            <div class="inline-flex items-center gap-1">
+                                <a href="@Url.Action("ViewItem", "CaseBasicQuery")?id=${caseId}" 
+                                   class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                                   title="查看">
+                                    <i class="bi bi-eye text-lg"></i>
+                                </a>
+                                <a href="@Url.Action("EditItem", "CaseBasicCreateEdit")?id=${caseId}" 
+                                   class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                   title="編輯">
+                                    <i class="bi bi-pencil-square text-lg"></i>
+                                </a>
+                                <button type="button" 
+                                        class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                        title="刪除"
+                                        onclick="confirmDeleteCase('${caseId}', '${caseName.replace(/'/g, "\\'")}')">
+                                    <i class="bi bi-trash text-lg"></i>
+                                </button>
+                            </div>
+                        </td>
                         <td class="text-slate-900 dark:text-slate-100">
                             <code class="text-slate-900 dark:text-slate-100">${caseId}</code>
                         </td>
-                        <td class="text-slate-900 dark:text-slate-100">${escapeHtml(c.name || '')}</td>
+                        <td class="text-slate-900 dark:text-slate-100">${caseName}</td>
                         <td>${genderBadge}</td>
                         <td class="text-slate-900 dark:text-slate-100">${escapeHtml(birthDateStr)}</td>
                         <td class="text-slate-900 dark:text-slate-100">${escapeHtml(cityName)}</td>
+                        <td>${statusBadge}</td>
                         <td>
                             <small class="text-slate-900 dark:text-slate-100">${escapeHtml(displayName)}</small>
                         </td>
                         <td class="text-slate-900 dark:text-slate-100">${escapeHtml(createdAtStr)}</td>
-                        <td>
-                            <a href="@Url.Action("EditItem", "CaseBasicCreateEdit")?id=${caseId}" class="btn btn-sm" onclick="event.stopPropagation();">
-                                <i class="bi bi-pencil me-1"></i>編輯
-                            </a>
-                            <a href="@Url.Action("ViewItem", "CaseBasicQuery")?id=${caseId}" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
-                                <i class="bi bi-eye me-1"></i>查看
-                            </a>
-                        </td>
                     </tr>
                 `;
             }
 
-            // 載入所有個案
-            async function loadAllCases() {
+            // 載入個案（支援搜尋和狀態篩選）
+            async function loadCases() {
                 if (!loading) return;
+                
+                const query = input.value.trim();
+                const status = statusFilter.value;
+                
+                // 更新標題
+                if (status) {
+                    listTitle.textContent = statusTextMap[status] + '個案';
+                } else {
+                    listTitle.textContent = '全部個案';
+                }
                 
                 loading.classList.remove('hidden');
                 try {
-                    const resp = await fetch('/CaseBasicQuery/SearchCases');
+                    let url = '/CaseBasicQuery/SearchCases?';
+                    const params = new URLSearchParams();
+                    if (query) params.append('query', query);
+                    if (status) params.append('status', status);
+                    
+                    const resp = await fetch(url + params.toString());
                     const data = await resp.json();
                     loading.classList.add('hidden');
                     if (data.success && data.cases) {
@@ -330,34 +419,15 @@
                 }
             }
 
-            // 搜尋處理
+            // 搜尋處理（防抖）
             input.addEventListener('input', function(){
                 clearTimeout(timer);
-                const q = this.value.trim();
-                
-                if (!q) {
-                    // 清空搜尋時，載入所有個案
-                    loadAllCases();
-                    return;
-                }
+                timer = setTimeout(loadCases, 400);
+            });
 
-                loading.classList.remove('hidden');
-                timer = setTimeout(async () => {
-                    try {
-                        const resp = await fetch(`/CaseBasicQuery/SearchCases?query=${encodeURIComponent(q)}`);
-                        const data = await resp.json();
-                        loading.classList.add('hidden');
-                        if (data.success && data.cases) {
-                            renderTable(data.cases);
-                        } else {
-                            renderTable([]);
-                        }
-                    } catch (e) {
-                        console.error(e);
-                        loading.classList.add('hidden');
-                        renderTable([]);
-                    }
-                }, 400);
+            // 狀態篩選變更
+            statusFilter.addEventListener('change', function(){
+                loadCases();
             });
 
             function escapeHtml(t) {
@@ -367,22 +437,58 @@
                 return d.innerHTML;
             }
 
-            // 查看個案詳細資料
-            window.viewCaseDetails = function(caseId) {
-                if (caseId) {
-                    window.location.href = '@Url.Action("ViewItem", "CaseBasicQuery")?id=' + encodeURIComponent(caseId);
-                }
-            };
-
             // 顯示全部個案按鈕
             const showAllBtn = document.getElementById('showAllCasesBtn');
             if (showAllBtn) {
                 showAllBtn.addEventListener('click', function() {
                     input.value = '';
-                    loadAllCases();
+                    statusFilter.value = '';
+                    loadCases();
                 });
+            }
+
+            // 刪除個案確認
+            window.confirmDeleteCase = function(caseId, caseName) {
+                showConfirmModal({
+                    title: '確認刪除個案',
+                    message: `您確定要刪除個案「${caseName}」(${caseId}) 嗎？此操作無法復原。`,
+                    confirmText: '確認刪除',
+                    cancelText: '取消',
+                    onConfirm: function() {
+                        deleteCase(caseId);
+                    }
+                });
+            };
+
+            // 執行刪除
+            async function deleteCase(caseId) {
+                try {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    const formData = new FormData();
+                    if (token) {
+                        formData.append('__RequestVerificationToken', token);
+                    }
+                    
+                    const resp = await fetch(`/CaseBasic/Delete?id=${encodeURIComponent(caseId)}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await resp.json();
+                    
+                    if (data.success) {
+                        // 重新載入列表
+                        loadCases();
+                        // 顯示成功訊息
+                        showToast(data.message || '個案已成功刪除', 'success', 3);
+                    } else {
+                        showToast(data.message || '刪除失敗', 'error', 5);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    showToast('刪除時發生錯誤', 'error', 5);
+                }
             }
         })();
     </script>
+    @Html.AntiForgeryToken()
 }
-

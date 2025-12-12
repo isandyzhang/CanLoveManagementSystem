@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CanLove_Backend.Domain.Case.Exceptions;
 
 namespace CanLove_Backend.Core.Middleware;
 
@@ -40,13 +41,26 @@ public class ExceptionHandlingMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        // 記錄錯誤日誌（包含完整堆疊追蹤）
-        _logger.LogError(exception, 
-            "未處理的異常：{Message} | Path: {Path} | Method: {Method} | User: {User}",
-            exception.Message,
-            context.Request.Path,
-            context.Request.Method,
-            context.User?.Identity?.Name ?? "Anonymous");
+        // 業務邏輯異常使用較低的日誌等級（Warning），其他異常使用 Error
+        if (IsBusinessException(exception))
+        {
+            _logger.LogWarning(
+                "業務邏輯異常：{ExceptionType} - {Message} | Path: {Path} | User: {User}",
+                exception.GetType().Name,
+                exception.Message,
+                context.Request.Path,
+                context.User?.Identity?.Name ?? "Anonymous");
+        }
+        else
+        {
+            // 記錄錯誤日誌（包含完整堆疊追蹤）
+            _logger.LogError(exception, 
+                "未處理的異常：{Message} | Path: {Path} | Method: {Method} | User: {User}",
+                exception.Message,
+                context.Request.Path,
+                context.Request.Method,
+                context.User?.Identity?.Name ?? "Anonymous");
+        }
 
         // 決定 HTTP 狀態碼
         var statusCode = GetStatusCode(exception);
@@ -67,7 +81,11 @@ public class ExceptionHandlingMiddleware
         else
         {
             // HTML 請求：重定向到錯誤頁面
-            context.Response.Redirect($"/Home/Error?statusCode={statusCode}");
+            // 業務邏輯異常的訊息可以傳遞給錯誤頁面
+            var errorMessage = IsBusinessException(exception) 
+                ? Uri.EscapeDataString(exception.Message) 
+                : string.Empty;
+            context.Response.Redirect($"/Home/Error?statusCode={(int)statusCode}&message={errorMessage}");
         }
     }
 
@@ -75,6 +93,15 @@ public class ExceptionHandlingMiddleware
     {
         return exception switch
         {
+            // 自訂個案異常處理
+            CaseBasicNotFoundException => HttpStatusCode.NotFound,
+            CaseBasicLockedException => HttpStatusCode.Conflict,           // 409 衝突（資源被鎖定）
+            CaseBasicInvalidStatusException => HttpStatusCode.BadRequest,  // 400 狀態不允許
+            CaseBasicValidationException => HttpStatusCode.BadRequest,     // 400 驗證失敗
+            CaseBasicSaveException => HttpStatusCode.InternalServerError,  // 500 儲存失敗
+            CaseBasicException => HttpStatusCode.BadRequest,               // 400 其他個案異常
+            
+            // 標準異常處理
             ArgumentException or ArgumentNullException => HttpStatusCode.BadRequest,
             UnauthorizedAccessException => HttpStatusCode.Unauthorized,
             KeyNotFoundException or FileNotFoundException => HttpStatusCode.NotFound,
@@ -83,19 +110,32 @@ public class ExceptionHandlingMiddleware
         };
     }
 
+    /// <summary>
+    /// 判斷是否為業務邏輯異常（這些異常的訊息可以直接顯示給用戶）
+    /// </summary>
+    private static bool IsBusinessException(Exception exception)
+    {
+        return exception is CaseBasicException;
+    }
+
     private async Task WriteJsonResponseAsync(HttpContext context, Exception exception, HttpStatusCode statusCode)
     {
         context.Response.ContentType = "application/json; charset=utf-8";
 
+        // 業務邏輯異常的訊息可以直接顯示給用戶
+        // 其他異常只在開發環境顯示詳細訊息
+        var showMessage = IsBusinessException(exception) || _environment.IsDevelopment();
+        
         var errorResponse = new
         {
             error = new
             {
-                message = _environment.IsDevelopment() 
+                message = showMessage 
                     ? exception.Message 
                     : "發生錯誤，請稍後再試",
                 statusCode = (int)statusCode,
-                details = _environment.IsDevelopment() 
+                // 業務邏輯異常不需要顯示堆疊追蹤，只有開發環境才顯示
+                details = _environment.IsDevelopment() && !IsBusinessException(exception)
                     ? exception.ToString() 
                     : null
             }

@@ -1,0 +1,145 @@
+@*
+    確認對話框組件
+    使用方式：
+    1. 在頁面中引入此 partial view
+    2. 呼叫 showConfirmModal(options) 顯示對話框
+    
+    options 參數：
+    - title: 標題文字
+    - message: 訊息內容
+    - confirmText: 確認按鈕文字（預設：確認）
+    - cancelText: 取消按鈕文字（預設：取消）
+    - confirmClass: 確認按鈕樣式（預設：btn--danger）
+    - onConfirm: 確認後的回呼函數
+    - onCancel: 取消後的回呼函數
+*@
+
+<!-- 確認對話框 Modal -->
+<div id="confirmModal" class="fixed inset-0 z-50 hidden" aria-labelledby="confirmModalTitle" role="dialog" aria-modal="true">
+    <!-- 背景遮罩 -->
+    <div class="fixed inset-0 bg-black/50 transition-opacity" id="confirmModalBackdrop"></div>
+    
+    <!-- Modal 內容 - 置中 -->
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+        <div class="relative transform overflow-hidden rounded-xl bg-white dark:bg-slate-800 shadow-2xl transition-all" style="width: 420px;">
+            <!-- 標題區 - 綠色底色 -->
+            <div class="px-6 py-4" style="background-color: #5C8A4D;">
+                <h3 class="text-lg font-semibold text-white text-center" id="confirmModalTitle">確認刪除個案</h3>
+            </div>
+            
+            <!-- 內容區 -->
+            <div class="px-6 py-6">
+                <div class="flex justify-center mb-4">
+                    <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30" id="confirmModalIconWrapper">
+                        <i class="bi bi-exclamation-triangle text-red-600 dark:text-red-400 text-2xl" id="confirmModalIcon"></i>
+                    </div>
+                </div>
+                <p class="text-base text-slate-700 dark:text-slate-300 text-center leading-relaxed" id="confirmModalMessage">您確定要執行此操作嗎？</p>
+            </div>
+            
+            <!-- 按鈕區 - 確認在左、取消在右 -->
+            <div class="bg-slate-50 dark:bg-slate-700/50 px-6 py-4 flex justify-between gap-3">
+                <button type="button" id="confirmModalConfirmBtn" class="btn btn-sm btn--danger">
+                    確認刪除
+                </button>
+                <button type="button" id="confirmModalCancelBtn" class="btn btn-sm btn--secondary">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const modal = document.getElementById('confirmModal');
+    const backdrop = document.getElementById('confirmModalBackdrop');
+    const titleEl = document.getElementById('confirmModalTitle');
+    const messageEl = document.getElementById('confirmModalMessage');
+    const confirmBtn = document.getElementById('confirmModalConfirmBtn');
+    const cancelBtn = document.getElementById('confirmModalCancelBtn');
+    const iconWrapper = document.getElementById('confirmModalIconWrapper');
+    const icon = document.getElementById('confirmModalIcon');
+    
+    let currentOnConfirm = null;
+    let currentOnCancel = null;
+    
+    // 顯示 Modal
+    window.showConfirmModal = function(options) {
+        options = options || {};
+        
+        // 設定標題與訊息
+        titleEl.textContent = options.title || '確認操作';
+        messageEl.textContent = options.message || '您確定要執行此操作嗎？';
+        
+        // 設定按鈕文字
+        confirmBtn.textContent = options.confirmText || '確認';
+        cancelBtn.textContent = options.cancelText || '取消';
+        
+        // 設定確認按鈕樣式
+        confirmBtn.className = 'btn btn-sm ' + (options.confirmClass || 'btn--danger');
+        
+        // 設定圖標樣式（危險操作用紅色，一般用藍色）
+        if (options.confirmClass && options.confirmClass.includes('primary')) {
+            iconWrapper.className = 'flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30';
+            icon.className = 'bi bi-question-circle text-blue-600 dark:text-blue-400 text-2xl';
+        } else {
+            iconWrapper.className = 'flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30';
+            icon.className = 'bi bi-exclamation-triangle text-red-600 dark:text-red-400 text-2xl';
+        }
+        
+        // 儲存回呼函數
+        currentOnConfirm = options.onConfirm || null;
+        currentOnCancel = options.onCancel || null;
+        
+        // 顯示 Modal
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // 聚焦到取消按鈕（安全預設）
+        cancelBtn.focus();
+    };
+    
+    // 隱藏 Modal
+    window.hideConfirmModal = function() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        currentOnConfirm = null;
+        currentOnCancel = null;
+    };
+    
+    // 確認按鈕事件
+    confirmBtn.addEventListener('click', function() {
+        if (currentOnConfirm) {
+            currentOnConfirm();
+        }
+        hideConfirmModal();
+    });
+    
+    // 取消按鈕事件
+    cancelBtn.addEventListener('click', function() {
+        if (currentOnCancel) {
+            currentOnCancel();
+        }
+        hideConfirmModal();
+    });
+    
+    // 點擊背景關閉
+    backdrop.addEventListener('click', function() {
+        if (currentOnCancel) {
+            currentOnCancel();
+        }
+        hideConfirmModal();
+    });
+    
+    // ESC 鍵關閉
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            if (currentOnCancel) {
+                currentOnCancel();
+            }
+            hideConfirmModal();
+        }
+    });
+})();
+</script>

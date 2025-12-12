@@ -1,4 +1,4 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
+@model CanLove_Backend.Application.ViewModels.Case.Basic.CaseFormVM
 @{
     var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("Query", "CaseBasicQuery");
     var isEditMode = ViewBag.IsEditMode as bool? ?? false;
@@ -15,14 +15,14 @@
             <i class="bi bi-check-circle me-1"></i>儲存
         </button>
     }
-    else if (Model.Mode == CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormMode.Create)
+    else if (Model.Mode == CanLove_Backend.Application.ViewModels.Case.Basic.CaseFormMode.Create)
     {
         <input type="hidden" name="SubmitAction" value="Submit" />
         <button type="submit" class="btn">
             <i class="bi bi-check-circle me-1"></i>提交審核
         </button>
     }
-    else if (Model.Mode == CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormMode.Review)
+    else if (Model.Mode == CanLove_Backend.Application.ViewModels.Case.Basic.CaseFormMode.Review)
     {
         <button type="submit" name="SubmitAction" value="Approve" class="btn">
             <i class="bi bi-check2-circle me-1"></i>通過
@@ -31,7 +31,7 @@
             <i class="bi bi-x-circle me-1"></i>不通過
         </button>
     }
-    else if (Model.Mode == CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormMode.ReadOnly)
+    else if (Model.Mode == CanLove_Backend.Application.ViewModels.Case.Basic.CaseFormMode.ReadOnly)
     {
         <input type="hidden" name="SubmitAction" value="None" />
     }

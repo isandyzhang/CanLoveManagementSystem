@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using CanLove_Backend.Infrastructure.Data.Contexts;
 using CanLove_Backend.Domain.Case.Models.Basic;
-using CanLove_Backend.Domain.Case.ViewModels.Basic;
+using CanLove_Backend.Application.ViewModels.Case.Basic;
 using CanLove_Backend.Domain.Case.Services.Basic;
 using CanLove_Backend.Domain.Case.Shared.Services;
 using CanLove_Backend.Domain.Case.Exceptions;
@@ -18,13 +19,13 @@ namespace CanLove_Backend.Application.Controllers.Case;
 public class CaseBasicReviewController : CaseBasicBaseController
 {
     private readonly CanLoveDbContext _context;
-    private readonly CaseService _caseService;
+    private readonly ICaseBasicService _caseService;
     private readonly CaseBasicPhotoService _photoService;
     private readonly DataEncryptionService _encryptionService;
 
     public CaseBasicReviewController(
         CanLoveDbContext context,
-        CaseService caseService,
+        ICaseBasicService caseService,
         CaseBasicPhotoService photoService,
         DataEncryptionService encryptionService,
         CaseBasicValidationService validationService,
@@ -185,7 +186,7 @@ public class CaseBasicReviewController : CaseBasicBaseController
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireSocialWorker")]
     public async Task<IActionResult> ReviewCase(string id, bool approved, string? reviewComment = null)
     {
         try

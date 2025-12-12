@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using CanLove_Backend.Infrastructure.Data.Contexts;
 using CanLove_Backend.Domain.Case.Models.Basic;
-using CanLove_Backend.Domain.Case.ViewModels.Basic;
+using CanLove_Backend.Application.ViewModels.Case.Basic;
 using CanLove_Backend.Domain.Case.Services.Basic;
 using CanLove_Backend.Domain.Case.Shared.Services;
 using CanLove_Backend.Infrastructure.Storage.Encryption;
 using CaseEntity = CanLove_Backend.Domain.Case.Models.Basic.Case;
-
 namespace CanLove_Backend.Application.Controllers.Case;
 
 /// <summary>
@@ -16,13 +16,13 @@ namespace CanLove_Backend.Application.Controllers.Case;
 public class CaseBasicQueryController : CaseBasicBaseController
 {
     private readonly CanLoveDbContext _context;
-    private readonly CaseService _caseService;
+    private readonly ICaseBasicService _caseService;
     private readonly CaseBasicPhotoService _photoService;
     private readonly DataEncryptionService _encryptionService;
 
     public CaseBasicQueryController(
         CanLoveDbContext context,
-        CaseService caseService,
+        ICaseBasicService caseService,
         CaseBasicPhotoService photoService,
         DataEncryptionService encryptionService,
         CaseBasicValidationService validationService,
@@ -39,22 +39,32 @@ public class CaseBasicQueryController : CaseBasicBaseController
     /// <summary>
     /// 查詢 - 基本資料
     /// </summary>
+    /// <param name="caseId">個案編號（選填）</param>
+    /// <param name="status">狀態篩選（選填：Draft, PendingReview, Approved, Rejected）</param>
     [HttpGet]
-    public async Task<IActionResult> Query(string? caseId = null, bool showAll = false)
+    public async Task<IActionResult> Query(string? caseId = null, string? status = null)
     {
         ViewData["Title"] = "查詢個案 - 基本資料";
         ViewBag.CurrentPage = "Search";
         ViewBag.CurrentTab = "CaseBasic";
         SetNavigationContext("Query");
         
-        // 預設載入所有已審核個案列表
+        // 預設載入所有個案列表（支援狀態篩選）
         try
         {
-            var allCases = await _context.Cases
+            var queryable = _context.Cases
                 .Include(c => c.City)
                 .Include(c => c.District)
                 .Include(c => c.School)
-                .Where(c => c.Deleted != true && c.Status == "Approved")
+                .Where(c => c.Deleted != true);
+
+            // 狀態篩選
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                queryable = queryable.Where(c => c.Status == status);
+            }
+
+            var allCases = await queryable
                 .OrderByDescending(c => c.CreatedAt)
                 .Select(c => new CaseEntity
                 {
@@ -81,6 +91,7 @@ public class CaseBasicQueryController : CaseBasicBaseController
             
             ViewBag.AllCases = allCases;
             ViewBag.ShowAllCases = true;
+            ViewBag.CurrentStatus = status;
         }
         catch (Exception ex)
         {
@@ -96,9 +107,10 @@ public class CaseBasicQueryController : CaseBasicBaseController
     /// 搜尋個案 API（AJAX）
     /// </summary>
     /// <param name="query">搜尋關鍵字</param>
+    /// <param name="status">狀態篩選（選填：Draft, PendingReview, Approved, Rejected）</param>
     /// <param name="excludeWithOpeningRecord">是否排除已有開案紀錄的個案（預設為 false）</param>
     [HttpGet]
-    public async Task<IActionResult> SearchCases(string query, bool excludeWithOpeningRecord = false)
+    public async Task<IActionResult> SearchCases(string? query = null, string? status = null, bool excludeWithOpeningRecord = false)
     {
         try
         {
@@ -106,7 +118,13 @@ public class CaseBasicQueryController : CaseBasicBaseController
                 .Include(c => c.City)
                 .Include(c => c.District)
                 .Include(c => c.School)
-                .Where(c => c.Deleted != true && c.Status == "Approved");
+                .Where(c => c.Deleted != true);
+
+            // 狀態篩選
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                queryable = queryable.Where(c => c.Status == status);
+            }
 
             // 如果需要排除已有開案紀錄的個案
             if (excludeWithOpeningRecord)
@@ -133,6 +151,7 @@ public class CaseBasicQueryController : CaseBasicBaseController
                     caseId = c.CaseId,
                     name = c.Name,
                     gender = c.Gender ?? "",
+                    status = c.Status ?? "",
                     birthDate = c.BirthDate,
                     city = c.City != null ? new { CityId = c.City.CityId, CityName = c.City.CityName } : null,
                     district = c.District != null ? new { DistrictId = c.District.DistrictId, DistrictName = c.District.DistrictName } : null,
@@ -153,7 +172,7 @@ public class CaseBasicQueryController : CaseBasicBaseController
     /// <summary>
     /// 取得個案詳細資料 (AJAX API)
     /// </summary>
-    // [Authorize(Policy = "RequireViewer")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireViewer")]
     [HttpGet]
     public async Task<IActionResult> ViewDetails(string caseId)
     {

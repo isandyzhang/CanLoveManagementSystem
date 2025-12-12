@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using CanLove_Backend.Infrastructure.Data.Contexts;
 using CanLove_Backend.Domain.Case.Models.Basic;
 using CanLove_Backend.Domain.Case.ViewModels.Opening;
-using CanLove_Backend.Domain.Case.ViewModels.Basic;
+using CanLove_Backend.Application.ViewModels.Case.Basic;
 using CanLove_Backend.Domain.Case.Services.Opening.Steps;
 using CanLove_Backend.Infrastructure.Options.Services;
 using CanLove_Backend.Infrastructure.Storage.Blob;

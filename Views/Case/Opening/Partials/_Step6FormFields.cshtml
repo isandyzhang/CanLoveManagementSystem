@@ -23,7 +23,7 @@
                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ1)</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <select asp-for="EqQ1" class="input" required form-mode="@Model.Mode" disabled-when="ReadOnly">
+                        <select asp-for="EqQ1" class="input" required form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                             <option value="">請選擇評分</option>
                             <option value="1">1分 - 完全不符合</option>
                             <option value="2">2分 - 部分符合</option>
@@ -48,7 +48,7 @@
                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ2)</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <select asp-for="EqQ2" class="input" required form-mode="@Model.Mode" disabled-when="ReadOnly">
+                        <select asp-for="EqQ2" class="input" required form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                             <option value="">請選擇評分</option>
                             <option value="1">1分 - 完全不符合</option>
                             <option value="2">2分 - 部分符合</option>
@@ -73,7 +73,7 @@
                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ3)</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <select asp-for="EqQ3" class="input" required form-mode="@Model.Mode" disabled-when="ReadOnly">
+                        <select asp-for="EqQ3" class="input" required form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                             <option value="">請選擇評分</option>
                             <option value="1">1分 - 完全不符合</option>
                             <option value="2">2分 - 部分符合</option>
@@ -98,7 +98,7 @@
                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ4)</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <select asp-for="EqQ4" class="input" required form-mode="@Model.Mode" disabled-when="ReadOnly">
+                        <select asp-for="EqQ4" class="input" required form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                             <option value="">請選擇評分</option>
                             <option value="1">1分 - 完全不符合</option>
                             <option value="2">2分 - 部分符合</option>
@@ -123,7 +123,7 @@
                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ5)</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <select asp-for="EqQ5" class="input" required form-mode="@Model.Mode" disabled-when="ReadOnly">
+                        <select asp-for="EqQ5" class="input" required form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                             <option value="">請選擇評分</option>
                             <option value="1">1分 - 完全不符合</option>
                             <option value="2">2分 - 部分符合</option>
@@ -148,7 +148,7 @@
                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ6)</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <select asp-for="EqQ6" class="input" required form-mode="@Model.Mode" disabled-when="ReadOnly">
+                        <select asp-for="EqQ6" class="input" required form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                             <option value="">請選擇評分</option>
                             <option value="1">1分 - 完全不符合</option>
                             <option value="2">2分 - 部分符合</option>
@@ -173,7 +173,7 @@
                 <p class="card-text mb-3">@Html.DisplayNameFor(model => model.EqQ7)</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <select asp-for="EqQ7" class="input" required form-mode="@Model.Mode" disabled-when="ReadOnly">
+                        <select asp-for="EqQ7" class="input" required form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                             <option value="">請選擇評分</option>
                             <option value="1">1分 - 完全不符合</option>
                             <option value="2">2分 - 部分符合</option>

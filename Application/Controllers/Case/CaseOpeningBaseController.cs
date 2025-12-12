@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using CanLove_Backend.Domain.Case.Models.Opening;
-using CanLove_Backend.Domain.Case.ViewModels.Basic;
+using CanLove_Backend.Application.ViewModels.Case.Basic;
 using CanLove_Backend.Domain.Case.Services.Opening;
 using CanLove_Backend.Domain.Case.Shared.Services;
 

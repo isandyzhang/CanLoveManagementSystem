@@ -12,13 +12,13 @@ namespace CanLove_Backend.Domain.Case.Services.Basic;
 /// <summary>
 /// 個案服務類別 - 使用 AutoMapper 改善版
 /// </summary>
-public class CaseService
+public class CaseBasicService : ICaseBasicService
 {
     private readonly CanLoveDbContext _context;
     private readonly IMapper _mapper;
     private readonly DataEncryptionService _encryptionService;
 
-    public CaseService(CanLoveDbContext context, IMapper mapper, DataEncryptionService encryptionService)
+    public CaseBasicService(CanLoveDbContext context, IMapper mapper, DataEncryptionService encryptionService)
     {
         _context = context;
         _mapper = mapper;
@@ -147,7 +147,7 @@ public class CaseService
             _context.Cases.Add(caseData);
             await _context.SaveChangesAsync();
 
-            return (true, "個案建立成功");
+            return (true, "個案已送交審閱！");
         }
         catch (DbUpdateException dbEx)
         {
@@ -209,7 +209,9 @@ public class CaseService
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            var existingCase = await _context.Cases.FindAsync(caseData.CaseId);
+            // 使用追蹤實體更新，避免直接 Update(detached entity) 造成導覽屬性/關聯被意外覆蓋
+            var existingCase = await _context.Cases
+                .FirstOrDefaultAsync(c => c.CaseId == caseData.CaseId && c.Deleted != true);
             if (existingCase == null)
             {
                 throw new CaseBasicNotFoundException(caseData.CaseId);
@@ -221,46 +223,85 @@ public class CaseService
                 throw new CaseBasicLockedException(caseData.CaseId, existingCase.LockedBy ?? "未知");
             }
 
-            // 加密身分證字號（如果已變更）
-            if (!string.IsNullOrWhiteSpace(caseData.IdNumber) && caseData.IdNumber != existingCase.IdNumber)
+            // --- 欄位更新（僅更新基本資料欄位） ---
+            existingCase.Name = caseData.Name;
+            existingCase.AssessmentDate = caseData.AssessmentDate;
+            existingCase.Gender = caseData.Gender;
+            existingCase.SchoolId = caseData.SchoolId;
+            existingCase.BirthDate = caseData.BirthDate;
+            existingCase.Address = caseData.Address;
+            existingCase.CityId = caseData.CityId;
+            existingCase.DistrictId = caseData.DistrictId;
+            existingCase.Phone = caseData.Phone;
+            existingCase.Email = caseData.Email;
+            existingCase.PhotoBlobId = caseData.PhotoBlobId;
+
+            // 驗證外鍵是否存在（避免 DbUpdateException 只丟出模糊訊息）
+            if (existingCase.CityId.HasValue)
             {
-                // 檢查是否為已加密的格式（簡單判斷：如果長度超過正常身分證字號長度，可能是已加密）
-                if (caseData.IdNumber.Length <= 10)
+                var cityExists = await _context.Cities.AnyAsync(c => c.CityId == existingCase.CityId.Value);
+                if (!cityExists)
                 {
-                    // 可能是明文，需要加密
-                    var encryptedIdNumber = _encryptionService.Encrypt(caseData.IdNumber);
-                    
-                    // 檢查加密後的身分證字號是否已被其他個案使用
+                    throw new CaseBasicValidationException($"城市 ID {existingCase.CityId.Value} 不存在");
+                }
+            }
+
+            if (existingCase.DistrictId.HasValue)
+            {
+                var districtExists = await _context.Districts.AnyAsync(d => d.DistrictId == existingCase.DistrictId.Value);
+                if (!districtExists)
+                {
+                    throw new CaseBasicValidationException($"地區 ID {existingCase.DistrictId.Value} 不存在");
+                }
+            }
+
+            if (existingCase.SchoolId.HasValue)
+            {
+                var schoolExists = await _context.Schools.AnyAsync(s => s.SchoolId == existingCase.SchoolId.Value);
+                if (!schoolExists)
+                {
+                    throw new CaseBasicValidationException($"學校 ID {existingCase.SchoolId.Value} 不存在");
+                }
+            }
+
+            // 身分證字號：若傳入為明文則加密；若為空白則清空
+            var incomingIdNumber = caseData.IdNumber?.Trim();
+            string? encryptedIdNumber;
+            if (string.IsNullOrWhiteSpace(incomingIdNumber))
+            {
+                encryptedIdNumber = string.Empty;
+            }
+            else if (incomingIdNumber.Length <= 10)
+            {
+                encryptedIdNumber = _encryptionService.Encrypt(incomingIdNumber);
+            }
+            else
+            {
+                // 視為已加密的值（例如某些流程直接傳遞密文）
+                encryptedIdNumber = incomingIdNumber;
+            }
+
+            if (!string.Equals(encryptedIdNumber, existingCase.IdNumber, StringComparison.Ordinal))
+            {
+                // 檢查加密後的身分證字號是否已被其他個案使用
+                if (!string.IsNullOrWhiteSpace(encryptedIdNumber))
+                {
                     var existingIdNumber = await _context.Cases
                         .Where(c => c.IdNumber == encryptedIdNumber && c.CaseId != caseData.CaseId && c.Deleted != true)
+                        .Select(c => c.CaseId)
                         .FirstOrDefaultAsync();
-                    
+
                     if (existingIdNumber != null)
                     {
                         throw new CaseBasicValidationException("此身分證字號已被其他個案使用");
                     }
-                    
-                    caseData.IdNumber = encryptedIdNumber;
                 }
+
+                existingCase.IdNumber = encryptedIdNumber;
             }
 
-            // 保留原有的建立時間和審核相關欄位
-            caseData.CreatedAt = existingCase.CreatedAt;
-            caseData.Status = existingCase.Status;
-            caseData.SubmittedBy = existingCase.SubmittedBy;
-            caseData.SubmittedAt = existingCase.SubmittedAt;
-            caseData.ReviewedBy = existingCase.ReviewedBy;
-            caseData.ReviewedAt = existingCase.ReviewedAt;
-            caseData.Deleted = existingCase.Deleted;
-            caseData.DeletedAt = existingCase.DeletedAt;
-            caseData.DeletedBy = existingCase.DeletedBy;
-            caseData.IsLocked = existingCase.IsLocked;
-            caseData.LockedBy = existingCase.LockedBy;
-            caseData.LockedAt = existingCase.LockedAt;
-            
-            caseData.UpdatedAt = DateTimeExtensions.TaiwanTime;
+            existingCase.UpdatedAt = DateTimeExtensions.TaiwanTime;
 
-            _context.Update(caseData);
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 

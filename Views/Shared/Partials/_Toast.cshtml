@@ -1,0 +1,97 @@
+@*
+    Toast 提示組件（JavaScript 動態顯示）
+    使用方式：呼叫 showToast(message, type, duration)
+    
+    參數：
+    - message: 訊息內容
+    - type: 類型 ('success', 'error', 'warning', 'info')
+    - duration: 自動關閉秒數（預設 3 秒，0 表示不自動關閉）
+*@
+
+<!-- Toast 容器 -->
+<div id="toastContainer" class="fixed top-4 right-4 z-[60] flex flex-col gap-2" style="pointer-events: none;"></div>
+
+<script>
+(function() {
+    const container = document.getElementById('toastContainer');
+    
+    // 類型對應樣式
+    const typeStyles = {
+        success: {
+            bg: 'bg-green-50 dark:bg-green-900/90 border-green-300 dark:border-green-700',
+            text: 'text-green-800 dark:text-green-200',
+            icon: 'bi-check-circle-fill text-green-600 dark:text-green-400'
+        },
+        error: {
+            bg: 'bg-red-50 dark:bg-red-900/90 border-red-300 dark:border-red-700',
+            text: 'text-red-800 dark:text-red-200',
+            icon: 'bi-exclamation-triangle-fill text-red-600 dark:text-red-400'
+        },
+        warning: {
+            bg: 'bg-yellow-50 dark:bg-yellow-900/90 border-yellow-300 dark:border-yellow-700',
+            text: 'text-yellow-800 dark:text-yellow-200',
+            icon: 'bi-exclamation-circle-fill text-yellow-600 dark:text-yellow-400'
+        },
+        info: {
+            bg: 'bg-blue-50 dark:bg-blue-900/90 border-blue-300 dark:border-blue-700',
+            text: 'text-blue-800 dark:text-blue-200',
+            icon: 'bi-info-circle-fill text-blue-600 dark:text-blue-400'
+        }
+    };
+    
+    window.showToast = function(message, type, duration) {
+        type = type || 'info';
+        duration = duration !== undefined ? duration : 3;
+        
+        const style = typeStyles[type] || typeStyles.info;
+        
+        // 建立 Toast 元素
+        const toast = document.createElement('div');
+        toast.className = `toast-item flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg ${style.bg} transform translate-x-full transition-transform duration-300`;
+        toast.style.pointerEvents = 'auto';
+        toast.style.minWidth = '280px';
+        toast.style.maxWidth = '400px';
+        
+        toast.innerHTML = `
+            <i class="bi ${style.icon} text-xl flex-shrink-0"></i>
+            <span class="${style.text} font-medium flex-1">${escapeHtml(message)}</span>
+            <button type="button" class="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 ${style.text} transition-colors flex-shrink-0" onclick="closeToast(this.parentElement)">
+                <i class="bi bi-x text-lg"></i>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // 動畫進入
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-x-full');
+            toast.classList.add('translate-x-0');
+        });
+        
+        // 自動關閉
+        if (duration > 0) {
+            setTimeout(() => {
+                closeToast(toast);
+            }, duration * 1000);
+        }
+    };
+    
+    window.closeToast = function(toast) {
+        if (!toast || toast.classList.contains('closing')) return;
+        toast.classList.add('closing');
+        toast.classList.remove('translate-x-0');
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    };
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+})();
+</script>
+

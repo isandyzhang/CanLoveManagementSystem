@@ -9,6 +9,11 @@ function initCityDistrict(districtsByCity, preserveDistrictId = null) {
     const districtSelect = document.getElementById('districtSelect');
     
     if (!citySelect || !districtSelect) return;
+
+    // 若欄位在頁面初始就是不可編輯（例如 ReadOnly / Review 模式），
+    // 則 JS 只負責「載入對應地區選項」以便正確顯示，但不可解除 disabled。
+    const lockCitySelect = citySelect.disabled || citySelect.hasAttribute('disabled');
+    const lockDistrictSelect = districtSelect.disabled || districtSelect.hasAttribute('disabled');
     
     function loadDistrictsForCity(cityId, preserveId = null) {
         const cityIdKey = cityId ? parseInt(cityId) : null;
@@ -19,7 +24,7 @@ function initCityDistrict(districtsByCity, preserveDistrictId = null) {
         
         // 清空地區選項
         districtSelect.innerHTML = '<option value="">請選擇地區</option>';
-        districtSelect.disabled = !cityIdKey;
+        districtSelect.disabled = lockDistrictSelect || !cityIdKey;
         
         if (cityIdKey && districtsByCity && districtsByCity[cityIdKey]) {
             districtsByCity[cityIdKey].forEach(district => {
@@ -31,7 +36,8 @@ function initCityDistrict(districtsByCity, preserveDistrictId = null) {
                 }
                 districtSelect.appendChild(option);
             });
-            districtSelect.disabled = false;
+            // 可編輯模式才允許啟用地區下拉
+            districtSelect.disabled = lockDistrictSelect ? true : false;
         }
     }
     
@@ -52,9 +58,11 @@ function initCityDistrict(districtsByCity, preserveDistrictId = null) {
     }
     
     // 城市選擇變更事件
-    citySelect.addEventListener('change', function() {
-        loadDistrictsForCity(this.value);
-    });
+    if (!lockCitySelect) {
+        citySelect.addEventListener('change', function() {
+            loadDistrictsForCity(this.value);
+        });
+    }
 }
 
 // 新增學校功能
@@ -170,7 +178,9 @@ function initPhotoPreview(photoUrl = null) {
     const photoLoadingContainer = document.getElementById('photoLoadingContainer');
     const previewImage = document.getElementById('previewImage');
 
-    if (!photoFileInput || !addPhotoBtn || !photoPreviewContainer || !photoPlaceholder || !previewImage) return;
+    // 檢視/唯讀模式下可能不會渲染 addPhotoBtn（也不需要上傳互動），但仍需顯示既有照片
+    if (!photoPreviewContainer || !photoPlaceholder || !previewImage) return;
+    const canUpload = !!photoFileInput && !!addPhotoBtn && !photoFileInput.disabled && !addPhotoBtn.disabled;
 
     // 載入已存在的照片（編輯模式）
     if (photoUrl && photoUrl.trim() !== '') {
@@ -204,68 +214,74 @@ function initPhotoPreview(photoUrl = null) {
     }
 
     // 點擊「新增照片」按鈕時觸發檔案選擇
-    addPhotoBtn.addEventListener('click', function() {
-        photoFileInput.click();
-    });
+    if (canUpload) {
+        addPhotoBtn.addEventListener('click', function() {
+            photoFileInput.click();
+        });
+    }
 
     // 檔案選擇變更時
-    photoFileInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            // 驗證檔案類型
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-            if (!allowedTypes.includes(file.type)) {
-                alert('僅支援 JPG、PNG、GIF 格式的圖片');
-                photoFileInput.value = '';
-                photoPlaceholder.classList.remove('hidden');
-                photoPreviewContainer.classList.add('hidden');
-                if (photoLoadingContainer) {
-                    photoLoadingContainer.classList.add('hidden');
+    if (canUpload) {
+        photoFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // 驗證檔案類型
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('僅支援 JPG、PNG、GIF 格式的圖片');
+                    photoFileInput.value = '';
+                    photoPlaceholder.classList.remove('hidden');
+                    photoPreviewContainer.classList.add('hidden');
+                    if (photoLoadingContainer) {
+                        photoLoadingContainer.classList.add('hidden');
+                    }
+                    return;
                 }
-                return;
-            }
 
-            // 驗證檔案大小（5MB）
-            if (file.size > 5 * 1024 * 1024) {
-                alert('檔案大小不能超過 5MB');
-                photoFileInput.value = '';
-                photoPlaceholder.classList.remove('hidden');
-                photoPreviewContainer.classList.add('hidden');
-                if (photoLoadingContainer) {
-                    photoLoadingContainer.classList.add('hidden');
+                // 驗證檔案大小（5MB）
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('檔案大小不能超過 5MB');
+                    photoFileInput.value = '';
+                    photoPlaceholder.classList.remove('hidden');
+                    photoPreviewContainer.classList.add('hidden');
+                    if (photoLoadingContainer) {
+                        photoLoadingContainer.classList.add('hidden');
+                    }
+                    return;
                 }
-                return;
-            }
 
-            // 顯示預覽
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                if (photoLoadingContainer) {
-                    photoLoadingContainer.classList.add('hidden');
+                // 顯示預覽
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    if (photoLoadingContainer) {
+                        photoLoadingContainer.classList.add('hidden');
+                    }
+                    photoPlaceholder.classList.add('hidden');
+                    photoPreviewContainer.classList.remove('hidden');
+                    // 更新按鈕文字
+                    addPhotoBtn.innerHTML = '<i class="bi bi-pencil me-1"></i>更換照片';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // 如果沒有選擇檔案，恢復原狀態
+                if (!photoUrl || photoUrl.trim() === '') {
+                    photoPlaceholder.classList.remove('hidden');
+                    photoPreviewContainer.classList.add('hidden');
+                    if (photoLoadingContainer) {
+                        photoLoadingContainer.classList.add('hidden');
+                    }
+                    addPhotoBtn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>新增照片';
                 }
-                photoPlaceholder.classList.add('hidden');
-                photoPreviewContainer.classList.remove('hidden');
-                // 更新按鈕文字
-                addPhotoBtn.innerHTML = '<i class="bi bi-pencil me-1"></i>更換照片';
-            };
-            reader.readAsDataURL(file);
-        } else {
-            // 如果沒有選擇檔案，恢復原狀態
-            if (!photoUrl || photoUrl.trim() === '') {
-                photoPlaceholder.classList.remove('hidden');
-                photoPreviewContainer.classList.add('hidden');
-                if (photoLoadingContainer) {
-                    photoLoadingContainer.classList.add('hidden');
-                }
-                addPhotoBtn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>新增照片';
             }
-        }
-    });
+        });
+    }
 
     // 點擊照片預覽區域也可以觸發檔案選擇
-    photoPreviewContainer.addEventListener('click', function() {
-        photoFileInput.click();
-    });
+    if (canUpload) {
+        photoPreviewContainer.addEventListener('click', function() {
+            photoFileInput.click();
+        });
+    }
 }
 

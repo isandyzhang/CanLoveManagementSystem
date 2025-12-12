@@ -10,7 +10,7 @@
     <div class="col-12">
         <div class="mb-3">
             <label asp-for="AcademicPerformanceSummary" class="block text-lg font-medium mb-2 text-slate-900">學業表現描述</label>
-            <textarea asp-for="AcademicPerformanceSummary" class="input" rows="6" placeholder="請詳細描述兒少的學業表現狀況，包括：&#10;• 學習態度與動機&#10;• 各科成績表現&#10;• 學習困難與挑戰&#10;• 特殊學習需求&#10;• 與同學和老師的互動情況&#10;• 課外活動參與度&#10;• 其他相關觀察" form-mode="@Model.Mode" readonly-when="ReadOnly"></textarea>
+            <textarea asp-for="AcademicPerformanceSummary" class="input" rows="6" placeholder="請詳細描述兒少的學業表現狀況，包括：&#10;• 學習態度與動機&#10;• 各科成績表現&#10;• 學習困難與挑戰&#10;• 特殊學習需求&#10;• 與同學和老師的互動情況&#10;• 課外活動參與度&#10;• 其他相關觀察" form-mode="@Model.Mode" locked-when="ReadOnly,Review"></textarea>
             <div class="form-text">
                 <i class="fas fa-info-circle me-1"></i>
                 請詳細描述兒少的學業表現狀況，包括學習態度、成績表現、學習困難、特殊需求等相關資訊。

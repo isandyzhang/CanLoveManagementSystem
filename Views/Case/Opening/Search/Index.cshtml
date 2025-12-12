@@ -6,6 +6,17 @@
         ("查詢個案", Url.Action("Query", "CaseOpeningQuery") ?? string.Empty),
         ("開案紀錄表", string.Empty)
     };
+    
+    // 狀態選項
+    var statusOptions = new List<(string Value, string Text)>
+    {
+        ("", "全部狀態"),
+        ("Draft", "草稿"),
+        ("PendingReview", "審核中"),
+        ("Approved", "已開案"),
+        ("Rejected", "被拒絕"),
+        ("Closed", "已結案")
+    };
 }
 
 <div class="w-full px-4 sm:px-6 lg:px-8">
@@ -18,22 +29,41 @@
         <!-- 搜尋與列表整合卡片 -->
         <div class="card bg-white dark:bg-slate-900 shadow-card-lg border rounded-xl border-[#FDBA74] dark:border-slate-700 mb-6">
             <div class="px-6 py-6">
-                <!-- 搜尋輸入框 -->
+                <!-- 搜尋列：搜尋框 + 狀態篩選 + 顯示全部按鈕 -->
                 <div class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <label for="openingSearchInput" class="block text-sm text-slate-700 mb-1">搜尋個案（編號/姓名/電話）</label>
-                        <button type="button" id="showAllOpeningsBtn" class="btn btn-sm btn--secondary">
-                            <i class="bi bi-list-ul me-1"></i>顯示全部開案記錄
-                        </button>
-                    </div>
-                    <div class="flex">
-                        <span class="inline-flex items-center px-3 border border-r-0 border-border rounded-l-md bg-slate-50 text-slate-500"><i class="bi bi-search"></i></span>
-                        <input type="text" id="openingSearchInput" class="input flex-1 rounded-l-none" placeholder="請輸入關鍵字..." autocomplete="off" />
-                        <span id="openingSearchLoading" class="hidden items-center px-3 border border-l-0 border-border rounded-r-md"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                    <div class="flex flex-col md:flex-row md:items-end gap-4">
+                        <!-- 搜尋輸入框 -->
+                        <div class="flex-1">
+                            <label for="openingSearchInput" class="block text-sm text-slate-700 dark:text-slate-300 mb-1">搜尋個案（編號/姓名/電話）</label>
+                            <div class="flex">
+                                <span class="inline-flex items-center px-3 border border-r-0 border-border dark:border-slate-700 rounded-l-md bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400"><i class="bi bi-search"></i></span>
+                                <input type="text" id="openingSearchInput" class="input flex-1 rounded-l-none rounded-r-none dark:bg-slate-800 dark:text-slate-100" placeholder="請輸入關鍵字..." autocomplete="off" />
+                                <span id="openingSearchLoading" class="hidden items-center px-3 border border-l-0 border-border dark:border-slate-700 rounded-r-md bg-slate-50 dark:bg-slate-800"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                            </div>
+                        </div>
+                        
+                        <!-- 狀態篩選下拉選單 -->
+                        <div class="flex-1">
+                            <label for="statusFilter" class="block text-sm text-slate-700 dark:text-slate-300 mb-1">狀態</label>
+                            <select id="statusFilter" class="input w-full dark:bg-slate-800 dark:text-slate-100">
+                                @foreach (var opt in statusOptions)
+                                {
+                                    <option value="@opt.Value">@opt.Text</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <!-- 顯示全部按鈕 -->
+                        <div class="flex-shrink-0">
+                            <label class="block text-sm text-transparent mb-1 select-none">&nbsp;</label>
+                            <button type="button" id="showAllOpeningsBtn" class="btn btn--secondary whitespace-nowrap">
+                                <i class="bi bi-list-ul me-1"></i>顯示全部
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 全部開案記錄列表區（使用公版 _OpeningListTable，搜尋時直接覆蓋此列表） -->
+                <!-- 開案記錄列表 -->
                 <div id="openingListContainer">
                     @{
                         var allOpenings = ViewBag.AllOpenings as IEnumerable<CanLove_Backend.Domain.Case.Models.Opening.CaseOpening> ?? new List<CanLove_Backend.Domain.Case.Models.Opening.CaseOpening>();
@@ -41,24 +71,87 @@
                     }
                     <div class="mb-4">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300">全部開案記錄</h3>
+                            <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-300" id="listTitle">全部開案記錄</h3>
                             <span class="text-sm text-slate-600 dark:text-slate-400">共 <span id="openingCount">@openingCount</span> 筆</span>
                         </div>
                     </div>
                     <div id="openingListTableWrapper">
                         @if (ViewBag.ShowAllOpenings == true && allOpenings.Any())
                         {
-                            ViewBag.TableMode = "Search";
-                            ViewBag.ShowActions = true;
-                            ViewBag.DisableCardWrapper = true;
-                            ViewBag.ActionButtons = new List<(string Text, string Action, string Controller, string Class)>
-                            {
-                                ("編輯", "EditItem", "CaseOpeningQuery", "btn-sm"),
-                                ("查看", "SearchItem", "CaseOpeningQuery", "btn-sm btn--secondary")
-                            };
-                            ViewBag.OnRowClick = "viewOpeningDetails";
-
-                            <partial name="~/Views/Case/Opening/Partials/_OpeningListTable.cshtml" model="allOpenings" />
+                            <div class="overflow-auto">
+                                <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
+                                    <thead>
+                                        <tr class="bg-slate-50 dark:bg-slate-800">
+                                            <th class="text-slate-700 dark:text-slate-300 text-center w-24">功能</th>
+                                            <th class="text-slate-700 dark:text-slate-300">個案編號</th>
+                                            <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
+                                            <th class="text-slate-700 dark:text-slate-300">開案日期</th>
+                                            <th class="text-slate-700 dark:text-slate-300">狀態</th>
+                                            <th class="text-slate-700 dark:text-slate-300">建立時間</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="openingListTableBody">
+                                        @foreach (var item in allOpenings)
+                                        {
+                                            var statusClass = item.Status switch
+                                            {
+                                                "Approved" => "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+                                                "PendingReview" => "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+                                                "Rejected" => "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+                                                "Closed" => "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
+                                                "Draft" => "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300",
+                                                _ => "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300"
+                                            };
+                                            var statusText = item.Status switch
+                                            {
+                                                "Approved" => "已開案",
+                                                "PendingReview" => "審核中",
+                                                "Rejected" => "被拒絕",
+                                                "Closed" => "已結案",
+                                                "Draft" => "草稿",
+                                                _ => "未知"
+                                            };
+                                            <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+                                                <td class="text-center">
+                                                    <div class="inline-flex items-center gap-1">
+                                                        <a href="@Url.Action("View", "CaseOpeningQuery", new { caseId = item.CaseId, step = "CaseDetail" })" 
+                                                           class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                                                           title="查看">
+                                                            <i class="bi bi-eye text-lg"></i>
+                                                        </a>
+                                                        @if (item.Status == "Draft" || item.Status == "Rejected")
+                                                        {
+                                                            <a href="@Url.Action("Edit", "CaseOpeningCreateEdit", new { caseId = item.CaseId, step = "CaseDetail" })" 
+                                                               class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                               title="編輯">
+                                                                <i class="bi bi-pencil-square text-lg"></i>
+                                                            </a>
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td class="text-slate-900 dark:text-slate-100">
+                                                    <code class="text-slate-900 dark:text-slate-100">@item.CaseId</code>
+                                                </td>
+                                                <td class="text-slate-900 dark:text-slate-100">@(item.Case?.Name ?? "")</td>
+                                                <td class="text-slate-900 dark:text-slate-100">
+                                                    @if (item.OpenDate.HasValue)
+                                                    {
+                                                        @item.OpenDate.Value.ToString("yyyy/MM/dd")
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-slate-400">未設定</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <span class="badge-pill @statusClass text-sm">@statusText</span>
+                                                </td>
+                                                <td class="text-slate-900 dark:text-slate-100"><datetime value="@item.CreatedAt"></datetime></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
                         else
                         {
@@ -76,67 +169,101 @@
         (function(){
             const input = document.getElementById('openingSearchInput');
             const loading = document.getElementById('openingSearchLoading');
+            const statusFilter = document.getElementById('statusFilter');
             const tableWrapper = document.getElementById('openingListTableWrapper');
             const openingCountSpan = document.getElementById('openingCount');
+            const listTitle = document.getElementById('listTitle');
             let timer;
+
+            // 狀態文字對應
+            const statusTextMap = {
+                'Draft': '草稿',
+                'PendingReview': '審核中',
+                'Approved': '已開案',
+                'Rejected': '被拒絕',
+                'Closed': '已結案'
+            };
+
+            // 狀態樣式對應
+            const statusClassMap = {
+                'Approved': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                'PendingReview': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+                'Rejected': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+                'Closed': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+                'Draft': 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300'
+            };
             
-            // 產生單列表列 HTML
-            function escapeHtml(t){ if(!t) return ''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+            function escapeHtml(t) { 
+                if (!t) return ''; 
+                const d = document.createElement('div'); 
+                d.textContent = t; 
+                return d.innerHTML; 
+            }
+
+            // 格式化日期時間
+            function formatDateTime(dateValue) {
+                if (!dateValue) return '';
+                try {
+                    const date = new Date(dateValue);
+                    if (isNaN(date.getTime())) {
+                        return String(dateValue || '');
+                    }
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}/${month}/${day} ${hours}:${minutes}`;
+                } catch {
+                    return String(dateValue || '');
+                }
+            }
+
+            // 取得狀態標籤 HTML
+            function getStatusBadge(status) {
+                const statusClass = statusClassMap[status] || 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
+                const statusText = statusTextMap[status] || '未知';
+                return `<span class="badge-pill ${statusClass} text-sm">${statusText}</span>`;
+            }
             
             function renderRow(o) {
                 const status = o.status || 'Draft';
-                let actionButtons = '';
-                
                 const caseId = escapeHtml(o.caseId || '');
-                const editUrl = `/CaseOpening/Edit/CaseDetail?caseId=${caseId}`;
-                const viewUrl = `/CaseOpening/View/CaseDetail?caseId=${caseId}`;
-                const resubmitUrl = `/CaseOpening/Resubmit`;
+                const caseName = escapeHtml(o.name || '');
+                const openDate = o.openDate ? escapeHtml(o.openDate.replace(/-/g, '/')) : '<span class="text-slate-400">未設定</span>';
+                const statusBadge = getStatusBadge(status);
+                const createdAtStr = o.createdAt ? formatDateTime(o.createdAt) : '';
                 
-                switch (status) {
-                    case 'Draft':
-                        actionButtons = `
-                            <a href="${editUrl}" class="btn btn-sm" onclick="event.stopPropagation();">
-                                <i class="bi bi-pencil me-1"></i>編輯
-                            </a>
-                            <a href="${viewUrl}" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
-                                <i class="bi bi-eye me-1"></i>查看
-                            </a>`;
-                        break;
-                    case 'PendingReview':
-                    case 'Approved':
-                    case 'Closed':
-                        actionButtons = `
-                            <a href="${viewUrl}" class="btn btn-sm" onclick="event.stopPropagation();">
-                                <i class="bi bi-eye me-1"></i>檢視
-                            </a>`;
-                        break;
-                    case 'Rejected':
-                        actionButtons = `
-                            <form method="post" action="${resubmitUrl}" style="display: inline;" onsubmit="return confirm('確定要重新送審此開案記錄嗎？');" onclick="event.stopPropagation();">
-                                <input type="hidden" name="caseId" value="${caseId}" />
-                                <input type="hidden" name="__RequestVerificationToken" value="${getAntiForgeryToken()}" />
-                                <button type="submit" class="btn btn-sm">
-                                    <i class="bi bi-arrow-clockwise me-1"></i>重送
-                                </button>
-                            </form>
-                            <a href="${viewUrl}" class="btn btn-sm btn--secondary" onclick="event.stopPropagation();">
-                                <i class="bi bi-eye me-1"></i>檢視
-                            </a>`;
-                        break;
-                    default:
-                        actionButtons = `
-                            <a href="${viewUrl}" class="btn btn-sm" onclick="event.stopPropagation();">
-                                <i class="bi bi-eye me-1"></i>檢視
-                            </a>`;
-                }
+                const viewUrl = `@Url.Action("View", "CaseOpeningQuery")?caseId=${caseId}&step=CaseDetail`;
+                const editUrl = `@Url.Action("Edit", "CaseOpeningCreateEdit")?caseId=${caseId}&step=CaseDetail`;
+                
+                // 根據狀態決定是否顯示編輯按鈕
+                const showEditBtn = status === 'Draft' || status === 'Rejected';
                 
                 return `
-                    <tr class="border-b border-border hover:bg-slate-50 cursor-pointer" onclick="viewOpeningDetails('${caseId}')">
-                        <td><code>${caseId}</code></td>
-                        <td>${escapeHtml(o.name || '')}</td>
-                        <td>${escapeHtml(o.openDate || '')}</td>
-                        <td>${escapeHtml(o.statusText || '')}</td>
-                        <td>${actionButtons}</td>
+                    <tr class="border-b border-border dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+                        <td class="text-center">
+                            <div class="inline-flex items-center gap-1">
+                                <a href="${viewUrl}" 
+                                   class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                                   title="查看">
+                                    <i class="bi bi-eye text-lg"></i>
+                                </a>
+                                ${showEditBtn ? `
+                                <a href="${editUrl}" 
+                                   class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                   title="編輯">
+                                    <i class="bi bi-pencil-square text-lg"></i>
+                                </a>` : ''}
+                            </div>
+                        </td>
+                        <td class="text-slate-900 dark:text-slate-100">
+                            <code class="text-slate-900 dark:text-slate-100">${caseId}</code>
+                        </td>
+                        <td class="text-slate-900 dark:text-slate-100">${caseName}</td>
+                        <td class="text-slate-900 dark:text-slate-100">${openDate}</td>
+                        <td>${statusBadge}</td>
+                        <td class="text-slate-900 dark:text-slate-100">${escapeHtml(createdAtStr)}</td>
                     </tr>`;
             }
             
@@ -145,10 +272,10 @@
                 
                 if (!openings || !openings.length) {
                     tableWrapper.innerHTML = `
-                        <div class="text-center py-10 text-slate-500">
-                            <i class="bi bi-inbox text-slate-400 text-5xl"></i>
-                            <h4 class="mt-3 text-slate-900">尚無開案記錄</h4>
-                            <p class="text-slate-600">目前沒有符合條件的開案記錄</p>
+                        <div class="text-center py-10 text-slate-500 dark:text-slate-400">
+                            <i class="bi bi-inbox text-slate-400 dark:text-slate-500 text-5xl"></i>
+                            <h4 class="mt-3 text-slate-900 dark:text-slate-100">尚無開案記錄</h4>
+                            <p class="text-slate-600 dark:text-slate-400">目前沒有符合條件的開案記錄</p>
                         </div>
                     `;
                     openingCountSpan.textContent = '0';
@@ -158,14 +285,15 @@
                 openingCountSpan.textContent = openings.length.toString();
                 tableWrapper.innerHTML = `
                     <div class="overflow-auto">
-                        <table class="data-table text-left w-full text-slate-900">
+                        <table class="data-table text-left w-full text-slate-900 dark:text-slate-100">
                             <thead>
-                                <tr class="bg-slate-50">
-                                    <th class="text-slate-700">個案編號</th>
-                                    <th class="text-slate-700">姓名</th>
-                                    <th class="text-slate-700">開案日期</th>
-                                    <th class="text-slate-700">狀態</th>
-                                    <th class="text-slate-700">操作</th>
+                                <tr class="bg-slate-50 dark:bg-slate-800">
+                                    <th class="text-slate-700 dark:text-slate-300 text-center w-24">功能</th>
+                                    <th class="text-slate-700 dark:text-slate-300">個案編號</th>
+                                    <th class="text-slate-700 dark:text-slate-300">個案姓名</th>
+                                    <th class="text-slate-700 dark:text-slate-300">開案日期</th>
+                                    <th class="text-slate-700 dark:text-slate-300">狀態</th>
+                                    <th class="text-slate-700 dark:text-slate-300">建立時間</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -176,12 +304,27 @@
                 `;
             }
             
-            async function loadOpenings(query) {
+            async function loadOpenings() {
                 if (!loading) return;
+                
+                const query = input.value.trim();
+                const status = statusFilter.value;
+                
+                // 更新標題
+                if (status) {
+                    listTitle.textContent = statusTextMap[status] + '開案記錄';
+                } else {
+                    listTitle.textContent = '全部開案記錄';
+                }
+                
                 loading.classList.remove('hidden');
                 try {
-                    const url = query ? `/CaseOpening/SearchOpenings?query=${encodeURIComponent(query)}` : `/CaseOpening/SearchOpenings`;
-                    const resp = await fetch(url);
+                    let url = '/CaseOpeningQuery/SearchOpenings?';
+                    const params = new URLSearchParams();
+                    if (query) params.append('query', query);
+                    if (status) params.append('status', status);
+                    
+                    const resp = await fetch(url + params.toString());
                     const data = await resp.json();
                     loading.classList.add('hidden');
                     if (data.success && data.openings) {
@@ -196,42 +339,28 @@
                 }
             }
             
+            // 搜尋處理（防抖）
             if (input) {
                 input.addEventListener('input', function () {
                     clearTimeout(timer);
-                    const q = this.value.trim();
-                    timer = setTimeout(() => {
-                        loadOpenings(q || '');
-                    }, 400);
+                    timer = setTimeout(loadOpenings, 400);
                 });
             }
-            
-            // 獲取 AntiForgeryToken
-            function getAntiForgeryToken() {
-                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-                return tokenInput ? tokenInput.value : '';
-            }
-            
-            // 查看開案記錄詳細資料
-            window.viewOpeningDetails = function (caseId) {
-                if (caseId) {
-                    window.location.href = '@Url.Action("SearchItem", "CaseOpeningQuery")?id=' + encodeURIComponent(caseId);
-                }
-            }
+
+            // 狀態篩選變更
+            statusFilter.addEventListener('change', function(){
+                loadOpenings();
+            });
             
             // 顯示全部開案記錄按鈕
             const showAllBtn = document.getElementById('showAllOpeningsBtn');
             if (showAllBtn) {
                 showAllBtn.addEventListener('click', function() {
-                    // 清空搜尋並回復顯示全部開案記錄（不重新導頁）
-                    if (input) {
-                        input.value = '';
-                    }
-                    loadOpenings('');
+                    input.value = '';
+                    statusFilter.value = '';
+                    loadOpenings();
                 });
             }
         })();
     </script>
 }
-
-

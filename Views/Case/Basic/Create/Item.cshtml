@@ -1,4 +1,4 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
+@model CanLove_Backend.Application.ViewModels.Case.Basic.CaseFormVM
 
 @{
     ViewData["Title"] = "新增個案基本資料";
@@ -19,7 +19,7 @@
             <div class="px-6 py-6">
                 <form asp-controller="CaseBasicCreateEdit" asp-action="Create" method="post" enctype="multipart/form-data" class="prevent-double-submit">
                     <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
-                    <partial name="~/Views/Case/Basic/Partials/_CaseFormFields.cshtml" model="Model" />
+                    <partial name="~/Views/Case/Basic/Partials/_CaseBasicFormFields.cshtml" model="Model" />
                     <partial name="~/Views/Shared/Partials/_CaseFormActions.cshtml" model="Model" />
                 </form>
             </div>
@@ -34,7 +34,7 @@
         const districtsByCity = @Html.Raw(Json.Serialize(ViewBag.DistrictsByCity));
         if (districtsByCity) {
             initCityDistrict(districtsByCity);
-                    }
+        }
 
         // 初始化新增學校功能
         initSchoolAdd();
@@ -43,4 +43,5 @@
         initPhotoPreview();
     </script>
 }
+
 

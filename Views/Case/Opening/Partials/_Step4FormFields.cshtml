@@ -10,7 +10,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label asp-for="CaregiverRoleValueId" class="block text-lg font-medium mb-2 text-slate-900">照顧者角色 <span class="text-red-500">*</span></label>
-            <select asp-for="CaregiverRoleValueId" class="input" required form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="CaregiverRoleValueId" class="input" required form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇照顧者角色</option>
                 @if (Model.CaregiverRoleOptions != null)
                 {
@@ -24,12 +24,12 @@
         </div>
         <div>
             <label asp-for="CaregiverName" class="block text-lg font-medium mb-2 text-slate-900">照顧者姓名</label>
-            <input asp-for="CaregiverName" class="input" placeholder="請輸入照顧者姓名" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="CaregiverName" class="input" placeholder="請輸入照顧者姓名" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="CaregiverName" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="IsPrimary" class="block text-lg font-medium mb-2 text-slate-900">是否主要照顧者</label>
-            <select asp-for="IsPrimary" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="IsPrimary" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇</option>
                 <option value="true">是</option>
                 <option value="false">否</option>
@@ -49,7 +49,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label asp-for="EmotionalExpressionRating" class="block text-lg font-medium mb-2 text-slate-900">情緒表現分數</label>
-            <select asp-for="EmotionalExpressionRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="EmotionalExpressionRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常不穩定</option>
                 <option value="2">2分 - 不穩定</option>
@@ -60,12 +60,12 @@
         </div>
         <div>
             <label asp-for="EmotionalExpressionNote" class="block text-lg font-medium mb-2 text-slate-900">情緒表現說明</label>
-            <input asp-for="EmotionalExpressionNote" class="input" placeholder="請輸入情緒表現說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="EmotionalExpressionNote" class="input" placeholder="請輸入情緒表現說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="EmotionalExpressionNote" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="HealthStatusRating" class="block text-lg font-medium mb-2 text-slate-900">身體健康分數</label>
-            <select asp-for="HealthStatusRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="HealthStatusRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常差</option>
                 <option value="2">2分 - 差</option>
@@ -76,7 +76,7 @@
         </div>
         <div>
             <label asp-for="HealthStatusNote" class="block text-lg font-medium mb-2 text-slate-900">身體健康說明</label>
-            <input asp-for="HealthStatusNote" class="input" placeholder="請輸入身體健康說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="HealthStatusNote" class="input" placeholder="請輸入身體健康說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="HealthStatusNote" class="text-red-600 text-sm"></span>
         </div>
     </div>
@@ -92,7 +92,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label asp-for="ChildHealthStatusRating" class="block text-lg font-medium mb-2 text-slate-900">兒少健康狀態分數</label>
-            <select asp-for="ChildHealthStatusRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="ChildHealthStatusRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常差</option>
                 <option value="2">2分 - 差</option>
@@ -103,12 +103,12 @@
         </div>
         <div>
             <label asp-for="ChildHealthStatusNote" class="block text-lg font-medium mb-2 text-slate-900">兒少健康狀態說明</label>
-            <input asp-for="ChildHealthStatusNote" class="input" placeholder="請輸入兒少健康狀態說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="ChildHealthStatusNote" class="input" placeholder="請輸入兒少健康狀態說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="ChildHealthStatusNote" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="ChildCareStatusRating" class="block text-lg font-medium mb-2 text-slate-900">兒少受照顧狀態分數</label>
-            <select asp-for="ChildCareStatusRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="ChildCareStatusRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常差</option>
                 <option value="2">2分 - 差</option>
@@ -119,7 +119,7 @@
         </div>
         <div>
             <label asp-for="ChildCareStatusNote" class="block text-lg font-medium mb-2 text-slate-900">兒少受照顧狀態說明</label>
-            <input asp-for="ChildCareStatusNote" class="input" placeholder="請輸入兒少受照顧狀態說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="ChildCareStatusNote" class="input" placeholder="請輸入兒少受照顧狀態說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="ChildCareStatusNote" class="text-red-600 text-sm"></span>
         </div>
     </div>

@@ -1,4 +1,4 @@
-@model CanLove_Backend.Domain.Case.ViewModels.Basic.CaseFormVM
+@model CanLove_Backend.Application.ViewModels.Case.Basic.CaseFormVM
 
 @{
     ViewData["Title"] = "審核個案 - 個案基本資料";
@@ -23,7 +23,7 @@
                 ("不通過", "ReviewItemDecision", "CaseBasicReview", "btn bg-red-400 hover:bg-red-500 text-white", "bi bi-x-circle", true, "ReviewItemDecision")
             };
         }
-        <partial name="~/Views/Case/Basic/Partials/_CaseDetailCard.cshtml" model="Model" />
+        <partial name="~/Views/Case/Basic/Partials/_CaseBasicCard.cshtml" model="Model" />
     </div>
 </div>
 

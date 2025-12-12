@@ -1,4 +1,4 @@
-using CanLove_Backend.Domain.Case.ViewModels.Basic;
+using CanLove_Backend.Application.ViewModels.Case.Basic;
 
 namespace CanLove_Backend.Domain.Case.ViewModels.Opening;
 

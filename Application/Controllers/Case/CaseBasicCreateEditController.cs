@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CanLove_Backend.Domain.Case.Models.Basic;
-using CanLove_Backend.Domain.Case.ViewModels.Basic;
+using CanLove_Backend.Application.ViewModels.Case.Basic;
 using CanLove_Backend.Domain.Case.Services.Basic;
 using CanLove_Backend.Domain.Case.Shared.Services;
 using CanLove_Backend.Domain.Case.Exceptions;
@@ -15,12 +16,12 @@ namespace CanLove_Backend.Application.Controllers.Case;
 /// </summary>
 public class CaseBasicCreateEditController : CaseBasicBaseController
 {
-    private readonly CaseService _caseService;
+    private readonly ICaseBasicService _caseService;
     private readonly CaseBasicPhotoService _photoService;
     private readonly DataEncryptionService _encryptionService;
 
     public CaseBasicCreateEditController(
-        CaseService caseService,
+        ICaseBasicService caseService,
         CaseBasicPhotoService photoService,
         DataEncryptionService encryptionService,
         CaseBasicValidationService validationService,
@@ -60,12 +61,12 @@ public class CaseBasicCreateEditController : CaseBasicBaseController
                 GenderOptions = optionsData.GenderOptions
             };
 
-            return View("~/Views/Case/Basic/Create.cshtml", viewModel);
+            return View("~/Views/Case/Basic/Create/Item.cshtml", viewModel);
         }
         catch (Exception ex)
         {
             ViewBag.ErrorMessage = $"載入頁面時發生錯誤：{ex.Message}";
-            return View("~/Views/Case/Basic/Create.cshtml", new CaseFormVM
+            return View("~/Views/Case/Basic/Create/Item.cshtml", new CaseFormVM
             {
                 Mode = CaseFormMode.Create,
                 Case = new CaseEntity(),
@@ -82,7 +83,7 @@ public class CaseBasicCreateEditController : CaseBasicBaseController
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // [Authorize(Policy = "RequireAssistant")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireAssistant")]
     public async Task<IActionResult> Create(CaseFormVM model)
     {
         if (ModelState.IsValid)
@@ -121,7 +122,7 @@ public class CaseBasicCreateEditController : CaseBasicBaseController
                 model.Districts = new List<Domain.Case.Shared.Models.District>();
                 model.Schools = optionsData.Schools;
                 model.GenderOptions = optionsData.GenderOptions;
-                return View("~/Views/Case/Basic/Create.cshtml", model);
+                return View("~/Views/Case/Basic/Create/Item.cshtml", model);
             }
 
             // 設定個案為待審閱狀態（點擊「提交審核」表示要送審）
@@ -135,25 +136,10 @@ public class CaseBasicCreateEditController : CaseBasicBaseController
             
             if (response.Success)
             {
-                TempData["SuccessMessage"] = "個案建立成功";
+                TempData["SuccessMessage"] = "個案已送交審閱！";
 
-                // 留在建立頁，並重設表單預設值與下拉資料
-                var optionsData = await LoadOptionsDataAsync();
-                var resetViewModel = new CaseFormVM
-                {
-                    Mode = CaseFormMode.Create,
-                    Case = new CaseEntity
-                    {
-                        CaseId = string.Empty,
-                        AssessmentDate = DateOnly.FromDateTime(DateTime.Today)
-                    },
-                    Cities = optionsData.Cities,
-                    Districts = new List<Domain.Case.Shared.Models.District>(),
-                    Schools = optionsData.Schools,
-                    GenderOptions = optionsData.GenderOptions
-                };
-
-                return View("~/Views/Case/Basic/Create.cshtml", resetViewModel);
+                // 使用 PRG 模式重定向回 Create 頁面，確保表單完全清空
+                return RedirectToAction("Create");
             }
             else
             {
@@ -174,14 +160,14 @@ public class CaseBasicCreateEditController : CaseBasicBaseController
         model.Schools = errorOptionsData.Schools; // 載入所有學校供獨立選擇
         model.GenderOptions = errorOptionsData.GenderOptions;
 
-        return View("~/Views/Case/Basic/Create.cshtml", model);
+        return View("~/Views/Case/Basic/Create/Item.cshtml", model);
     }
 
     /// <summary>
     /// 個案編輯頁面（別名：EditItem）
     /// </summary>
     [HttpGet]
-    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireSocialWorker")]
     public async Task<IActionResult> EditItem(string id)
     {
         return await Edit(id);
@@ -191,7 +177,7 @@ public class CaseBasicCreateEditController : CaseBasicBaseController
     /// 個案編輯頁面
     /// </summary>
     [HttpGet]
-    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireSocialWorker")]
     public async Task<IActionResult> Edit(string id)
     {
         SetNavigationContext("Edit");
@@ -259,7 +245,7 @@ public class CaseBasicCreateEditController : CaseBasicBaseController
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireSocialWorker")]
     public async Task<IActionResult> Edit(string id, CaseFormVM model)
     {
         if (id != model.Case.CaseId)

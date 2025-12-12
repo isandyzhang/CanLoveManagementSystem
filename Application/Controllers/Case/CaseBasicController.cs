@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using CanLove_Backend.Infrastructure.Data.Contexts;
 using CanLove_Backend.Domain.Case.Models.Basic;
@@ -15,11 +16,11 @@ namespace CanLove_Backend.Application.Controllers.Case;
 public class CaseBasicController : CaseBasicBaseController
 {
     private readonly CanLoveDbContext _context;
-    private readonly CaseService _caseService;
+    private readonly ICaseBasicService _caseService;
 
     public CaseBasicController(
         CanLoveDbContext context,
-        CaseService caseService,
+        ICaseBasicService caseService,
         CaseBasicValidationService validationService,
         CaseBasicOptionsService optionsService,
         CaseInfoService caseInfoService)
@@ -34,7 +35,7 @@ public class CaseBasicController : CaseBasicBaseController
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // [Authorize(Policy = "RequireAssistant")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireAssistant")]
     public async Task<IActionResult> SubmitForReview(string id)
     {
         try
@@ -69,7 +70,7 @@ public class CaseBasicController : CaseBasicBaseController
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // [Authorize(Policy = "RequireSocialWorker")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireSocialWorker")]
     public async Task<IActionResult> ToggleLock(string id)
     {
         try
@@ -103,7 +104,7 @@ public class CaseBasicController : CaseBasicBaseController
     /// 個案刪除頁面
     /// </summary>
     [HttpGet]
-    // [Authorize(Policy = "RequireAdmin")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireAdmin")]
     public async Task<IActionResult> Delete(string id)
     {
         var validationResult = ValidateCaseId(id);
@@ -130,7 +131,7 @@ public class CaseBasicController : CaseBasicBaseController
     /// 個案刪除處理 (軟刪除)
     /// </summary>
     [HttpPost, ActionName("Delete")]
-    // [Authorize(Policy = "RequireAdmin")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireAdmin")]
     public async Task<IActionResult> DeleteConfirmed(string id)
     {
         try
@@ -165,7 +166,7 @@ public class CaseBasicController : CaseBasicBaseController
     /// <summary>
     /// 個案詳情頁面
     /// </summary>
-    // [Authorize(Policy = "RequireViewer")] // 暫時註解掉進行測試
+    [Authorize] // TODO: 之後可根據需求改為 [Authorize(Policy = "RequireViewer")]
     public async Task<IActionResult> Details(string id)
     {
         var validationResult = ValidateCaseId(id);

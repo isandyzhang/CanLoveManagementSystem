@@ -10,12 +10,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pl-8">
         <div>
             <label asp-for="ContactName" class="block text-lg font-medium mb-2 text-slate-900">聯絡人姓名</label>
-            <input asp-for="ContactName" class="input pl-5" placeholder="請輸入聯絡人姓名" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="ContactName" class="input pl-5" placeholder="請輸入聯絡人姓名" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="ContactName" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="ContactRelationValueId" class="block text-lg font-medium mb-2 text-slate-900">與案主關係</label>
-            <select asp-for="ContactRelationValueId" class="input pl-5" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="ContactRelationValueId" class="input pl-5" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇關係</option>
                 @if (Model.ContactRelationOptions != null)
                 {
@@ -29,12 +29,12 @@
         </div>
         <div>
             <label asp-for="ContactPhone" class="block text-lg font-medium mb-2 text-slate-900">聯絡人電話</label>
-            <input asp-for="ContactPhone" class="input pl-5" placeholder="請輸入聯絡人電話" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="ContactPhone" class="input pl-5" placeholder="請輸入聯絡人電話" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="ContactPhone" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="HomePhone" class="block text-lg font-medium mb-2 text-slate-900">住家電話</label>
-            <input asp-for="HomePhone" class="input pl-5" placeholder="請輸入住家電話" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="HomePhone" class="input pl-5" placeholder="請輸入住家電話" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="HomePhone" class="text-red-600 text-sm"></span>
         </div>
     </div>
@@ -50,7 +50,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pl-8">
         <div>
             <label asp-for="FamilyStructureTypeId" class="block text-lg font-medium mb-2 text-slate-900">家庭結構類型</label>
-            <select asp-for="FamilyStructureTypeId" class="input pl-5" id="familyStructureSelect" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="FamilyStructureTypeId" class="input pl-5" id="familyStructureSelect" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇家庭結構類型</option>
                 @if (Model.FamilyStructureTypeOptions != null)
                 {
@@ -64,7 +64,7 @@
         </div>
         <div>
             <label asp-for="FamilyStructureOtherDesc" class="block text-lg font-medium mb-2 text-slate-900">其他結構描述</label>
-            <input asp-for="FamilyStructureOtherDesc" class="input pl-5" placeholder="請描述其他家庭結構類型" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="FamilyStructureOtherDesc" class="input pl-5" placeholder="請描述其他家庭結構類型" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="FamilyStructureOtherDesc" class="text-red-600 text-sm"></span>
         </div>
     </div>
@@ -80,7 +80,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pl-8">
         <div>
             <label asp-for="ParentNationFatherId" class="block text-lg font-medium mb-2 text-slate-900">父親國籍</label>
-            <select asp-for="ParentNationFatherId" class="input pl-5" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="ParentNationFatherId" class="input pl-5" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇父親國籍</option>
                 @if (Model.NationalityOptions != null)
                 {
@@ -94,7 +94,7 @@
         </div>
         <div>
             <label asp-for="ParentNationMotherId" class="block text-lg font-medium mb-2 text-slate-900">母親國籍</label>
-            <select asp-for="ParentNationMotherId" class="input pl-5" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="ParentNationMotherId" class="input pl-5" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇母親國籍</option>
                 @if (Model.NationalityOptions != null)
                 {
@@ -119,34 +119,34 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pl-8">
         <div>
             <label asp-for="MainCaregiverName" class="block text-lg font-medium mb-2 text-slate-900">主要照顧者姓名</label>
-            <input asp-for="MainCaregiverName" class="input pl-5" placeholder="請輸入主要照顧者姓名" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="MainCaregiverName" class="input pl-5" placeholder="請輸入主要照顧者姓名" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="MainCaregiverName" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="MainCaregiverRelationValueId" class="block text-lg font-medium mb-2 text-slate-900">與案主關係</label>
-            <select asp-for="MainCaregiverRelationValueId" class="input pl-5" asp-items="@(new SelectList(Model.MainCaregiverRelationOptions, "OptionValueId", "ValueName", Model.MainCaregiverRelationValueId))" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="MainCaregiverRelationValueId" class="input pl-5" asp-items="@(new SelectList(Model.MainCaregiverRelationOptions, "OptionValueId", "ValueName", Model.MainCaregiverRelationValueId))" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇與案主關係</option>
             </select>
             <span asp-validation-for="MainCaregiverRelationValueId" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="MainCaregiverId" class="block text-lg font-medium mb-2 text-slate-900">身分證字號(加密)</label>
-            <input asp-for="MainCaregiverId" class="input pl-5" placeholder="請輸入身分證字號" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="MainCaregiverId" class="input pl-5" placeholder="請輸入身分證字號" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="MainCaregiverId" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="MainCaregiverBirth" class="block text-lg font-medium mb-2 text-slate-900">生日</label>
-            <input asp-for="MainCaregiverBirth" type="date" class="input pl-5" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="MainCaregiverBirth" type="date" class="input pl-5" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="MainCaregiverBirth" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="MainCaregiverJob" class="block text-lg font-medium mb-2 text-slate-900">職業</label>
-            <input asp-for="MainCaregiverJob" class="input pl-5" placeholder="請輸入職業" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="MainCaregiverJob" class="input pl-5" placeholder="請輸入職業" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="MainCaregiverJob" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="MainCaregiverMarryStatusValueId" class="block text-lg font-medium mb-2 text-slate-900">婚姻狀況</label>
-            <select asp-for="MainCaregiverMarryStatusValueId" class="input pl-5" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="MainCaregiverMarryStatusValueId" class="input pl-5" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇婚姻狀況</option>
                 @if (Model.MarryStatusOptions != null)
                 {
@@ -160,7 +160,7 @@
         </div>
         <div>
             <label asp-for="MainCaregiverEduValueId" class="block text-lg font-medium mb-2 text-slate-900">教育程度</label>
-            <select asp-for="MainCaregiverEduValueId" class="input pl-5" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="MainCaregiverEduValueId" class="input pl-5" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇教育程度</option>
                 @if (Model.EducationLevelOptions != null)
                 {
@@ -185,7 +185,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pl-8">
         <div>
             <label asp-for="SourceValueId" class="block text-lg font-medium mb-2 text-slate-900">個案來源</label>
-            <select asp-for="SourceValueId" class="input pl-5" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="SourceValueId" class="input pl-5" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇個案來源</option>
                 @if (Model.SourceOptions != null)
                 {
@@ -199,7 +199,7 @@
         </div>
         <div>
             <label asp-for="HelpExperienceValueId" class="block text-lg font-medium mb-2 text-slate-900">求助經驗</label>
-            <select asp-for="HelpExperienceValueId" class="input pl-5" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="HelpExperienceValueId" class="input pl-5" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇求助經驗</option>
                 @if (Model.HelpExperienceOptions != null)
                 {
@@ -224,7 +224,7 @@
     <div class="col-12 pl-8">
         <div class="mb-3">
             <label asp-for="Note" class="block text-lg font-medium mb-2 text-slate-900">備註</label>
-            <textarea asp-for="Note" class="input pl-5" rows="4" placeholder="請輸入備註資訊" form-mode="@Model.Mode" readonly-when="ReadOnly"></textarea>
+            <textarea asp-for="Note" class="input pl-5" rows="4" placeholder="請輸入備註資訊" form-mode="@Model.Mode" locked-when="ReadOnly,Review"></textarea>
             <span asp-validation-for="Note" class="text-red-600 text-sm"></span>
         </div>
     </div>

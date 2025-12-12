@@ -170,6 +170,29 @@
   }
   .input::placeholder { @apply text-slate-400; }
   .input:focus { box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 25%, transparent); border-color: color-mix(in oklab, var(--color-primary) 50%, var(--color-border)); outline: none; }
+  /* ReadOnly / Disabled：檢視或鎖定時欄位灰底 */
+  .input:disabled,
+  .input[disabled],
+  .input[readonly] {
+    background-color: #f1f5f9; /* slate-100 */
+    color: #64748b; /* slate-500 */
+    border-color: #e2e8f0; /* slate-200 */
+    cursor: not-allowed;
+  }
+  .input[readonly] { cursor: default; }
+  .input:disabled:focus,
+  .input[disabled]:focus,
+  .input[readonly]:focus { box-shadow: none; outline: none; border-color: #e2e8f0; }
+  .dark .input:disabled,
+  .dark .input[disabled],
+  .dark .input[readonly] {
+    background-color: #0f172a; /* slate-900 */
+    color: #94a3b8; /* slate-400 */
+    border-color: #334155; /* slate-700 */
+  }
+  .dark .input:disabled:focus,
+  .dark .input[disabled]:focus,
+  .dark .input[readonly]:focus { box-shadow: none; outline: none; border-color: #334155; }
 
   .card {
     @apply bg-white dark:bg-slate-900 border shadow-card;

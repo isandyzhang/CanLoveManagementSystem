@@ -26,7 +26,7 @@
         </div>
         <div>
             <label asp-for="ResidenceTypeValueId" class="block text-lg font-medium mb-2 text-slate-900">居住地型態</label>
-            <select asp-for="ResidenceTypeValueId" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="ResidenceTypeValueId" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇居住地型態</option>
                 @if (Model.ResidenceTypeOptions != null)
                 {
@@ -51,7 +51,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label asp-for="HouseCleanlinessRating" class="block text-lg font-medium mb-2 text-slate-900">居家整潔分數</label>
-            <select asp-for="HouseCleanlinessRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="HouseCleanlinessRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常不整潔</option>
                 <option value="2">2分 - 不整潔</option>
@@ -62,12 +62,12 @@
         </div>
         <div>
             <label asp-for="HouseCleanlinessNote" class="block text-lg font-medium mb-2 text-slate-900">居家整潔說明</label>
-            <input asp-for="HouseCleanlinessNote" class="input" placeholder="請輸入居家整潔說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="HouseCleanlinessNote" class="input" placeholder="請輸入居家整潔說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="HouseCleanlinessNote" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="HouseSafetyRating" class="block text-lg font-medium mb-2 text-slate-900">居家安全分數</label>
-            <select asp-for="HouseSafetyRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="HouseSafetyRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常不安全</option>
                 <option value="2">2分 - 不安全</option>
@@ -78,7 +78,7 @@
         </div>
         <div>
             <label asp-for="HouseSafetyNote" class="block text-lg font-medium mb-2 text-slate-900">居家安全說明</label>
-            <input asp-for="HouseSafetyNote" class="input" placeholder="請輸入居家安全說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="HouseSafetyNote" class="input" placeholder="請輸入居家安全說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="HouseSafetyNote" class="text-red-600 text-sm"></span>
         </div>
     </div>
@@ -94,7 +94,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label asp-for="CaregiverChildInteractionRating" class="block text-lg font-medium mb-2 text-slate-900">照顧者與兒少互動情形分數</label>
-            <select asp-for="CaregiverChildInteractionRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="CaregiverChildInteractionRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常不好</option>
                 <option value="2">2分 - 不好</option>
@@ -105,12 +105,12 @@
         </div>
         <div>
             <label asp-for="CaregiverChildInteractionNote" class="block text-lg font-medium mb-2 text-slate-900">照顧者與兒少互動情形說明</label>
-            <input asp-for="CaregiverChildInteractionNote" class="input" placeholder="請輸入互動情形說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="CaregiverChildInteractionNote" class="input" placeholder="請輸入互動情形說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="CaregiverChildInteractionNote" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="CaregiverFamilyInteractionRating" class="block text-lg font-medium mb-2 text-slate-900">照顧者與整體同住家人互動情形分數</label>
-            <select asp-for="CaregiverFamilyInteractionRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="CaregiverFamilyInteractionRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常不好</option>
                 <option value="2">2分 - 不好</option>
@@ -121,7 +121,7 @@
         </div>
         <div>
             <label asp-for="CaregiverFamilyInteractionNote" class="block text-lg font-medium mb-2 text-slate-900">照顧者與整體同住家人互動情形說明</label>
-            <input asp-for="CaregiverFamilyInteractionNote" class="input" placeholder="請輸入互動情形說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="CaregiverFamilyInteractionNote" class="input" placeholder="請輸入互動情形說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="CaregiverFamilyInteractionNote" class="text-red-600 text-sm"></span>
         </div>
     </div>
@@ -137,7 +137,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label asp-for="FamilyResourceAbilityRating" class="block text-lg font-medium mb-2 text-slate-900">家庭資源連結能力分數</label>
-            <select asp-for="FamilyResourceAbilityRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="FamilyResourceAbilityRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常差</option>
                 <option value="2">2分 - 差</option>
@@ -148,12 +148,12 @@
         </div>
         <div>
             <label asp-for="FamilyResourceAbilityNote" class="block text-lg font-medium mb-2 text-slate-900">家庭資源連結能力說明</label>
-            <input asp-for="FamilyResourceAbilityNote" class="input" placeholder="請輸入資源連結能力說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="FamilyResourceAbilityNote" class="input" placeholder="請輸入資源連結能力說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="FamilyResourceAbilityNote" class="text-red-600 text-sm"></span>
         </div>
         <div>
             <label asp-for="FamilySocialSupportRating" class="block text-lg font-medium mb-2 text-slate-900">社會家庭支持獲得分數</label>
-            <select asp-for="FamilySocialSupportRating" class="input" form-mode="@Model.Mode" disabled-when="ReadOnly">
+            <select asp-for="FamilySocialSupportRating" class="input" form-mode="@Model.Mode" locked-when="ReadOnly,Review">
                 <option value="">請選擇分數</option>
                 <option value="1">1分 - 非常少</option>
                 <option value="2">2分 - 少</option>
@@ -164,7 +164,7 @@
         </div>
         <div>
             <label asp-for="FamilySocialSupportNote" class="block text-lg font-medium mb-2 text-slate-900">社會家庭支持獲得說明</label>
-            <input asp-for="FamilySocialSupportNote" class="input" placeholder="請輸入社會支持說明" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="FamilySocialSupportNote" class="input" placeholder="請輸入社會支持說明" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="FamilySocialSupportNote" class="text-red-600 text-sm"></span>
         </div>
     </div>
@@ -180,7 +180,7 @@
     <div class="col-12">
         <div class="mb-3">
             <label asp-for="SpecialCircumstancesDescription" class="block text-lg font-medium mb-2 text-slate-900">其他特殊情形描述</label>
-            <input asp-for="SpecialCircumstancesDescription" class="input" placeholder="請描述其他特殊情形" form-mode="@Model.Mode" readonly-when="ReadOnly" />
+            <input asp-for="SpecialCircumstancesDescription" class="input" placeholder="請描述其他特殊情形" form-mode="@Model.Mode" locked-when="ReadOnly,Review" />
             <span asp-validation-for="SpecialCircumstancesDescription" class="text-red-600 text-sm"></span>
         </div>
     </div>

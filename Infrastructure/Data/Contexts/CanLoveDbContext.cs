@@ -88,6 +88,20 @@ public partial class CanLoveDbContext : DbContext
     {
         modelBuilder.UseCollation("Chinese_PRC_CI_AS");
 
+        // ============================================================================
+        // 實體配置說明
+        // ============================================================================
+        // 目前使用內聯配置（下方的 modelBuilder.Entity<T> 區塊）
+        // 
+        // 建議的優化方式：使用 IEntityTypeConfiguration<T> 將配置拆分到獨立文件
+        // 範例配置已建立在 Infrastructure/Data/Configurations/ 目錄
+        // 
+        // 啟用方式（未來遷移時）：
+        // 1. 將下方的內聯配置移到對應的 Configuration 類別
+        // 2. 取消下行的註解，自動載入所有配置
+        // modelBuilder.ApplyConfigurationsFromAssembly(typeof(CanLoveDbContext).Assembly);
+        // ============================================================================
+
         modelBuilder.Entity<Case>(entity =>
         {
             entity.HasKey(e => e.CaseId).HasName("PK__Cases__956FA6E99085F5FE");
@@ -186,6 +200,8 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey(d => d.PhotoBlobId)
                 .HasConstraintName("FK_Cases_PhotoBlob");
 
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseOpening>(entity =>
@@ -263,6 +279,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey(d => d.ConsultationTargetValueId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseConsu__consu__5D95E53A");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseDetail>(entity =>
@@ -368,6 +387,9 @@ public partial class CanLoveDbContext : DbContext
             entity.HasOne(d => d.SourceValue).WithMany(p => p.CaseDetailSourceValues)
                 .HasForeignKey(d => d.SourceValueId)
                 .HasConstraintName("FK__CaseDetai__sourc__0D7A0286");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseDetailHistory>(entity =>
@@ -451,6 +473,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<CaseEqemotionalEvaluation>(d => d.OpeningId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CaseEQemotionalEvaluation_CaseOpening");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseFamilyMember>(entity =>
@@ -486,6 +511,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey(d => d.MemberTypeValueId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseFamil__membe__4F47C5E3");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseFamilyMemberNote>(entity =>
@@ -524,6 +552,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey(d => d.MemberTypeValueId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseFamil__membe__55F4C372");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseFamilySpecialStatus>(entity =>
@@ -566,6 +597,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey(d => d.StatusTypeValueId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseFamil__statu__498EEC8D");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseFqeconomicStatus>(entity =>
@@ -622,6 +656,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<CaseFqeconomicStatus>(d => d.OpeningId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CaseFQeconomicStatus_CaseOpening");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseHistory>(entity =>
@@ -727,6 +764,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey(d => d.OpeningId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CaseHQhealthStatus_CaseOpening");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseIqacademicPerformance>(entity =>
@@ -766,6 +806,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<CaseIqacademicPerformance>(d => d.OpeningId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CaseIQacademicPerformance_CaseOpening");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseSocialWorkerContent>(entity =>
@@ -833,6 +876,9 @@ public partial class CanLoveDbContext : DbContext
             entity.HasOne(d => d.ResidenceTypeValue).WithMany(p => p.CaseSocialWorkerContents)
                 .HasForeignKey(d => d.ResidenceTypeValueId)
                 .HasConstraintName("FK__CaseSocia__resid__1AD3FDA4");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<CaseSocialWorkerService>(entity =>
@@ -872,6 +918,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey(d => d.ServiceTypeValueId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CaseSocia__servi__6442E2C9");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<City>(entity =>
@@ -1006,6 +1055,9 @@ public partial class CanLoveDbContext : DbContext
                 .HasForeignKey<FinalAssessmentSummary>(d => d.OpeningId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_FinalAssessmentSummary_CaseOpening");
+
+            // 全局查詢過濾器：自動排除已刪除的記錄
+            entity.HasQueryFilter(e => e.Deleted != true);
         });
 
         modelBuilder.Entity<Nationality>(entity =>
