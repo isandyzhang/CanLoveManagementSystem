@@ -91,3 +91,4 @@ public class CaseBasicLockedException : CaseBasicException
     public string CaseId { get; }
     public string LockedBy { get; }
 }
+

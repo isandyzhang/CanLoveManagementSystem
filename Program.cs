@@ -493,11 +493,11 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
     }
 
     // 註冊 DbContext（使用 SQL Server）
-    // 指定 Migrations 組件位置：Infrastructure.Data
+    // 指定 Migrations 組件位置：主專案名稱
     builder.Services.AddDbContext<CanLoveDbContext>(options =>
     {
         options.UseSqlServer(connectionString, sqlOptions =>
-            sqlOptions.MigrationsAssembly("CanLove_Backend.Infrastructure.Data"));
+            sqlOptions.MigrationsAssembly("CanLove_Backend"));
     });
     
     // 註冊 DbContextFactory（用於並行操作時創建獨立的 DbContext 實例）
@@ -507,7 +507,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
     {
         // 直接使用連接字串配置，不依賴已註冊的 DbContextOptions
         options.UseSqlServer(connectionString, sqlOptions =>
-            sqlOptions.MigrationsAssembly("CanLove_Backend.Infrastructure.Data"));
+            sqlOptions.MigrationsAssembly("CanLove_Backend"));
     }, ServiceLifetime.Scoped);
 }
 

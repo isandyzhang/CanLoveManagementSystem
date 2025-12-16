@@ -56,6 +56,35 @@
     --orange-100: #FFF8F1;
     --orange-400: #FDBA74;
     --orange-500: #FB923C;
+
+    /* ============================================
+       表單元素統一樣式變數（Form Input Tokens）
+       ============================================ */
+    
+    /* 背景色 */
+    --form-input-bg: #ffffff;
+    --form-input-bg-disabled: #f1f5f9;  /* slate-100 */
+    --form-input-bg-readonly: #f1f5f9;
+    
+    /* 邊框 */
+    --form-input-border: #e2e8f0;  /* slate-200，直接使用具體顏色值確保顯示 */
+    --form-input-border-disabled: #e2e8f0;     /* slate-200 */
+    --form-input-border-focus: var(--color-primary);
+    
+    /* 文字 */
+    --form-input-text: #0f172a;              /* slate-900 */
+    --form-input-text-disabled: #64748b;      /* slate-500 */
+    --form-input-placeholder: var(--color-slate-400);
+    
+    /* 尺寸 */
+    --form-input-radius: var(--radius-md);    /* 10px */
+    --form-input-padding-x: calc(var(--spacing) * 3);  /* 0.75rem */
+    --form-input-padding-y: calc(var(--spacing) * 2);  /* 0.5rem */
+    --form-input-text-size: var(--text-sm);
+    
+    /* Focus 狀態 */
+    --form-input-focus-ring: var(--color-primary);
+    --form-input-focus-ring-opacity: 25%;
   }
 
   .dark {
@@ -70,6 +99,12 @@
     --on-secondary: #071018;
     --muted: #111827;  /* gray-900 */
     --border: #1f2937; /* gray-800 */
+    
+    /* 深色模式下的表單元素樣式 */
+    --form-input-bg: #ffffff;  /* 表單元素在深色模式下仍保持白色 */
+    --form-input-bg-disabled: #0f172a;  /* slate-900 */
+    --form-input-text-disabled: #94a3b8;  /* slate-400 */
+    --form-input-border-disabled: #334155;  /* slate-700 */
   }
 }
 
@@ -144,6 +179,158 @@
 
 /* Component layer: buttons, inputs, cards */
 @layer components {
+  /* ============================================
+     表單元素統一樣式（Form Input Styles）
+     分開設計 input 和 select，確保完全一致且可靠
+     即使代碼重複，也要確保每個元素都有明確的樣式定義
+     ============================================ */
+  
+  /* ========== INPUT 元素樣式 ========== */
+  /* 使用更具體的選擇器提高特異性，確保覆蓋 base 層的基礎重置 */
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]) {
+    /* 移除瀏覽器預設樣式 */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* 基礎樣式（與 select 完全一致） */
+    border-radius: var(--form-input-radius);
+    background-color: var(--form-input-bg);
+    border: 1px solid var(--form-input-border);
+    padding-inline: var(--form-input-padding-x);
+    padding-block: var(--form-input-padding-y);
+    font-size: var(--form-input-text-size);
+    line-height: var(--text-sm--line-height);
+    color: var(--form-input-text);
+    
+    /* 過渡效果 */
+    transition-property: border-color, box-shadow, background-color;
+    transition-timing-function: var(--default-transition-timing-function);
+    transition-duration: var(--default-transition-duration);
+  }
+  
+  /* INPUT placeholder 樣式 */
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])::placeholder {
+    color: var(--form-input-placeholder);
+  }
+  
+  /* INPUT focus 狀態 */
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):focus {
+    outline: none;
+    border-color: var(--form-input-border-focus);
+    box-shadow: 0 0 0 3px var(--form-input-focus-ring);
+    @supports (color: color-mix(in lab, red, red)) {
+      box-shadow: 0 0 0 3px color-mix(
+        in oklab, 
+        var(--form-input-focus-ring) 
+        var(--form-input-focus-ring-opacity), 
+        transparent
+      );
+    }
+  }
+  
+  /* INPUT disabled/readonly 狀態 */
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):disabled,
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[disabled],
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[readonly] {
+    background-color: var(--form-input-bg-disabled);
+    color: var(--form-input-text-disabled);
+    border-color: var(--form-input-border-disabled);
+    cursor: not-allowed;
+  }
+  
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[readonly] {
+    cursor: default;
+  }
+  
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):disabled:focus,
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[disabled]:focus,
+  input:not([type="button"]):not([type="submit"]):not([type="reset"])
+        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[readonly]:focus {
+    box-shadow: none;
+    border-color: var(--form-input-border-disabled);
+  }
+  
+  /* ========== SELECT 元素樣式 ========== */
+  /* 使用更具體的選擇器提高特異性，確保覆蓋 base 層的基礎重置 */
+  select:not([multiple]) {
+    /* 移除瀏覽器預設樣式 */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* 基礎樣式（與 input 完全一致） */
+    border-radius: var(--form-input-radius);
+    background-color: var(--form-input-bg);
+    border: 1px solid var(--form-input-border);
+    padding-inline: var(--form-input-padding-x);
+    padding-block: var(--form-input-padding-y);
+    font-size: var(--form-input-text-size);
+    line-height: var(--text-sm--line-height);
+    color: var(--form-input-text);
+    
+    /* 為下拉箭頭留出空間 */
+    padding-right: calc(var(--form-input-padding-x) * 2.5);
+    
+    /* 自訂下拉箭頭圖示 */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--form-input-padding-x) center;
+    background-size: 12px;
+    
+    /* 過渡效果 */
+    transition-property: border-color, box-shadow, background-color;
+    transition-timing-function: var(--default-transition-timing-function);
+    transition-duration: var(--default-transition-duration);
+  }
+  
+  /* SELECT focus 狀態 */
+  select:not([multiple]):focus {
+    outline: none;
+    border-color: var(--form-input-border-focus);
+    box-shadow: 0 0 0 3px var(--form-input-focus-ring);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2390B44B' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    @supports (color: color-mix(in lab, red, red)) {
+      box-shadow: 0 0 0 3px color-mix(
+        in oklab, 
+        var(--form-input-focus-ring) 
+        var(--form-input-focus-ring-opacity), 
+        transparent
+      );
+    }
+  }
+  
+  /* SELECT disabled/readonly 狀態 */
+  select:not([multiple]):disabled,
+  select:not([multiple])[disabled],
+  select:not([multiple])[readonly] {
+    background-color: var(--form-input-bg-disabled);
+    color: var(--form-input-text-disabled);
+    border-color: var(--form-input-border-disabled);
+    cursor: not-allowed;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  }
+  
+  select:not([multiple])[readonly] {
+    cursor: default;
+  }
+  
+  select:not([multiple]):disabled:focus,
+  select:not([multiple])[disabled]:focus,
+  select:not([multiple])[readonly]:focus {
+    box-shadow: none;
+    border-color: var(--form-input-border-disabled);
+  }
+
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md font-medium transition shadow-sm;
     background-color: var(--color-primary);
@@ -161,38 +348,17 @@
     color: #ffffff;
   }
 
+  /* 簡化後的 .input 類
+     基礎樣式已在上面統一設定（input 和 select），
+     這裡只需要處理特殊情況，如全寬等 */
   .input {
-    @apply w-full rounded-md px-3 py-2 text-sm;
-    /* 統一在白底卡片上視覺一致，深色模式也維持白色 */
-    background-color: #ffffff;
-    color: #0f172a; /* slate-900 */
-    border: 1px solid var(--color-border);
+    /* 如果需要全寬（這是 .input 類的主要用途） */
+    width: 100%;
+    
+    /* 注意：所有其他樣式（border, border-radius, padding, background, color 等）
+       都在上面統一設定，這裡不需要也不應該重複定義
+       這樣可以確保 input 和 select 完全一致 */
   }
-  .input::placeholder { @apply text-slate-400; }
-  .input:focus { box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 25%, transparent); border-color: color-mix(in oklab, var(--color-primary) 50%, var(--color-border)); outline: none; }
-  /* ReadOnly / Disabled：檢視或鎖定時欄位灰底 */
-  .input:disabled,
-  .input[disabled],
-  .input[readonly] {
-    background-color: #f1f5f9; /* slate-100 */
-    color: #64748b; /* slate-500 */
-    border-color: #e2e8f0; /* slate-200 */
-    cursor: not-allowed;
-  }
-  .input[readonly] { cursor: default; }
-  .input:disabled:focus,
-  .input[disabled]:focus,
-  .input[readonly]:focus { box-shadow: none; outline: none; border-color: #e2e8f0; }
-  .dark .input:disabled,
-  .dark .input[disabled],
-  .dark .input[readonly] {
-    background-color: #0f172a; /* slate-900 */
-    color: #94a3b8; /* slate-400 */
-    border-color: #334155; /* slate-700 */
-  }
-  .dark .input:disabled:focus,
-  .dark .input[disabled]:focus,
-  .dark .input[readonly]:focus { box-shadow: none; outline: none; border-color: #334155; }
 
   .card {
     @apply bg-white dark:bg-slate-900 border shadow-card;
