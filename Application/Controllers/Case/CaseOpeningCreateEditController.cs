@@ -241,6 +241,7 @@ public class CaseOpeningCreateEditController : CaseOpeningBaseController
                     {
                         CaseId = model.CaseId,
                         Status = "Draft",
+                        OpenDate = DateOnly.FromDateTime(DateTimeExtensions.TaiwanTime), // 自動設定開案日期為當下日期
                         CreatedAt = DateTimeExtensions.TaiwanTime,
                         UpdatedAt = DateTimeExtensions.TaiwanTime
                     };
@@ -256,6 +257,12 @@ public class CaseOpeningCreateEditController : CaseOpeningBaseController
                     
                     // 更新時間戳
                     opening.UpdatedAt = DateTimeExtensions.TaiwanTime;
+                    
+                    // 如果 OpenDate 為空，補上當下日期
+                    if (!opening.OpenDate.HasValue)
+                    {
+                        opening.OpenDate = DateOnly.FromDateTime(DateTimeExtensions.TaiwanTime);
+                    }
                 }
                 
                 await _context.SaveChangesAsync();

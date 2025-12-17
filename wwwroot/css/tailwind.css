@@ -187,8 +187,7 @@
   
   /* ========== INPUT 元素樣式 ========== */
   /* 使用更具體的選擇器提高特異性，確保覆蓋 base 層的基礎重置 */
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]) {
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]) {
     /* 移除瀏覽器預設樣式 */
     appearance: none;
     -webkit-appearance: none;
@@ -211,14 +210,12 @@
   }
   
   /* INPUT placeholder 樣式 */
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])::placeholder {
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])::placeholder {
     color: var(--form-input-placeholder);
   }
   
   /* INPUT focus 狀態 */
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):focus {
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):focus {
     outline: none;
     border-color: var(--form-input-border-focus);
     box-shadow: 0 0 0 3px var(--form-input-focus-ring);
@@ -233,29 +230,22 @@
   }
   
   /* INPUT disabled/readonly 狀態 */
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):disabled,
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[disabled],
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[readonly] {
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):disabled,
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[disabled],
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[readonly] {
     background-color: var(--form-input-bg-disabled);
     color: var(--form-input-text-disabled);
     border-color: var(--form-input-border-disabled);
     cursor: not-allowed;
   }
   
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[readonly] {
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[readonly] {
     cursor: default;
   }
   
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):disabled:focus,
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[disabled]:focus,
-  input:not([type="button"]):not([type="submit"]):not([type="reset"])
-        :not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[readonly]:focus {
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"]):disabled:focus,
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[disabled]:focus,
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="image"])[readonly]:focus {
     box-shadow: none;
     border-color: var(--form-input-border-disabled);
   }

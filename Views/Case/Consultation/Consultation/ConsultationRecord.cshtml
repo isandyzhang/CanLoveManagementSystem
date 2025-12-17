@@ -22,14 +22,7 @@
                 <partial name="~/Views/Shared/Partials/_CurrentCaseInfo.cshtml" />
             </div>
             <div class="px-6 py-6">
-                <!-- 個案選擇 Autocomplete -->
-                @{
-                    ViewBag.CaseAutocompleteInputId = "caseAutocompleteInput";
-                    ViewBag.CaseAutocompleteInputName = "caseAutocomplete";
-                    ViewBag.CaseAutocompleteCaseIdFieldId = "CaseId";
-                    ViewBag.CaseAutocompleteOnSelectCallback = "";
-                }
-                <partial name="~/Views/Shared/Partials/_CaseAutocomplete.cshtml" />
+                <!-- TODO: 實作個案選擇功能 -->
                 <input type="hidden" id="CaseId" name="CaseId" value="@ViewBag.CaseId" />
                 
                 <partial name="~/Views/Shared/Partials/_NotImplemented.cshtml" />

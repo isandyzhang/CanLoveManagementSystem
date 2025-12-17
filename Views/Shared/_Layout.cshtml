@@ -5,30 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CanLove 個案管理系統</title>
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
-    <script>
-        // Tailwind CSS 官方推荐的深色模式初始化脚本
-        (function() {
-            try {
-                const root = document.documentElement;
-                const savedTheme = localStorage.getItem('theme');
-                const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                
-                // 优先使用保存的主题，否则使用系统偏好
-                const isDark = savedTheme 
-                    ? savedTheme === 'dark' 
-                    : systemPrefersDark;
-                
-                if (isDark) {
-                    root.classList.add('dark');
-                } else {
-                    root.classList.remove('dark');
-                }
-            } catch (e) {
-                // 如果出现错误（如 localStorage 不可用），默认使用浅色模式
-                console.warn('主题初始化失败:', e);
-            }
-        })();
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -66,11 +42,11 @@
     </script>
     </head>
 <body>
-    <div class="min-h-screen grid grid-cols-[320px_1fr] bg-white dark:bg-slate-950">
-        <aside class="border-r border-border bg-white dark:bg-slate-900 dark:border-slate-800">
+    <div class="min-h-screen grid grid-cols-[320px_1fr] bg-white">
+        <aside class="border-r border-border bg-white">
             @await Html.PartialAsync("_Sidebar")
         </aside>
-        <div class="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div class="flex flex-col min-h-screen bg-slate-50">
             @await Html.PartialAsync("_Topbar")
             @await Html.PartialAsync("_Breadcrumb")
             <main role="main" class="flex-1 p-6">
@@ -95,7 +71,7 @@
                 </div>
             }
             </main>
-            <footer class="border-t border-border dark:border-slate-800 text-muted dark:text-slate-400 p-4 text-sm">
+            <footer class="border-t border-border text-muted p-4 text-sm">
                 <div class="max-w-7xl mx-auto flex items-center justify-between">
                     <div>&copy; 2025 - CanLove 個案管理系統</div>
                     <div class="text-end"><small>版本 1.0.0</small></div>

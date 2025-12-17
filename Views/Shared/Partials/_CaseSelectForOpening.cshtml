@@ -1,0 +1,347 @@
+@{
+    // 參數：caseIdFieldId, onSelectCallback, showSearch
+    var caseIdFieldId = ViewBag.CaseSelectFieldId as string ?? "CaseId";
+    var onSelectCallback = ViewBag.CaseSelectCallback as string ?? "";
+    var showSearch = ViewBag.ShowSearch as bool? ?? false;
+}
+
+<div class="mb-4">
+    <label class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">選擇個案 <span class="text-red-500">*</span></label>
+    
+    <!-- 提示訊息 -->
+    <div class="mb-3 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+        <div class="flex items-start gap-3">
+            <i class="bi bi-info-circle text-orange-600 dark:text-orange-400 text-xl mt-0.5"></i>
+            <div>
+                <p class="text-slate-700 dark:text-slate-300 font-medium mb-1">請先選擇個案，才能繼續進行後續步驟</p>
+                <p class="text-slate-600 dark:text-slate-400 text-sm">選擇個案後，系統會自動建立草稿記錄，您可以隨時儲存進度並稍後繼續填寫。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜尋框（可選） -->
+    @if (showSearch)
+    {
+        <div class="mb-3">
+            <input 
+                type="text" 
+                id="caseSelectSearch" 
+                class="input w-full focus:ring-orange-400 focus:border-orange-400 dark:bg-slate-800 dark:text-slate-100" 
+                placeholder="搜尋個案編號或姓名..." 
+                autocomplete="off" />
+        </div>
+    }
+    
+    <!-- 載入指示器 -->
+    <div id="caseSelectLoading" class="mb-3 text-center py-8">
+        <div class="inline-flex items-center gap-3">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            <span class="text-slate-600 dark:text-slate-400">載入個案列表中...</span>
+        </div>
+    </div>
+    
+    <!-- 個案列表 -->
+    <div id="caseSelectContainer" class="hidden mb-3">
+        <div class="bg-white dark:bg-slate-800 border border-border dark:border-slate-700 rounded-md shadow-sm">
+            <div class="overflow-auto max-h-96">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 dark:bg-slate-700 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-slate-700 dark:text-slate-300">個案編號</th>
+                            <th class="px-4 py-2 text-left text-slate-700 dark:text-slate-300">姓名</th>
+                            <th class="px-4 py-2 text-left text-slate-700 dark:text-slate-300">學校</th>
+                        </tr>
+                    </thead>
+                    <tbody id="caseSelectList" class="text-slate-900 dark:text-slate-100">
+                        <!-- 動態插入結果 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 空列表提示 -->
+    <div id="caseSelectEmpty" class="hidden mb-3 p-6 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-center">
+        <i class="bi bi-inbox text-4xl text-slate-400 dark:text-slate-600 mb-3"></i>
+        <p class="text-slate-600 dark:text-slate-400">目前沒有可開案的個案</p>
+        <p class="text-slate-500 dark:text-slate-500 text-sm mt-1">所有個案都已建立開案記錄</p>
+    </div>
+    
+    <!-- 已選擇個案資訊 -->
+    <div id="caseSelectSelectedInfo" class="hidden mb-3 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-sm text-slate-600 dark:text-slate-400">已選擇：</span>
+                <span class="font-medium text-slate-900 dark:text-slate-100">
+                    <code class="text-orange-600 dark:text-orange-400" id="caseSelectSelectedId"></code>
+                    <span class="ml-2" id="caseSelectSelectedName"></span>
+                </span>
+            </div>
+            <button 
+                type="button" 
+                id="caseSelectClearBtn" 
+                class="btn btn-sm btn-secondary">
+                <i class="bi bi-x-circle me-1"></i>清除
+            </button>
+        </div>
+    </div>
+    
+    <!-- 隱藏的 caseId 欄位 -->
+    <input type="hidden" id="@caseIdFieldId" name="@caseIdFieldId" />
+    <span id="caseSelectError" class="hidden text-red-600 text-sm mt-1">請選擇個案</span>
+</div>
+
+<script>
+(function(){
+    // 確保 DOM 載入完成後執行
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCaseSelect);
+    } else {
+        initCaseSelect();
+    }
+    
+    function initCaseSelect() {
+        const caseIdFieldId = '@caseIdFieldId';
+        const onSelectCallback = '@onSelectCallback';
+        const showSearch = @(showSearch ? "true" : "false");
+        
+        const loadingDiv = document.getElementById('caseSelectLoading');
+        const containerDiv = document.getElementById('caseSelectContainer');
+        const listElement = document.getElementById('caseSelectList');
+        const emptyDiv = document.getElementById('caseSelectEmpty');
+        const selectedInfo = document.getElementById('caseSelectSelectedInfo');
+        const selectedId = document.getElementById('caseSelectSelectedId');
+        const selectedName = document.getElementById('caseSelectSelectedName');
+        const clearBtn = document.getElementById('caseSelectClearBtn');
+        const caseIdField = document.getElementById(caseIdFieldId);
+        const errorSpan = document.getElementById('caseSelectError');
+        const searchInput = showSearch ? document.getElementById('caseSelectSearch') : null;
+        
+        // 檢查必要元素是否存在
+        if (!listElement || !caseIdField) {
+            console.error('Required elements not found');
+            return;
+        }
+        
+        let allCases = []; // 儲存所有個案資料
+        let selectedCase = null;
+        
+        // 清除按鈕點擊事件
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                clearSelection();
+            });
+        }
+        
+        // 搜尋框輸入事件（前端過濾）
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim().toLowerCase();
+                filterCases(query);
+            });
+        }
+        
+        // 頁面載入時自動取得個案列表
+        loadCases();
+        
+        // 載入個案列表
+        async function loadCases() {
+            try {
+                // 顯示載入指示器
+                if (loadingDiv) loadingDiv.classList.remove('hidden');
+                if (containerDiv) containerDiv.classList.add('hidden');
+                if (emptyDiv) emptyDiv.classList.add('hidden');
+                
+                const url = '/CaseBasicQuery/SearchCases?excludeWithOpeningRecord=true';
+                const res = await fetch(url);
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: 請求失敗`);
+                }
+                
+                const data = await res.json();
+                
+                // 隱藏載入指示器
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                
+                // 檢查 API 回應
+                if (!data.success) {
+                    throw new Error(data.message || '載入失敗');
+                }
+                
+                if (data.cases && data.cases.length > 0) {
+                    allCases = data.cases;
+                    renderCases(allCases);
+                } else {
+                    // 沒有個案
+                    if (emptyDiv) emptyDiv.classList.remove('hidden');
+                }
+            } catch(e) {
+                console.error('載入個案列表時發生錯誤:', e);
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                
+                // 顯示錯誤
+                if (listElement) {
+                    listElement.innerHTML = `<tr><td colspan="3" class="px-4 py-3 text-center text-red-600 dark:text-red-400">載入失敗：${escapeHtml(e.message)}</td></tr>`;
+                }
+                if (containerDiv) containerDiv.classList.remove('hidden');
+            }
+        }
+        
+        // 渲染個案列表
+        function renderCases(cases) {
+            if (!cases || cases.length === 0) {
+                if (emptyDiv) emptyDiv.classList.remove('hidden');
+                if (containerDiv) containerDiv.classList.add('hidden');
+                return;
+            }
+            
+            listElement.innerHTML = cases.map((c) => {
+                const caseId = escapeHtml(c.caseId || '');
+                const caseName = escapeHtml(c.name || '');
+                const schoolName = escapeHtml(
+                    c.schoolName ||
+                    (c.school && (c.school.SchoolName || c.school.schoolName)) ||
+                    '-'
+                );
+                const caseIdAttr = escapeHtmlForAttribute(c.caseId || '');
+                const caseNameAttr = escapeHtmlForAttribute(c.name || '');
+                
+                return `
+                    <tr class="case-row cursor-pointer border-b border-border dark:border-slate-700 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
+                        data-case-id="${caseIdAttr}"
+                        data-case-name="${caseNameAttr}"
+                        onclick="selectCaseRow(this, '${caseIdAttr}', '${caseNameAttr}')">
+                        <td class="px-4 py-3">
+                            <code class="text-sm text-orange-600 dark:text-orange-400 font-mono">${caseId}</code>
+                        </td>
+                        <td class="px-4 py-3 font-medium">${caseName}</td>
+                        <td class="px-4 py-3">${schoolName}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            if (containerDiv) containerDiv.classList.remove('hidden');
+            if (emptyDiv) emptyDiv.classList.add('hidden');
+        }
+        
+        // 前端過濾個案
+        function filterCases(query) {
+            if (!query) {
+                renderCases(allCases);
+                return;
+            }
+            
+            const filtered = allCases.filter(c => {
+                const caseId = (c.caseId || '').toLowerCase();
+                const caseName = (c.name || '').toLowerCase();
+                return caseId.includes(query) || caseName.includes(query);
+            });
+            
+            renderCases(filtered);
+        }
+        
+        // 選擇個案（整列點擊）
+        window.selectCaseRow = function(rowElement, caseId, caseName) {
+            // 移除所有列的選中狀態
+            const allRows = document.querySelectorAll('.case-row');
+            allRows.forEach(row => {
+                row.classList.remove('!bg-orange-200', 'dark:!bg-orange-900');
+            });
+            
+            // 添加當前列的選中狀態
+            if (rowElement) {
+                rowElement.classList.add('!bg-orange-200', 'dark:!bg-orange-900');
+            }
+            
+            selectedCase = { caseId, name: caseName };
+            
+            // 設定隱藏欄位
+            if (caseIdField) {
+                caseIdField.value = caseId;
+            }
+            
+            // 顯示已選擇資訊
+            if (selectedInfo) {
+                if (selectedId) selectedId.textContent = caseId;
+                if (selectedName) selectedName.textContent = caseName;
+                selectedInfo.classList.remove('hidden');
+            }
+            
+            // 隱藏錯誤訊息
+            if (errorSpan) {
+                errorSpan.classList.add('hidden');
+            }
+            
+            // 觸發自訂回調
+            if (onSelectCallback && typeof window[onSelectCallback] === 'function') {
+                window[onSelectCallback](caseId, caseName);
+            }
+            
+            // 觸發自訂事件
+            const event = new CustomEvent('caseSelected', { 
+                detail: { caseId, name: caseName } 
+            });
+            document.dispatchEvent(event);
+        };
+        
+        // 清除選擇
+        function clearSelection() {
+            selectedCase = null;
+            
+            if (caseIdField) {
+                caseIdField.value = '';
+            }
+            
+            if (selectedInfo) {
+                selectedInfo.classList.add('hidden');
+            }
+            
+            if (selectedName) {
+                selectedName.textContent = '';
+            }
+            
+            // 清除搜尋框
+            if (searchInput) {
+                searchInput.value = '';
+                filterCases('');
+            }
+            
+            // 移除所有列的選中狀態
+            const allRows = document.querySelectorAll('.case-row');
+            allRows.forEach(row => {
+                row.classList.remove('!bg-orange-200', 'dark:!bg-orange-900');
+            });
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function escapeHtmlForAttribute(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        }
+        
+        // 驗證函數
+        window.validateCaseSelection = function() {
+            if (!caseIdField || !caseIdField.value) {
+                if (errorSpan) {
+                    errorSpan.classList.remove('hidden');
+                }
+                return false;
+            }
+            if (errorSpan) {
+                errorSpan.classList.add('hidden');
+            }
+            return true;
+        };
+    }
+})();
+</script>
+

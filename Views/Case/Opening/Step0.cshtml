@@ -41,30 +41,14 @@
                         {
                             <partial name="~/Views/Shared/Partials/_ValidationSummary.cshtml" model="ViewData.ModelState" />
                         }
-                        
-                        <!-- 提示訊息 -->
-                        <div class="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                            <div class="flex items-start gap-3">
-                                <i class="bi bi-info-circle text-orange-600 dark:text-orange-400 text-xl mt-0.5"></i>
-                                <div>
-                                    <p class="text-slate-700 dark:text-slate-300 font-medium mb-1">請先選擇個案，才能繼續進行後續步驟</p>
-                                    <p class="text-slate-600 dark:text-slate-400 text-sm">選擇個案後，系統會自動建立草稿記錄，您可以隨時儲存進度並稍後繼續填寫。</p>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- 個案選擇 Autocomplete -->
+                        <!-- 個案選擇（使用新的簡化元件） -->
                         @{
-                            ViewBag.CaseAutocompleteInputId = "caseAutocompleteInput";
-                            ViewBag.CaseAutocompleteInputName = "caseAutocomplete";
-                            ViewBag.CaseAutocompleteCaseIdFieldId = "CaseId";
-                            ViewBag.CaseAutocompleteOnSelectCallback = "onCaseSelected";
-                            ViewBag.CaseAutocompleteExcludeWithOpeningRecord = true; // 新增開案紀錄時，排除已有開案紀錄的個案
-                            ViewBag.CaseAutocompleteAutoSearchOnLoad = true; // 進入頁面自動載入清單
-                            ViewBag.CaseAutocompleteThirdColumn = "School"; // 第三欄顯示學校
-                            ViewBag.CaseAutocompletePlaceholder = "請輸入個案編號或姓名..."; // 仍可手動搜尋
+                            ViewBag.CaseSelectFieldId = "CaseId";
+                            ViewBag.CaseSelectCallback = "onCaseSelected";
+                            ViewBag.ShowSearch = false; // 預設不顯示搜尋框
                         }
-                        <partial name="~/Views/Shared/Partials/_CaseAutocomplete.cshtml" />
+                        <partial name="~/Views/Shared/Partials/_CaseSelectForOpening.cshtml" />
                         
                         <!-- 隱藏欄位 -->
                         <input asp-for="CaseId" type="hidden" />
@@ -122,15 +106,10 @@
                         if (!caseIdField || !caseIdField.value || caseIdField.value.trim() === '') {
                             event.preventDefault();
                             event.stopPropagation();
-                            // 顯示錯誤訊息但不使用 alert
-                            const errorSpan = document.getElementById('caseAutocompleteInputError');
+                            // 顯示錯誤訊息
+                            const errorSpan = document.getElementById('caseSelectError');
                             if (errorSpan) {
                                 errorSpan.classList.remove('hidden');
-                            }
-                            // 聚焦到輸入框
-                            const autocompleteInput = document.getElementById('caseAutocompleteInput');
-                            if (autocompleteInput) {
-                                autocompleteInput.focus();
                             }
                         } else {
                             form.classList.add('was-validated');
@@ -140,15 +119,13 @@
             }, false);
         })();
         
-        // 如果有現有的 caseId，設定 autocomplete 輸入框的值
+        // 如果有現有的 caseId，自動啟用下一步按鈕
         @if (!string.IsNullOrEmpty(Model.CaseId))
         {
             <text>
             document.addEventListener('DOMContentLoaded', function() {
                 const caseIdField = document.getElementById('CaseId');
-                const autocompleteInput = document.getElementById('caseAutocompleteInput');
-                if (caseIdField && caseIdField.value && autocompleteInput) {
-                    autocompleteInput.value = '@Model.CaseId';
+                if (caseIdField && caseIdField.value) {
                     // 觸發選擇事件以啟用按鈕
                     if (typeof onCaseSelected === 'function') {
                         onCaseSelected('@Model.CaseId', '@Model.CaseId');
