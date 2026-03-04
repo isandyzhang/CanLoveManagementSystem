@@ -21,13 +21,13 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+          dotnet-version: '10.x'
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./CanLove_Backend.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -47,25 +47,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: .net-app
-
-      - name: List downloaded artifact
-        run: |
-          echo "PWD:" && pwd
-          echo "Dir listing of workspace:" && dir
-          echo "Dir listing of ./.net-app:" && dir .\.net-app
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_28D88F484DDA4D46BD1D674787B18873 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_ED2E980E58B24F8985A6A6BABF9851A2 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_31CF57A390E64C78A29D18FC85E0C7F5 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_29985B3680BD4F9A906CE4768CC95952 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0DDDD9D9DD37421C92FECF0E9D7CD057 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0FEE72061F83478793BE035533FB50D2 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'CanloveManagementSystem'
-          package: ${{ github.workspace }}/.net-app
+          slot-name: 'Production'
+          package: .
           
